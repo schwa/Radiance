@@ -554,24 +554,24 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/GeometryLite3D";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.0;
+				branch = main;
+				kind = branch;
 			};
 		};
 		455EE9212F3A679900A753D3 /* XCRemoteSwiftPackageReference "Interaction3D" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/Interaction3D";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.3;
+				branch = main;
+				kind = branch;
 			};
 		};
 		457A346B2EB3DBF20001F508 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/MetalSprocketsGaussianSplats";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.4;
+				branch = main;
+				kind = branch;
 			};
 		};
 		45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {

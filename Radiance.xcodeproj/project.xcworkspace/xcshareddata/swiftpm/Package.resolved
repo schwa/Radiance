@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprocketsAddOns",
       "state" : {
-        "branch" : "main",
-        "revision" : "7bbb307cd5efda853e796debe7a90d7bc3982bed"
+        "revision" : "625b73a349c6ef0914d1febf4607ce571a91a09b",
+        "version" : "0.1.4"
       }
     },
     {
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprocketsGaussianSplats",
       "state" : {
-        "branch" : "main",
-        "revision" : "6f27b8b49619d4ea8b5bf337ddb7bbb3dedc53ef"
+        "revision" : "50ae3bb7dc800323f3239bab6d71c1d7c09640d5",
+        "version" : "0.1.5"
       }
     },
     {

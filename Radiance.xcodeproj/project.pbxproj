@@ -44,16 +44,16 @@
 
 /* Begin PBXFileReference section */
 		454CBDEC2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GaussianSplatsPreviewExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		457A34552EB3D9AE0001F508 /* Radiance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Radiance.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		457A34552EB3D9AE0001F508 /* Radiance-Viewer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Radiance-Viewer.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		450DB2A02EF7293D003752BC /* Exceptions for "Radiance" folder in "Radiance" target */ = {
+		450DB2A02EF7293D003752BC /* Exceptions for "Radiance" folder in "Radiance-Viewer" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 457A34542EB3D9AE0001F508 /* Radiance */;
+			target = 457A34542EB3D9AE0001F508 /* Radiance-Viewer */;
 		};
 		454CBDFF2EF753EC00A16AD0 /* Exceptions for "GaussianSplatsPreviewExtension" folder in "GaussianSplatsPreviewExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -81,7 +81,7 @@
 		457A34572EB3D9AE0001F508 /* Radiance */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				450DB2A02EF7293D003752BC /* Exceptions for "Radiance" folder in "Radiance" target */,
+				450DB2A02EF7293D003752BC /* Exceptions for "Radiance" folder in "Radiance-Viewer" target */,
 			);
 			path = Radiance;
 			sourceTree = "<group>";
@@ -119,6 +119,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		453914F92F74A3AE00D7A039 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		457A344C2EB3D9AD0001F508 = {
 			isa = PBXGroup;
 			children = (
@@ -126,6 +133,7 @@
 				45CD75FA2F74989400E601F7 /* Packages */,
 				457A34572EB3D9AE0001F508 /* Radiance */,
 				454CBDF02EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */,
+				453914F92F74A3AE00D7A039 /* Frameworks */,
 				457A34562EB3D9AE0001F508 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -133,7 +141,7 @@
 		457A34562EB3D9AE0001F508 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				457A34552EB3D9AE0001F508 /* Radiance.app */,
+				457A34552EB3D9AE0001F508 /* Radiance-Viewer.app */,
 				454CBDEC2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex */,
 			);
 			name = Products;
@@ -165,9 +173,9 @@
 			productReference = 454CBDEC2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		457A34542EB3D9AE0001F508 /* Radiance */ = {
+		457A34542EB3D9AE0001F508 /* Radiance-Viewer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 457A34602EB3D9AE0001F508 /* Build configuration list for PBXNativeTarget "Radiance" */;
+			buildConfigurationList = 457A34602EB3D9AE0001F508 /* Build configuration list for PBXNativeTarget "Radiance-Viewer" */;
 			buildPhases = (
 				457A34512EB3D9AE0001F508 /* Sources */,
 				457A34522EB3D9AE0001F508 /* Frameworks */,
@@ -183,7 +191,7 @@
 			fileSystemSynchronizedGroups = (
 				457A34572EB3D9AE0001F508 /* Radiance */,
 			);
-			name = Radiance;
+			name = "Radiance-Viewer";
 			packageProductDependencies = (
 				451155A32EC3EF9700C04880 /* GeometryLite3D */,
 				45E9BB722EF504C00016C77E /* Sharp */,
@@ -194,7 +202,7 @@
 				45629B972F74A0A200463117 /* Splats */,
 			);
 			productName = Radiance;
-			productReference = 457A34552EB3D9AE0001F508 /* Radiance.app */;
+			productReference = 457A34552EB3D9AE0001F508 /* Radiance-Viewer.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -236,7 +244,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				457A34542EB3D9AE0001F508 /* Radiance */,
+				457A34542EB3D9AE0001F508 /* Radiance-Viewer */,
 				454CBDEB2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */,
 			);
 		};
@@ -384,7 +392,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		457A34602EB3D9AE0001F508 /* Build configuration list for PBXNativeTarget "Radiance" */ = {
+		457A34602EB3D9AE0001F508 /* Build configuration list for PBXNativeTarget "Radiance-Viewer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				457A34612EB3D9AE0001F508 /* Debug */,

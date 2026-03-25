@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "457A34542EB3D9AE0001F508"
-               BuildableName = "Radiance.app"
-               BlueprintName = "Radiance"
+               BuildableName = "Radiance-Viewer.app"
+               BlueprintName = "Radiance-Viewer"
                ReferencedContainer = "container:Radiance.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -49,8 +49,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "457A34542EB3D9AE0001F508"
-            BuildableName = "Radiance.app"
-            BlueprintName = "Radiance"
+            BuildableName = "Radiance-Viewer.app"
+            BlueprintName = "Radiance-Viewer"
             ReferencedContainer = "container:Radiance.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -98,8 +98,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "457A34542EB3D9AE0001F508"
-            BuildableName = "Radiance.app"
-            BlueprintName = "Radiance"
+            BuildableName = "Radiance-Viewer.app"
+            BlueprintName = "Radiance-Viewer"
             ReferencedContainer = "container:Radiance.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

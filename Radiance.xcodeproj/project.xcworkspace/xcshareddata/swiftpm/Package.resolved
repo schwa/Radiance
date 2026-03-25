@@ -1,15 +1,6 @@
 {
-  "originHash" : "f0eb17c36c4b79b820262bbb5162bad480a37a94b8c96d4103f2b8f1dbba2f81",
+  "originHash" : "29208b1e375c0fe3bea3fbdd3de9f09a43da953285c08dab8649fffa15ea4c4b",
   "pins" : [
-    {
-      "identity" : "earcut-swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/schwa/earcut-swift",
-      "state" : {
-        "revision" : "84309d9350a3e818412c4c13156af5d95d761147",
-        "version" : "0.1.0"
-      }
-    },
     {
       "identity" : "geometrylite3d",
       "kind" : "remoteSourceControl",
@@ -47,21 +38,12 @@
       }
     },
     {
-      "identity" : "metalsprocketsaddons",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/schwa/MetalSprocketsAddOns",
-      "state" : {
-        "revision" : "625b73a349c6ef0914d1febf4607ce571a91a09b",
-        "version" : "0.1.4"
-      }
-    },
-    {
       "identity" : "metalsprocketsgaussiansplats",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprocketsGaussianSplats",
       "state" : {
-        "revision" : "50ae3bb7dc800323f3239bab6d71c1d7c09640d5",
-        "version" : "0.1.5"
+        "revision" : "b41633feb2cf4d985d0de8e566144530b6f24318",
+        "version" : "0.1.6"
       }
     },
     {

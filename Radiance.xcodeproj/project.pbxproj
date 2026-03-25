@@ -11,8 +11,8 @@
 		451155A42EC3EF9700C04880 /* GeometryLite3D in Frameworks */ = {isa = PBXBuildFile; productRef = 451155A32EC3EF9700C04880 /* GeometryLite3D */; };
 		452D31B02F15791E0034906D /* Interaction3D in Frameworks */ = {isa = PBXBuildFile; productRef = 452D31AF2F15791E0034906D /* Interaction3D */; };
 		454CBDFB2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 454CBDEC2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		454CBE022EF7576300A16AD0 /* MetalSprocketsGaussianSplats in Frameworks */ = {isa = PBXBuildFile; productRef = 454CBE012EF7576300A16AD0 /* MetalSprocketsGaussianSplats */; };
-		457A346D2EB3DBF20001F508 /* MetalSprocketsGaussianSplats in Frameworks */ = {isa = PBXBuildFile; productRef = 457A346C2EB3DBF20001F508 /* MetalSprocketsGaussianSplats */; };
+		45629B962F74A0A200463117 /* MetalSprocketsGaussianSplats in Frameworks */ = {isa = PBXBuildFile; productRef = 45629B952F74A0A200463117 /* MetalSprocketsGaussianSplats */; };
+		45629B982F74A0A200463117 /* Splats in Frameworks */ = {isa = PBXBuildFile; productRef = 45629B972F74A0A200463117 /* Splats */; };
 		45B4CDDB2EF86B8D00BFC1FC /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 45B4CDDA2EF86B8D00BFC1FC /* ZIPFoundation */; };
 		45E9BB732EF504C00016C77E /* Sharp in Frameworks */ = {isa = PBXBuildFile; productRef = 45E9BB722EF504C00016C77E /* Sharp */; };
 		45E9BB762EF519850016C77E /* Sharp in Frameworks */ = {isa = PBXBuildFile; productRef = 45E9BB752EF519850016C77E /* Sharp */; };
@@ -44,7 +44,6 @@
 
 /* Begin PBXFileReference section */
 		454CBDEC2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GaussianSplatsPreviewExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
-		454CBDEE2EF753EC00A16AD0 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		457A34552EB3D9AE0001F508 /* Radiance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Radiance.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -100,7 +99,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4502C67F2F451AE10030C282 /* Interaction3D in Frameworks */,
-				454CBE022EF7576300A16AD0 /* MetalSprocketsGaussianSplats in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,10 +106,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				45629B982F74A0A200463117 /* Splats in Frameworks */,
 				452D31B02F15791E0034906D /* Interaction3D in Frameworks */,
 				451155A42EC3EF9700C04880 /* GeometryLite3D in Frameworks */,
-				457A346D2EB3DBF20001F508 /* MetalSprocketsGaussianSplats in Frameworks */,
 				45E9BB732EF504C00016C77E /* Sharp in Frameworks */,
+				45629B962F74A0A200463117 /* MetalSprocketsGaussianSplats in Frameworks */,
 				45E9BB762EF519850016C77E /* Sharp in Frameworks */,
 				45B4CDDB2EF86B8D00BFC1FC /* ZIPFoundation in Frameworks */,
 			);
@@ -120,23 +119,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		454CBDED2EF753EC00A16AD0 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				454CBDEE2EF753EC00A16AD0 /* Quartz.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 		457A344C2EB3D9AD0001F508 = {
 			isa = PBXGroup;
 			children = (
-				457A34572EB3D9AE0001F508 /* Radiance */,
-				454CBDF02EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */,
-				454CBDED2EF753EC00A16AD0 /* Frameworks */,
-				457A34562EB3D9AE0001F508 /* Products */,
 				452EC1342EF51EF600AB9206 /* Configuration */,
 				45CD75FA2F74989400E601F7 /* Packages */,
+				457A34572EB3D9AE0001F508 /* Radiance */,
+				454CBDF02EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */,
+				457A34562EB3D9AE0001F508 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
@@ -169,7 +159,6 @@
 			);
 			name = GaussianSplatsPreviewExtension;
 			packageProductDependencies = (
-				454CBE012EF7576300A16AD0 /* MetalSprocketsGaussianSplats */,
 				4502C67E2F451AE10030C282 /* Interaction3D */,
 			);
 			productName = GaussianSplatsPreviewExtension;
@@ -196,12 +185,13 @@
 			);
 			name = Radiance;
 			packageProductDependencies = (
-				457A346C2EB3DBF20001F508 /* MetalSprocketsGaussianSplats */,
 				451155A32EC3EF9700C04880 /* GeometryLite3D */,
 				45E9BB722EF504C00016C77E /* Sharp */,
 				45E9BB752EF519850016C77E /* Sharp */,
 				45B4CDDA2EF86B8D00BFC1FC /* ZIPFoundation */,
 				452D31AF2F15791E0034906D /* Interaction3D */,
+				45629B952F74A0A200463117 /* MetalSprocketsGaussianSplats */,
+				45629B972F74A0A200463117 /* Splats */,
 			);
 			productName = Radiance;
 			productReference = 457A34552EB3D9AE0001F508 /* Radiance.app */;
@@ -235,11 +225,11 @@
 			mainGroup = 457A344C2EB3D9AD0001F508;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				457A346B2EB3DBF20001F508 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */,
 				451155A22EC3EF9700C04880 /* XCRemoteSwiftPackageReference "GeometryLite3D" */,
 				45E9BB742EF519850016C77E /* XCRemoteSwiftPackageReference "Sharp" */,
 				45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
 				455EE9212F3A679900A753D3 /* XCRemoteSwiftPackageReference "Interaction3D" */,
+				45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 457A34562EB3D9AE0001F508 /* Products */;
@@ -410,19 +400,19 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/GeometryLite3D";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.0;
 			};
 		};
 		455EE9212F3A679900A753D3 /* XCRemoteSwiftPackageReference "Interaction3D" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/Interaction3D";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.3;
 			};
 		};
-		457A346B2EB3DBF20001F508 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */ = {
+		45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/MetalSprocketsGaussianSplats";
 			requirement = {
@@ -442,8 +432,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/Sharp";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.0.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -463,15 +453,15 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = Interaction3D;
 		};
-		454CBE012EF7576300A16AD0 /* MetalSprocketsGaussianSplats */ = {
+		45629B952F74A0A200463117 /* MetalSprocketsGaussianSplats */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 457A346B2EB3DBF20001F508 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */;
+			package = 45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */;
 			productName = MetalSprocketsGaussianSplats;
 		};
-		457A346C2EB3DBF20001F508 /* MetalSprocketsGaussianSplats */ = {
+		45629B972F74A0A200463117 /* Splats */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 457A346B2EB3DBF20001F508 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */;
-			productName = MetalSprocketsGaussianSplats;
+			package = 45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */;
+			productName = Splats;
 		};
 		45B4CDDA2EF86B8D00BFC1FC /* ZIPFoundation */ = {
 			isa = XCSwiftPackageProductDependency;

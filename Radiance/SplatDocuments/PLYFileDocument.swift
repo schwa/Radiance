@@ -12,11 +12,11 @@ struct PLYFileDocument: FileDocument {
         self.data = (try? Data(contentsOf: url)) ?? Data()
     }
 
-    init(configuration: ReadConfiguration) throws {
+    init(configuration: ReadConfiguration) {
         self.data = configuration.file.regularFileContents ?? Data()
     }
 
-    func fileWrapper(configuration _: WriteConfiguration) throws -> FileWrapper {
+    func fileWrapper(configuration _: WriteConfiguration) -> FileWrapper {
         FileWrapper(regularFileWithContents: data)
     }
 }

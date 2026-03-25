@@ -27,8 +27,10 @@ struct AsyncView<T: Sendable, Content>: View where Content: View {
                         result = .failure(error)
                     }
                 }
+
         case .some(.success(let value)):
             content(value)
+
         case .some(.failure(let error)):
             ContentUnavailableView(error: error)
         }

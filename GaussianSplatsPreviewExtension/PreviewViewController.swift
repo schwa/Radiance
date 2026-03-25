@@ -25,24 +25,28 @@ class PreviewViewController: NSViewController, QLPreviewingController {
             try reader.read { _, extendedSplat in
                 splats.append(SparkSplat(extendedSplat.genericSplat))
             }
+
         case .ply:
             let reader = try PLYSplatReader(url: url)
             splats.reserveCapacity(reader.splatCount)
             try reader.read { _, extendedSplat in
                 splats.append(SparkSplat(extendedSplat.genericSplat))
             }
+
         case .antimatter15Splat:
             let reader = try Antimatter15Reader(url: url)
             splats.reserveCapacity(reader.splatCount)
             try reader.read { _, extendedSplat in
                 splats.append(SparkSplat(extendedSplat.genericSplat))
             }
+
         case .sog:
             let reader = try SOGReaderCPU(url: url)
             splats.reserveCapacity(reader.splatCount)
             try reader.read { _, extendedSplat in
                 splats.append(SparkSplat(extendedSplat.genericSplat))
             }
+
         default:
             throw NSError(
                 domain: "PreviewViewController",

@@ -13,6 +13,7 @@ struct ThrowingView<Content: View>: View {
         switch result {
         case .success(let content):
             content
+
         case .failure(let error):
             ContentUnavailableView("Failed to load", systemImage: "exclamationmark.triangle", description: Text(error.localizedDescription))
         }

@@ -91,6 +91,7 @@ struct SplatDocumentContentView: View {
             switch mode {
             case .single:
                 singleModeLayout
+
             case .multi:
                 multiModeLayout
             }
@@ -290,7 +291,7 @@ struct SplatDocumentContentView: View {
                     .onTapGesture(count: 2) {
                         // Double-click to teleport to cloud center
                         if let loadedCloud = viewModel.loadedClouds.first(where: { $0.id == cloud.id }),
-                            let bounds = loadedCloud.bounds {
+                           let bounds = loadedCloud.bounds {
                             let localCenter = bounds.center
                             let worldCenter = (cloud.transform.matrix * SIMD4<Float>(localCenter, 1)).xyz
                             viewModel.cameraMatrix = simd_float4x4(translation: worldCenter)
@@ -352,6 +353,7 @@ struct SplatDocumentContentView: View {
         switch mode {
         case .single:
             singleModeMainContent
+
         case .multi:
             multiModeMainContent
         }
@@ -362,10 +364,13 @@ struct SplatDocumentContentView: View {
         switch viewModel.loadingState {
         case .idle, .loading:
             ContentUnavailableView("Loading…", systemImage: "circle.dotted")
+
         case .converting(let status):
             conversionContent(status: status)
+
         case .error(let message):
             errorContent(message: message)
+
         case .ready:
             if needsConfirmation {
                 confirmationContent
@@ -390,12 +395,16 @@ struct SplatDocumentContentView: View {
             } else {
                 multiRenderView
             }
+
         case .loading:
             ProgressView("Loading clouds...")
+
         case .ready:
             multiRenderView
+
         case .converting:
             ProgressView("Converting...")
+
         case .error(let message):
             errorContent(message: message)
         }
@@ -438,16 +447,22 @@ struct SplatDocumentContentView: View {
         switch mode {
         case .distanceFromCenter:
             return .distance(DebugDistanceParams(center: boundsCenter, maxDistance: maxExtent / 2))
+
         case .splatSize:
             return .size(DebugSizeParams(minSize: 0, maxSize: maxExtent / 50))
+
         case .depth:
             return .depth(DebugDepthParams(minDepth: 0, maxDepth: maxExtent * 2))
+
         case .opacity:
             return .opacity
+
         case .normal:
             return .normal
+
         case .aspectRatio:
             return .aspectRatio(DebugAspectRatioParams(minRatio: 1.0, maxRatio: 10.0))
+
         case .cloudIndex:
             return .cloudIndex(DebugCloudIndexParams.withColors(cloudCount: cloudCount, colors: cloudColors))
         }
@@ -854,7 +869,7 @@ struct CloudListRow: View {
                 .labelsHidden()
                 #if os(macOS)
                 .toggleStyle(.checkbox)
-                #endif
+            #endif
 
             Text(cloud.displayName ?? "Unknown")
                 .lineLimit(1)

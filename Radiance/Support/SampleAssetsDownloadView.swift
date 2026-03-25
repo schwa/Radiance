@@ -97,6 +97,7 @@ struct SampleAssetsDownloadView: View {
                 Task {
                     await downloadAssets(to: url)
                 }
+
             case .failure(let error):
                 state = .error(error.localizedDescription)
             }
@@ -192,11 +193,11 @@ private struct FolderPickerDocument: FileDocument {
         // Empty folder document for folder picker
     }
 
-    init(configuration _: ReadConfiguration) throws {
+    init(configuration _: ReadConfiguration) {
         // Not used for folder creation
     }
 
-    func fileWrapper(configuration _: WriteConfiguration) throws -> FileWrapper {
+    func fileWrapper(configuration _: WriteConfiguration) -> FileWrapper {
         FileWrapper(directoryWithFileWrappers: [:])
     }
 }

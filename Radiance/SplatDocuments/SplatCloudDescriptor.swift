@@ -43,18 +43,22 @@ struct SplatCloudDescriptor: Sendable {
             let reader = try SPZReader(url: url)
             splatCount = reader.splatCount
             shDegree = reader.shDegree
+
         case .ply:
             let reader = try PLYSplatReader(url: url)
             splatCount = reader.splatCount
             shDegree = reader.shDegree
+
         case .antimatter15Splat:
             let reader = try Antimatter15Reader(url: url)
             splatCount = reader.splatCount
             shDegree = 0
+
         case .sog:
             let reader = try SOGReaderCPU(url: url)
             splatCount = reader.splatCount
             shDegree = UInt8(reader.shDegree)
+
         default:
             splatCount = 0
             shDegree = 0
@@ -70,21 +74,25 @@ struct SplatCloudDescriptor: Sendable {
             try reader.read { _, extendedSplat in
                 bounds.expand(by: extendedSplat.genericSplat.position)
             }
+
         case .ply:
             let reader = try PLYSplatReader(url: url)
             try reader.read { _, extendedSplat in
                 bounds.expand(by: extendedSplat.genericSplat.position)
             }
+
         case .antimatter15Splat:
             let reader = try Antimatter15Reader(url: url)
             try reader.read { _, extendedSplat in
                 bounds.expand(by: extendedSplat.genericSplat.position)
             }
+
         case .sog:
             let reader = try SOGReaderCPU(url: url)
             try reader.read { _, extendedSplat in
                 bounds.expand(by: extendedSplat.genericSplat.position)
             }
+
         default:
             break
         }
@@ -138,6 +146,7 @@ extension SplatCloudDescriptor {
                     }
                 }
             }
+
         case .ply:
             let reader = try PLYSplatReader(url: url)
             effectiveSHDegree = reader.shDegree
@@ -154,11 +163,13 @@ extension SplatCloudDescriptor {
                     }
                 }
             }
+
         case .antimatter15Splat:
             let reader = try Antimatter15Reader(url: url)
             try reader.read { _, extendedSplat in
                 splats.append(S(extendedSplat.genericSplat))
             }
+
         case .sog:
             let reader = try SOGReaderCPU(url: url)
             effectiveSHDegree = UInt8(reader.shDegree)
@@ -175,6 +186,7 @@ extension SplatCloudDescriptor {
                     }
                 }
             }
+
         default:
             throw NSError(domain: "SplatCloudDescriptor", code: 1, userInfo: [NSLocalizedDescriptionKey: "Unsupported content type: \(contentType?.identifier ?? "nil")"])
         }
@@ -195,12 +207,16 @@ extension SplatCloudDescriptor {
         switch degree {
         case 0:
             return 0
+
         case 1:
             return 3 * 3   // 3 basis functions * 3 channels (RGB)
+
         case 2:
             return 8 * 3   // 8 basis functions * 3 channels
+
         case 3:
             return 15 * 3  // 15 basis functions * 3 channels
+
         default:
             return 0
         }

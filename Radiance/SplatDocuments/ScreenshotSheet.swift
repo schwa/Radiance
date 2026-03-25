@@ -140,6 +140,7 @@ struct ScreenshotSheet: View {
             switch result {
             case .success:
                 dismiss()
+
             case .failure(let error):
                 errorMessage = error.localizedDescription
             }

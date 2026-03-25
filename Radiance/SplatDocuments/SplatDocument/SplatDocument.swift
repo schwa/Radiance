@@ -46,7 +46,7 @@ struct SplatDocument: FileDocument {
         contentType = nil
     }
 
-    init(configuration: ReadConfiguration) throws {
+    init(configuration: ReadConfiguration) {
         // Don't load the data here - let the view handle loading from the file URL
         contentType = configuration.contentType
     }

@@ -11,8 +11,10 @@ enum CameraMode: String, CaseIterable {
         switch self {
         case .object:
             [0, 0, 5]
+
         case .room:
             [0, 0, 0]
+
         case .spatialScene:
             [0, 0, 0.2]
         }

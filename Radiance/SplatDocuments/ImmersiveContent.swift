@@ -17,7 +17,7 @@ struct GaussianSplatImmersiveContent: Element, @unchecked Sendable {
     let scale: Float
     let translation: SIMD3<Float>
 
-    init(context: ImmersiveContext) throws {
+    init(context: ImmersiveContext) {
         self.context = context
         self.splatCloud = ImmersiveState.shared.splatCloud
         self.sortedIndices = ImmersiveState.shared.sortedIndices

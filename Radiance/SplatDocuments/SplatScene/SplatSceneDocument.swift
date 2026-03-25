@@ -53,7 +53,7 @@ final class ScopedResourceAccess {
     private var accessingURLs: [URL] = []
 
     /// Start accessing all cloud URLs in a scene
-    func startAccessing(scene: SplatScene) throws -> [ResolvedCloud] {
+    func startAccessing(scene: SplatScene) -> [ResolvedCloud] {
         var resolved: [ResolvedCloud] = []
 
         for cloud in scene.clouds {

@@ -45,16 +45,16 @@
 /* Begin PBXFileReference section */
 		454CBDEC2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GuassianSplatsPreviewExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		454CBDEE2EF753EC00A16AD0 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
-		457A34552EB3D9AE0001F508 /* MetalGaussianSplatsDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MetalGaussianSplatsDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		457A34552EB3D9AE0001F508 /* Radiance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Radiance.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		450DB2A02EF7293D003752BC /* Exceptions for "MetalGaussianSplatsDemo" folder in "MetalGaussianSplatsDemo" target */ = {
+		450DB2A02EF7293D003752BC /* Exceptions for "Radiance" folder in "Radiance" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 457A34542EB3D9AE0001F508 /* MetalGaussianSplatsDemo */;
+			target = 457A34542EB3D9AE0001F508 /* Radiance */;
 		};
 		454CBDFF2EF753EC00A16AD0 /* Exceptions for "GuassianSplatsPreviewExtension" folder in "GuassianSplatsPreviewExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -79,12 +79,12 @@
 			path = GuassianSplatsPreviewExtension;
 			sourceTree = "<group>";
 		};
-		457A34572EB3D9AE0001F508 /* MetalGaussianSplatsDemo */ = {
+		457A34572EB3D9AE0001F508 /* Radiance */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				450DB2A02EF7293D003752BC /* Exceptions for "MetalGaussianSplatsDemo" folder in "MetalGaussianSplatsDemo" target */,
+				450DB2A02EF7293D003752BC /* Exceptions for "Radiance" folder in "Radiance" target */,
 			);
-			path = MetalGaussianSplatsDemo;
+			path = Radiance;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -126,7 +126,7 @@
 		457A344C2EB3D9AD0001F508 = {
 			isa = PBXGroup;
 			children = (
-				457A34572EB3D9AE0001F508 /* MetalGaussianSplatsDemo */,
+				457A34572EB3D9AE0001F508 /* Radiance */,
 				454CBDF02EF753EC00A16AD0 /* GuassianSplatsPreviewExtension */,
 				454CBDED2EF753EC00A16AD0 /* Frameworks */,
 				457A34562EB3D9AE0001F508 /* Products */,
@@ -137,7 +137,7 @@
 		457A34562EB3D9AE0001F508 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				457A34552EB3D9AE0001F508 /* MetalGaussianSplatsDemo.app */,
+				457A34552EB3D9AE0001F508 /* Radiance.app */,
 				454CBDEC2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension.appex */,
 			);
 			name = Products;
@@ -170,9 +170,9 @@
 			productReference = 454CBDEC2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
-		457A34542EB3D9AE0001F508 /* MetalGaussianSplatsDemo */ = {
+		457A34542EB3D9AE0001F508 /* Radiance */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 457A34602EB3D9AE0001F508 /* Build configuration list for PBXNativeTarget "MetalGaussianSplatsDemo" */;
+			buildConfigurationList = 457A34602EB3D9AE0001F508 /* Build configuration list for PBXNativeTarget "Radiance" */;
 			buildPhases = (
 				457A34512EB3D9AE0001F508 /* Sources */,
 				457A34522EB3D9AE0001F508 /* Frameworks */,
@@ -186,9 +186,9 @@
 				454CBDFA2EF753EC00A16AD0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				457A34572EB3D9AE0001F508 /* MetalGaussianSplatsDemo */,
+				457A34572EB3D9AE0001F508 /* Radiance */,
 			);
-			name = MetalGaussianSplatsDemo;
+			name = Radiance;
 			packageProductDependencies = (
 				457A346C2EB3DBF20001F508 /* MetalSprocketsGaussianSplats */,
 				451155A32EC3EF9700C04880 /* GeometryLite3D */,
@@ -197,8 +197,8 @@
 				45B4CDDA2EF86B8D00BFC1FC /* ZIPFoundation */,
 				452D31AF2F15791E0034906D /* Interaction3D */,
 			);
-			productName = MetalGaussianSplatsDemo;
-			productReference = 457A34552EB3D9AE0001F508 /* MetalGaussianSplatsDemo.app */;
+			productName = Radiance;
+			productReference = 457A34552EB3D9AE0001F508 /* Radiance.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -219,7 +219,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 457A34502EB3D9AD0001F508 /* Build configuration list for PBXProject "MetalGaussianSplatsDemo" */;
+			buildConfigurationList = 457A34502EB3D9AD0001F508 /* Build configuration list for PBXProject "Radiance" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -240,7 +240,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				457A34542EB3D9AE0001F508 /* MetalGaussianSplatsDemo */,
+				457A34542EB3D9AE0001F508 /* Radiance */,
 				454CBDEB2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension */,
 			);
 		};
@@ -387,7 +387,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = io.schwa.MetalGaussianSplatsDemo.GuassianSplatsPreviewExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = io.schwa.Radiance.GuassianSplatsPreviewExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -466,7 +466,7 @@
 				MARKETING_VERSION = 0.1.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = io.schwa.MetalGaussianSplatsDemo.GuassianSplatsPreviewExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = io.schwa.Radiance.GuassianSplatsPreviewExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -500,7 +500,7 @@
 		457A34612EB3D9AE0001F508 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReferenceAnchor = 452EC1342EF51EF600AB9206 /* Configuration */;
-			baseConfigurationReferenceRelativePath = "MetalGaussianSplatsDemo-Debug.xcconfig";
+			baseConfigurationReferenceRelativePath = "Radiance-Debug.xcconfig";
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=iphoneos*]" = AppIcon;
@@ -525,7 +525,7 @@
 		457A34622EB3D9AE0001F508 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReferenceAnchor = 452EC1342EF51EF600AB9206 /* Configuration */;
-			baseConfigurationReferenceRelativePath = "MetalGaussianSplatsDemo-Release.xcconfig";
+			baseConfigurationReferenceRelativePath = "Radiance-Release.xcconfig";
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "";
 				"ASSETCATALOG_COMPILER_APPICON_NAME[sdk=iphoneos*]" = AppIcon;
@@ -559,7 +559,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		457A34502EB3D9AD0001F508 /* Build configuration list for PBXProject "MetalGaussianSplatsDemo" */ = {
+		457A34502EB3D9AD0001F508 /* Build configuration list for PBXProject "Radiance" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				457A345E2EB3D9AE0001F508 /* Debug */,
@@ -568,7 +568,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		457A34602EB3D9AE0001F508 /* Build configuration list for PBXNativeTarget "MetalGaussianSplatsDemo" */ = {
+		457A34602EB3D9AE0001F508 /* Build configuration list for PBXNativeTarget "Radiance" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				457A34612EB3D9AE0001F508 /* Debug */,

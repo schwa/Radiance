@@ -1,6 +1,6 @@
-# Metal Gaussian Splats Demo
+# Radiance
 
-A full-featured demo app for [MetalSprocketsGaussianSplats](https://github.com/schwa/MetalSprocketsGaussianSplats), showcasing Gaussian splat rendering on macOS, iOS, and visionOS.
+A Gaussian splat viewer for macOS, iOS, and visionOS, built on [MetalSprocketsGaussianSplats](https://github.com/schwa/MetalSprocketsGaussianSplats).
 
 ## Features
 
@@ -21,6 +21,6 @@ A full-featured demo app for [MetalSprocketsGaussianSplats](https://github.com/s
 
 ## Getting Started
 
-Open `MetalGaussianSplatsDemo.xcodeproj` in Xcode and build.
+Open `Radiance.xcodeproj` in Xcode and build.
 
 The app loads `.splat`, `.ply`, `.spz`, and `.sog` files. Sample splats are included in the `Sample Splats` directory.

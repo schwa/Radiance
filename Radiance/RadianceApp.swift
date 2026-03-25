@@ -8,7 +8,7 @@ import MetalSprocketsUI
 #endif
 
 @main
-struct MetalGaussianSplatsDemoApp: App {
+struct RadianceApp: App {
     #if os(macOS)
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     #endif

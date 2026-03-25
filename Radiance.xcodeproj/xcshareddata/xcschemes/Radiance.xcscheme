@@ -16,9 +16,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "457A34542EB3D9AE0001F508"
-               BuildableName = "MetalGaussianSplatsDemo.app"
-               BlueprintName = "MetalGaussianSplatsDemo"
-               ReferencedContainer = "container:MetalGaussianSplatsDemo.xcodeproj">
+               BuildableName = "Radiance.app"
+               BlueprintName = "Radiance"
+               ReferencedContainer = "container:Radiance.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -49,9 +49,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "457A34542EB3D9AE0001F508"
-            BuildableName = "MetalGaussianSplatsDemo.app"
-            BlueprintName = "MetalGaussianSplatsDemo"
-            ReferencedContainer = "container:MetalGaussianSplatsDemo.xcodeproj">
+            BuildableName = "Radiance.app"
+            BlueprintName = "Radiance"
+            ReferencedContainer = "container:Radiance.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <EnvironmentVariables>
@@ -98,9 +98,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "457A34542EB3D9AE0001F508"
-            BuildableName = "MetalGaussianSplatsDemo.app"
-            BlueprintName = "MetalGaussianSplatsDemo"
-            ReferencedContainer = "container:MetalGaussianSplatsDemo.xcodeproj">
+            BuildableName = "Radiance.app"
+            BlueprintName = "Radiance"
+            ReferencedContainer = "container:Radiance.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

@@ -1,5 +1,5 @@
 {
-  "originHash" : "8653e20c08b972e947c0a303cfd3fbe498a4cd248d53bb7822ad7f44c9be2e37",
+  "originHash" : "9a7ce0acfe0be6d56c01af599ecf6f7e12df39c858b455f2bd80ad9435eaf0ce",
   "pins" : [
     {
       "identity" : "earcut-swift",
@@ -53,6 +53,15 @@
       "state" : {
         "branch" : "main",
         "revision" : "625b73a349c6ef0914d1febf4607ce571a91a09b"
+      }
+    },
+    {
+      "identity" : "metalsprocketsgaussiansplats",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/schwa/MetalSprocketsGaussianSplats",
+      "state" : {
+        "branch" : "main",
+        "revision" : "57397aefcaba7f356f17ccedf0c655519895b816"
       }
     },
     {

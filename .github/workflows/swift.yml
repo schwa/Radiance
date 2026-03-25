@@ -27,8 +27,8 @@ jobs:
       - name: Build (${{ matrix.destination }})
         run: |
           xcodebuild build \
-            -project MetalGaussianSplatsDemo.xcodeproj \
-            -scheme MetalGaussianSplatsDemo \
+            -project Radiance.xcodeproj \
+            -scheme Radiance \
             -destination '${{ matrix.destination }}' \
             -skipPackagePluginValidation \
             -skipMacroValidation \

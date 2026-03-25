@@ -1,6 +1,6 @@
 //
 // GlimmerView.swift
-// MetalGaussianSplatsDemo
+// Radiance
 //
 // An animated glimmer effect using SwiftUI Metal shaders.
 // Inspired by Inferno by Paul Hudson (https://github.com/twostraws/Inferno)

@@ -3,7 +3,7 @@ import simd
 import SwiftUI
 import UniformTypeIdentifiers
 
-private let logger = Logger(subsystem: "com.schwa.MetalGaussianSplatsDemo", category: "SplatSceneDocument")
+private let logger = Logger(subsystem: "com.schwa.Radiance", category: "SplatSceneDocument")
 
 /// A document representing a splat scene with multiple clouds
 struct SplatSceneDocument: FileDocument {

@@ -10,7 +10,7 @@
 		4502C67F2F451AE10030C282 /* Interaction3D in Frameworks */ = {isa = PBXBuildFile; productRef = 4502C67E2F451AE10030C282 /* Interaction3D */; };
 		451155A42EC3EF9700C04880 /* GeometryLite3D in Frameworks */ = {isa = PBXBuildFile; productRef = 451155A32EC3EF9700C04880 /* GeometryLite3D */; };
 		452D31B02F15791E0034906D /* Interaction3D in Frameworks */ = {isa = PBXBuildFile; productRef = 452D31AF2F15791E0034906D /* Interaction3D */; };
-		454CBDFB2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 454CBDEC2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension.appex */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		454CBDFB2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 454CBDEC2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		454CBE022EF7576300A16AD0 /* MetalSprocketsGaussianSplats in Frameworks */ = {isa = PBXBuildFile; productRef = 454CBE012EF7576300A16AD0 /* MetalSprocketsGaussianSplats */; };
 		457A346D2EB3DBF20001F508 /* MetalSprocketsGaussianSplats in Frameworks */ = {isa = PBXBuildFile; productRef = 457A346C2EB3DBF20001F508 /* MetalSprocketsGaussianSplats */; };
 		45B4CDDB2EF86B8D00BFC1FC /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 45B4CDDA2EF86B8D00BFC1FC /* ZIPFoundation */; };
@@ -24,7 +24,7 @@
 			containerPortal = 457A344D2EB3D9AD0001F508 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 454CBDEB2EF753EC00A16AD0;
-			remoteInfo = GuassianSplatsPreviewExtension;
+			remoteInfo = GaussianSplatsPreviewExtension;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -35,7 +35,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				454CBDFB2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension.appex in Embed Foundation Extensions */,
+				454CBDFB2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -43,7 +43,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		454CBDEC2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GuassianSplatsPreviewExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		454CBDEC2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = GaussianSplatsPreviewExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		454CBDEE2EF753EC00A16AD0 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = System/Library/Frameworks/Quartz.framework; sourceTree = SDKROOT; };
 		457A34552EB3D9AE0001F508 /* Radiance.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Radiance.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -56,12 +56,12 @@
 			);
 			target = 457A34542EB3D9AE0001F508 /* Radiance */;
 		};
-		454CBDFF2EF753EC00A16AD0 /* Exceptions for "GuassianSplatsPreviewExtension" folder in "GuassianSplatsPreviewExtension" target */ = {
+		454CBDFF2EF753EC00A16AD0 /* Exceptions for "GaussianSplatsPreviewExtension" folder in "GaussianSplatsPreviewExtension" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 454CBDEB2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension */;
+			target = 454CBDEB2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -71,12 +71,12 @@
 			path = Configuration;
 			sourceTree = "<group>";
 		};
-		454CBDF02EF753EC00A16AD0 /* GuassianSplatsPreviewExtension */ = {
+		454CBDF02EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				454CBDFF2EF753EC00A16AD0 /* Exceptions for "GuassianSplatsPreviewExtension" folder in "GuassianSplatsPreviewExtension" target */,
+				454CBDFF2EF753EC00A16AD0 /* Exceptions for "GaussianSplatsPreviewExtension" folder in "GaussianSplatsPreviewExtension" target */,
 			);
-			path = GuassianSplatsPreviewExtension;
+			path = GaussianSplatsPreviewExtension;
 			sourceTree = "<group>";
 		};
 		457A34572EB3D9AE0001F508 /* Radiance */ = {
@@ -127,7 +127,7 @@
 			isa = PBXGroup;
 			children = (
 				457A34572EB3D9AE0001F508 /* Radiance */,
-				454CBDF02EF753EC00A16AD0 /* GuassianSplatsPreviewExtension */,
+				454CBDF02EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */,
 				454CBDED2EF753EC00A16AD0 /* Frameworks */,
 				457A34562EB3D9AE0001F508 /* Products */,
 				452EC1342EF51EF600AB9206 /* Configuration */,
@@ -138,7 +138,7 @@
 			isa = PBXGroup;
 			children = (
 				457A34552EB3D9AE0001F508 /* Radiance.app */,
-				454CBDEC2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension.appex */,
+				454CBDEC2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -146,9 +146,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		454CBDEB2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension */ = {
+		454CBDEB2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 454CBDFC2EF753EC00A16AD0 /* Build configuration list for PBXNativeTarget "GuassianSplatsPreviewExtension" */;
+			buildConfigurationList = 454CBDFC2EF753EC00A16AD0 /* Build configuration list for PBXNativeTarget "GaussianSplatsPreviewExtension" */;
 			buildPhases = (
 				454CBDE82EF753EC00A16AD0 /* Sources */,
 				454CBDE92EF753EC00A16AD0 /* Frameworks */,
@@ -159,15 +159,15 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				454CBDF02EF753EC00A16AD0 /* GuassianSplatsPreviewExtension */,
+				454CBDF02EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */,
 			);
-			name = GuassianSplatsPreviewExtension;
+			name = GaussianSplatsPreviewExtension;
 			packageProductDependencies = (
 				454CBE012EF7576300A16AD0 /* MetalSprocketsGaussianSplats */,
 				4502C67E2F451AE10030C282 /* Interaction3D */,
 			);
-			productName = GuassianSplatsPreviewExtension;
-			productReference = 454CBDEC2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension.appex */;
+			productName = GaussianSplatsPreviewExtension;
+			productReference = 454CBDEC2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 		457A34542EB3D9AE0001F508 /* Radiance */ = {
@@ -241,7 +241,7 @@
 			projectRoot = "";
 			targets = (
 				457A34542EB3D9AE0001F508 /* Radiance */,
-				454CBDEB2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension */,
+				454CBDEB2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -309,7 +309,7 @@
 			platformFilters = (
 				macos,
 			);
-			target = 454CBDEB2EF753EC00A16AD0 /* GuassianSplatsPreviewExtension */;
+			target = 454CBDEB2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */;
 			targetProxy = 454CBDF92EF753EC00A16AD0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -318,7 +318,7 @@
 		454CBDFD2EF753EC00A16AD0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReferenceAnchor = 452EC1342EF51EF600AB9206 /* Configuration */;
-			baseConfigurationReferenceRelativePath = "GuassianSplatsPreviewExtension-Debug.xcconfig";
+			baseConfigurationReferenceRelativePath = "GaussianSplatsPreviewExtension-Debug.xcconfig";
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -375,8 +375,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = GuassianSplatsPreviewExtension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = GuassianSplatsPreviewExtension;
+				INFOPLIST_FILE = GaussianSplatsPreviewExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = GaussianSplatsPreviewExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -389,7 +389,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = io.schwa.Radiance.GuassianSplatsPreviewExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = io.schwa.Radiance.GaussianSplatsPreviewExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -406,7 +406,7 @@
 		454CBDFE2EF753EC00A16AD0 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReferenceAnchor = 452EC1342EF51EF600AB9206 /* Configuration */;
-			baseConfigurationReferenceRelativePath = "GuassianSplatsPreviewExtension-Release.xcconfig";
+			baseConfigurationReferenceRelativePath = "GaussianSplatsPreviewExtension-Release.xcconfig";
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -457,8 +457,8 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = GuassianSplatsPreviewExtension/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = GuassianSplatsPreviewExtension;
+				INFOPLIST_FILE = GaussianSplatsPreviewExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = GaussianSplatsPreviewExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -470,7 +470,7 @@
 				MARKETING_VERSION = 0.1.2;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = io.schwa.Radiance.GuassianSplatsPreviewExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = io.schwa.Radiance.GaussianSplatsPreviewExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -520,7 +520,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		454CBDFC2EF753EC00A16AD0 /* Build configuration list for PBXNativeTarget "GuassianSplatsPreviewExtension" */ = {
+		454CBDFC2EF753EC00A16AD0 /* Build configuration list for PBXNativeTarget "GaussianSplatsPreviewExtension" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				454CBDFD2EF753EC00A16AD0 /* Debug */,

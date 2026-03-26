@@ -408,50 +408,46 @@ final class SplatViewModel {
         loadingState = .loading
         resourceAccess.stopAccessing()
 
-        do {
-            let resolved = try resourceAccess.startAccessing(scene: scene)
-            var loaded: [LoadedSplatCloud] = []
+        let resolved = resourceAccess.startAccessing(scene: scene)
+        var loaded: [LoadedSplatCloud] = []
 
-            for resolvedCloud in resolved {
-                do {
-                    let descriptor = try SplatCloudDescriptor(url: resolvedCloud.url)
-                    let gpuCloud: GPUSplatCloud<SparkSplat> = try descriptor.loadGPUSplatCloud(
-                        modelTransform: resolvedCloud.transform.matrix
-                    )
+        for resolvedCloud in resolved {
+            do {
+                let descriptor = try SplatCloudDescriptor(url: resolvedCloud.url)
+                let gpuCloud: GPUSplatCloud<SparkSplat> = try descriptor.loadGPUSplatCloud(
+                    modelTransform: resolvedCloud.transform.matrix
+                )
 
-                    loaded.append(LoadedSplatCloud(
-                        id: resolvedCloud.id,
-                        displayName: resolvedCloud.displayName ?? resolvedCloud.url.lastPathComponent,
-                        cloud: gpuCloud,
-                        descriptor: descriptor,
-                        bounds: nil
-                    ))
-                } catch {
-                    // Skip clouds that fail to load
-                }
+                loaded.append(LoadedSplatCloud(
+                    id: resolvedCloud.id,
+                    displayName: resolvedCloud.displayName ?? resolvedCloud.url.lastPathComponent,
+                    cloud: gpuCloud,
+                    descriptor: descriptor,
+                    bounds: nil
+                ))
+            } catch {
+                // Skip clouds that fail to load
             }
+        }
 
-            loadedClouds = loaded
+        loadedClouds = loaded
 
-            // Update sort manager for the new clouds
-            updateSortManager(for: loaded.compactMap(\.cloud))
+        // Update sort manager for the new clouds
+        updateSortManager(for: loaded.compactMap(\.cloud))
 
-            if let camera = scene.camera {
-                cameraMatrix = camera.matrix
-                verticalAngleOfView = camera.verticalAngleOfView
-                if let mode = CameraMode(rawValue: camera.mode.capitalized) {
-                    cameraMode = mode
-                }
+        if let camera = scene.camera {
+            cameraMatrix = camera.matrix
+            verticalAngleOfView = camera.verticalAngleOfView
+            if let mode = CameraMode(rawValue: camera.mode.capitalized) {
+                cameraMode = mode
             }
+        }
 
-            loadingState = loaded.isEmpty ? .idle : .ready
+        loadingState = loaded.isEmpty ? .idle : .ready
 
-            // Compute bounds in background
-            Task {
-                await computeBoundsForLoadedClouds()
-            }
-        } catch {
-            loadingState = .error("Failed to load clouds: \(error.localizedDescription)")
+        // Compute bounds in background
+        Task {
+            await computeBoundsForLoadedClouds()
         }
     }
 

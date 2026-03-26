@@ -326,10 +326,7 @@ struct InspectorView: View {
 
     /// Get the bounds center for the selected cloud (multi mode) or the overall bounds (single mode)
     private var selectedCloudBoundsCenter: SIMD3<Float> {
-        guard mode == .multi,
-              let cloud = selectedCloud,
-              let loadedCloud = viewModel.loadedClouds.first(where: { $0.id == cloud.id }),
-              let bounds = loadedCloud.bounds
+        guard mode == .multi, let cloud = selectedCloud, let loadedCloud = viewModel.loadedClouds.first(where: { $0.id == cloud.id }), let bounds = loadedCloud.bounds
         else {
             return viewModel.boundsCenter
         }
@@ -342,8 +339,8 @@ struct InspectorView: View {
         if mode == .multi {
             // In multi mode, need a selected cloud with bounds
             guard let cloud = selectedCloud,
-                  let loadedCloud = viewModel.loadedClouds.first(where: { $0.id == cloud.id }),
-                  loadedCloud.bounds != nil
+                let loadedCloud = viewModel.loadedClouds.first(where: { $0.id == cloud.id }),
+                loadedCloud.bounds != nil
             else {
                 return false
             }

@@ -180,6 +180,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 457A34602EB3D9AE0001F508 /* Build configuration list for PBXNativeTarget "Radiance-Viewer" */;
 			buildPhases = (
+				45A385AE2F74D9B20071A823 /* ShellScript */,
 				457A34512EB3D9AE0001F508 /* Sources */,
 				457A34522EB3D9AE0001F508 /* Frameworks */,
 				457A34532EB3D9AE0001F508 /* Resources */,
@@ -289,6 +290,25 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if [ -x \"/opt/homebrew/bin/swiftlint\" ]; then\n  echo \"Running SwiftLint...\"\n  cd ../.. && /opt/homebrew/bin/swiftlint --quiet --lenient\nelif which swiftlint >/dev/null 2>&1; then\n  echo \"Running SwiftLint from PATH...\"\n      cd .. && swiftlint --quiet --lenient\nelse\n  echo \"warning: SwiftLint not installed. Get it from https://github.com/realm/SwiftLint\"\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		45A385AE2F74D9B20071A823 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\n\n if [ \"$CI_XCODE_CLOUD\" = \"TRUE\" ]; then\n     defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES\n fi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

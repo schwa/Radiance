@@ -63,6 +63,13 @@
 			);
 			target = 454CBDEB2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */;
 		};
+		45A385B62F74E04A0071A823 /* Exceptions for "Radiance" folder in "GaussianSplatsPreviewExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				AppIcon.icon,
+			);
+			target = 454CBDEB2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -83,6 +90,7 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 				450DB2A02EF7293D003752BC /* Exceptions for "Radiance" folder in "Radiance-Viewer" target */,
+				45A385B62F74E04A0071A823 /* Exceptions for "Radiance" folder in "GaussianSplatsPreviewExtension" target */,
 			);
 			path = Radiance;
 			sourceTree = "<group>";

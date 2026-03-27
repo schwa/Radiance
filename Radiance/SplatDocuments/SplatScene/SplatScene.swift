@@ -117,7 +117,7 @@ private struct RotationValue: Decodable {
 // MARK: - SplatScene Model
 
 /// A scene containing multiple splat clouds with their transforms
-struct SplatScene: Codable, Sendable {
+struct SplatScene: nonisolated Codable, Sendable {
     var version: Int = 1
     var clouds: [CloudReference] = []
     var sceneTransform = Transform(rotation: [.pi, 0, 0])  // Default X rotation of 180°

@@ -51,7 +51,7 @@ struct SplatSceneDocument: FileDocument {
 
 /// Helper to manage security-scoped resource access for multiple URLs
 final class ScopedResourceAccess {
-    private var accessingURLs: [URL] = []
+    nonisolated(unsafe) private var accessingURLs: [URL] = []
 
     /// Start accessing all cloud URLs in a scene
     func startAccessing(scene: SplatScene) -> [ResolvedCloud] {
@@ -81,7 +81,7 @@ final class ScopedResourceAccess {
     }
 
     /// Stop accessing all resources
-    func stopAccessing() {
+    nonisolated func stopAccessing() {
         #if os(macOS)
         for url in accessingURLs {
             url.stopAccessingSecurityScopedResource()

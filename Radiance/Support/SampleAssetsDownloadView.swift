@@ -204,7 +204,7 @@ private struct FolderPickerDocument: FileDocument {
 
 // MARK: - Download Delegate
 
-private class DownloadProgressDelegate: NSObject, URLSessionDownloadDelegate {
+private final class DownloadProgressDelegate: NSObject, URLSessionDownloadDelegate {
     let progressHandler: (Double) -> Void
     let completionHandler: (Result<(URL, URLResponse), Error>) -> Void
 

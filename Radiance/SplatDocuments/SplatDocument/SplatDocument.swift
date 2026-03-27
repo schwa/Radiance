@@ -1,29 +1,6 @@
+import RadianceSupport
 import SwiftUI
 import UniformTypeIdentifiers
-
-// MARK: - UTType Extensions for Gaussian Splats
-
-public extension UTType {
-    /// SOG - Spatially Ordered Gaussians (.sog) format (PlayCanvas)
-    static var sog: UTType {
-        UTType(importedAs: "com.playcanvas.sog")
-    }
-
-    /// Polygon File Format (.ply)
-    static var ply: UTType {
-        UTType(importedAs: "public.polygon-file-format")
-    }
-
-    /// Antimatter15 Splat (.splat) format
-    static var antimatter15Splat: UTType {
-        UTType(importedAs: "com.antimatter15.splat")
-    }
-
-    /// Gaussian Splat SPZ (.spz) format (Niantic Labs)
-    static var spz: UTType {
-        UTType(importedAs: "com.nianticlabs.spz")
-    }
-}
 
 // MARK: - SplatDocument
 

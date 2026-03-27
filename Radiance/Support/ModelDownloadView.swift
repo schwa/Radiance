@@ -219,7 +219,7 @@ struct ModelDownloadView: View {
     }
 }
 
-private class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
+private final class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
     let progressHandler: (Int64, Int64, Int64) -> Void
     let completionHandler: (Result<(URL, URLResponse), Error>) -> Void
 

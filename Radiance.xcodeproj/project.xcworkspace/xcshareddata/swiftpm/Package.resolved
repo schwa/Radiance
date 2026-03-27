@@ -1,5 +1,5 @@
 {
-  "originHash" : "23e62fcb4eafd040966d39ed5257033557a9d1f06b3a704c6761b22e49edb0e8",
+  "originHash" : "0e1fc3801ed34902279b6d1e774280b3493f05bf64e719182cbed3e650aabfba",
   "pins" : [
     {
       "identity" : "geometrylite3d",
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprocketsGaussianSplats",
       "state" : {
-        "revision" : "b41633feb2cf4d985d0de8e566144530b6f24318",
-        "version" : "0.1.6"
+        "branch" : "main",
+        "revision" : "6a9df6c10ae39037fa65e2795757faf97d05f1cd"
       }
     },
     {

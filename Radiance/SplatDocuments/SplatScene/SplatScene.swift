@@ -234,6 +234,10 @@ struct SplatScene: nonisolated Codable, Sendable {
         /// Background color RGBA components (0-1 range)
         var backgroundColor: [Float] = [0, 0, 0, 1]
     }
+
+    nonisolated init() {
+
+    }
 }
 
 // MARK: - simd_float4x4 Codable
@@ -271,5 +275,5 @@ extension simd_float4x4: @retroactive Codable {
 // MARK: - File Extension
 
 extension UTType {
-    static let splatScene = UTType(exportedAs: "com.schwa.splatscene", conformingTo: .json)
+    nonisolated static let splatScene = UTType(exportedAs: "com.schwa.splatscene", conformingTo: .json)
 }

@@ -7,6 +7,7 @@ import MetalSprocketsGaussianSplats
 import MetalSprocketsGaussianSplatShaders
 import Observation
 import Sharp
+import Splats
 import simd
 import SwiftUI
 import UniformTypeIdentifiers

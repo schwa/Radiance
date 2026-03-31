@@ -47,6 +47,9 @@ struct SplatPreviewView: View {
         .metalClearColor(.init(red: 0, green: 0, blue: 0, alpha: 1))
         .task {
             for await indices in sortManager.sortedIndicesStream {
+                if let old = sortedIndices {
+                    sortManager.release(old)
+                }
                 sortedIndices = indices
             }
         }

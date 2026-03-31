@@ -64,6 +64,9 @@ struct MultiCloudRenderView: View {
         .metalClearColor(clearColor)
         .task {
             for await indices in sortManager.sortedIndicesStream {
+                if let old = sortedIndices {
+                    sortManager.release(old)
+                }
                 sortedIndices = indices
             }
         }

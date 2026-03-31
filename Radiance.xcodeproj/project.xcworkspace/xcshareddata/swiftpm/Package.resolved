@@ -43,7 +43,7 @@
       "location" : "https://github.com/schwa/MetalSprocketsGaussianSplats",
       "state" : {
         "branch" : "main",
-        "revision" : "6a9df6c10ae39037fa65e2795757faf97d05f1cd"
+        "revision" : "f1caf1e3a05c17df394ef6933945952f4ad36ec3"
       }
     },
     {
@@ -85,7 +85,7 @@
     {
       "identity" : "swift-collections",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-collections.git",
+      "location" : "https://github.com/apple/swift-collections",
       "state" : {
         "revision" : "6675bc0ff86e61436e615df6fc5174e043e57924",
         "version" : "1.4.1"

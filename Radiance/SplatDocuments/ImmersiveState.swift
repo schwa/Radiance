@@ -48,6 +48,9 @@ final class ImmersiveState {
         if let sortManager {
             sortListenerTask = Task { @MainActor [weak self] in
                 for await indices in sortManager.sortedIndicesStream {
+                    if let old = self?.sortedIndices {
+                        sortManager.release(old)
+                    }
                     self?.sortedIndices = indices
                 }
             }

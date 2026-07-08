@@ -1,0 +1,9 @@
+{
+  "id" : "dfac84a5-7e4b-4787-9839-92c03edff0d2",
+  "targets" : [
+    {
+      "id" : "735D0498-E0AA-4ACA-BB50-674D91157DE6",
+      "name" : "Radiance-Viewer"
+    }
+  ]
+}

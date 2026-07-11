@@ -2,6 +2,7 @@
 # Settings here override global config (~/.config/xcb/config.toml).
 
 [defaults]
+skip_plugin_validation = true
 # destination = "iphone-sim"    # Default build destination
 # scheme = "MyApp"              # Default scheme to build
 # target = "MyApp"              # Default target

@@ -45,6 +45,10 @@ struct RadianceApp: App {
         #endif
 
         #if os(macOS)
+        Window("COLMAP Viewer", id: "colmap-viewer") {
+            ColmapViewerView()
+        }
+
         Window("About Gaussian Splats Demo", id: "about") {
             AboutView()
         }

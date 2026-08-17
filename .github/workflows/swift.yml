@@ -16,7 +16,7 @@ jobs:
           - destination: "platform=macOS"
             platform: ""
           - destination: "generic/platform=iOS"
-            platform: "iOS"
+            platform: ""
           - destination: "generic/platform=xrOS"
             platform: "visionOS"
     steps:

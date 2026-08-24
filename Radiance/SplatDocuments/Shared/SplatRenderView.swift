@@ -79,7 +79,8 @@ struct SplatRenderView: View {
                 modelMatrix: sceneTransform,
                 projection: projection
             )
-            .splatRenderer(viewModel.renderer)
+            .splatRenderer(debugParams == nil ? viewModel.renderer : .sparkGPU)
+            .splatDebugParams(debugParams)
             .onGeometryChange(for: CGSize.self, of: \.size) { size in
                 if viewModel.viewSize != size {
                     viewModel.viewSize = size
@@ -216,6 +217,7 @@ struct InspectorView: View {
     let isDescribingImage: Bool
     let describeImage: () -> Void
     let flipImage: () -> Void
+    let moveCameraInside: () -> Void
     // Multi-mode only: document and selection
     @Binding var document: SplatSceneDocument?
     @Binding var selectedCloud: SplatScene.CloudReference?
@@ -268,7 +270,8 @@ struct InspectorView: View {
                         imageDescription: imageDescription,
                         isDescribingImage: isDescribingImage,
                         describeImage: describeImage,
-                        flipCamera: flipImage
+                        flipCamera: flipImage,
+                        moveCameraInside: moveCameraInside
                     )
                 }
             }
@@ -429,6 +432,7 @@ struct InspectorView: View {
             backgroundColor: $viewModel.backgroundColor,
             useSphericalHarmonics: $viewModel.useSphericalHarmonics,
             rendererSelectionDisabled: mode == .multi,
+            supportsBoundsCulling: mode == .multi,
             sphericalHarmonicsDisabled: !viewModel.hasSphericalHarmonicsData,
             sphericalHarmonicsWarning: sphericalHarmonicsWarning,
             showBoundingBoxes: $viewModel.showBoundingBoxes,
@@ -478,6 +482,7 @@ extension InspectorView {
         isDescribingImage: Bool,
         describeImage: @escaping () -> Void,
         flipImage: @escaping () -> Void,
+        moveCameraInside: @escaping () -> Void,
         onScreenshot: (() -> Void)? = nil
     ) {
         self.mode = .single
@@ -492,6 +497,7 @@ extension InspectorView {
         self.isDescribingImage = isDescribingImage
         self.describeImage = describeImage
         self.flipImage = flipImage
+        self.moveCameraInside = moveCameraInside
         self._document = .constant(nil)
         self._selectedCloud = .constant(nil)
         self.onDeleteCloud = nil
@@ -519,6 +525,7 @@ extension InspectorView {
         self.isDescribingImage = false
         self.describeImage = { _ = () }
         self.flipImage = { _ = () }
+        self.moveCameraInside = { _ = () }
         self._document = document
         self._selectedCloud = selectedCloud
         self.onDeleteCloud = onDeleteCloud

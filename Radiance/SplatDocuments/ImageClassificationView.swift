@@ -107,6 +107,7 @@ struct AnalysisInspectorView: View {
     let isDescribingImage: Bool
     let describeImage: () -> Void
     let flipCamera: () -> Void
+    let moveCameraInside: () -> Void
 
     var body: some View {
         Section("Subjects") {
@@ -137,7 +138,15 @@ struct AnalysisInspectorView: View {
             }
 
             if let imageViewpoint {
-                LabeledContent("Viewpoint", value: imageViewpoint.title)
+                LabeledContent("Viewpoint") {
+                    HStack {
+                        Text(imageViewpoint.title)
+                        if imageViewpoint == .outsideLookingAtSubject {
+                            Button("Fix", action: moveCameraInside)
+                                .controlSize(.small)
+                        }
+                    }
+                }
             }
 
             if let imageFraming {
@@ -174,7 +183,8 @@ struct AnalysisInspectorView: View {
             imageDescription: "The image appears upright and shows an object viewed from outside.",
             isDescribingImage: false,
             describeImage: { _ = () },
-            flipCamera: { _ = () }
+            flipCamera: { _ = () },
+            moveCameraInside: { _ = () }
         )
     }
 }

@@ -6,6 +6,7 @@ struct RenderInspector<CullingContent: View>: View {
     @Binding var backgroundColor: Color
     @Binding var useSphericalHarmonics: Bool
     var rendererSelectionDisabled = false
+    var supportsBoundsCulling = false
     var sphericalHarmonicsDisabled: Bool = false
     var sphericalHarmonicsWarning: String?
     @Binding var showBoundingBoxes: Bool
@@ -92,7 +93,9 @@ struct RenderInspector<CullingContent: View>: View {
             }
         }
 
-        cullingContent()
+        if supportsBoundsCulling {
+            cullingContent()
+        }
 
         if let onScreenshot {
             Section("Export") {

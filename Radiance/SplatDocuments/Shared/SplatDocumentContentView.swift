@@ -215,6 +215,15 @@ struct SplatDocumentContentView: View {
     }
     private func flipImage() {
         viewModel.modelRotationZ = (viewModel.modelRotationZ + .pi).truncatingRemainder(dividingBy: 2 * .pi)
+        clearImageAnalysis()
+    }
+
+    private func moveCameraInside() {
+        viewModel.cameraMatrix = simd_float4x4(translation: viewModel.boundsCenter)
+        clearImageAnalysis()
+    }
+
+    private func clearImageAnalysis() {
         imageOrientation = nil
         imageViewpoint = nil
         imageFraming = nil
@@ -775,7 +784,8 @@ struct SplatDocumentContentView: View {
                 imageDescription: imageDescription,
                 isDescribingImage: isDescribingImage,
                 describeImage: describeCurrentRendering,
-                flipImage: flipImage
+                flipImage: flipImage,
+                moveCameraInside: moveCameraInside
             ) {
                 showScreenshotSheet = true
             }

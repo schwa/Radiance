@@ -5,6 +5,7 @@ import SwiftUI
 struct RenderInspector<CullingContent: View>: View {
     @Binding var backgroundColor: Color
     @Binding var useSphericalHarmonics: Bool
+    var rendererSelectionDisabled = false
     var sphericalHarmonicsDisabled: Bool = false
     var sphericalHarmonicsWarning: String?
     @Binding var showBoundingBoxes: Bool
@@ -18,7 +19,16 @@ struct RenderInspector<CullingContent: View>: View {
 
     var body: some View {
         Section("Renderer") {
-            LabeledContent("Type", value: "Spark")
+            if !rendererSelectionDisabled {
+                Picker("Type", selection: Binding(
+                    get: { viewModel.renderer },
+                    set: { viewModel.renderer = $0 }
+                )) {
+                    ForEach(SplatRenderer.allCases.filter { $0 != .spark }, id: \.self) { renderer in
+                        Text(renderer == .gpu ? "Spark (GPU Sort)" : renderer.rawValue.capitalized).tag(renderer)
+                    }
+                }
+            }
             LabeledContent("FPS") {
                 Text(viewModel.currentFPS.formatted(.number.precision(.fractionLength(1))))
                     .monospacedDigit()

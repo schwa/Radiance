@@ -68,34 +68,64 @@ struct SplatRenderView: View {
     /// Render view with the appropriate camera controller applied based on camera mode
     @ViewBuilder
     private var cameraControlledRenderView: some View {
-        let renderView = MultiCloudRenderView(
-            clouds: clouds,
-            cameraMatrix: cameraMatrix,
-            sceneTransform: sceneTransform,
-            verticalAngleOfView: verticalAngleOfView,
-            useSphericalHarmonics: useSphericalHarmonics,
-            backgroundColor: backgroundColor,
-            cullBoundingBox: cullBoundingBox,
-            sortManager: sortManager,
-            debugParams: debugParams,
-            onFrame: viewModel.recordFrame,
-            onDrawableSizeChange: { size in
+        if mode == .single, viewModel.renderer != .spark, let cloud = clouds.first {
+            let projection = PerspectiveProjection(
+                verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
+                depthMode: .standard(zClip: 0.01 ... 1_000)
+            )
+            let renderView = SplatView(
+                splatCloud: cloud,
+                cameraMatrix: cameraMatrix,
+                modelMatrix: sceneTransform,
+                projection: projection
+            )
+            .splatRenderer(viewModel.renderer)
+            .onGeometryChange(for: CGSize.self, of: \.size) { size in
                 if viewModel.viewSize != size {
                     viewModel.viewSize = size
                 }
-            },
-            sortingEnabled: viewModel.sortingEnabled
-        )
+            }
 
-        switch cameraMode {
-        case .object:
-            renderView.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
+            switch cameraMode {
+            case .object:
+                renderView.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
 
-        case .room:
-            renderView.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
+            case .room:
+                renderView.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
 
-        case .spatialScene:
-            renderView.modifier(SpatialSceneCameraController(transform: $cameraMatrix))
+            case .spatialScene:
+                renderView.modifier(SpatialSceneCameraController(transform: $cameraMatrix))
+            }
+        } else {
+            let renderView = MultiCloudRenderView(
+                clouds: clouds,
+                cameraMatrix: cameraMatrix,
+                sceneTransform: sceneTransform,
+                verticalAngleOfView: verticalAngleOfView,
+                useSphericalHarmonics: useSphericalHarmonics,
+                backgroundColor: backgroundColor,
+                cullBoundingBox: cullBoundingBox,
+                sortManager: sortManager,
+                debugParams: debugParams,
+                onFrame: viewModel.recordFrame,
+                onDrawableSizeChange: { size in
+                    if viewModel.viewSize != size {
+                        viewModel.viewSize = size
+                    }
+                },
+                sortingEnabled: viewModel.sortingEnabled
+            )
+
+            switch cameraMode {
+            case .object:
+                renderView.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
+
+            case .room:
+                renderView.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
+
+            case .spatialScene:
+                renderView.modifier(SpatialSceneCameraController(transform: $cameraMatrix))
+            }
         }
     }
 
@@ -384,6 +414,7 @@ struct InspectorView: View {
         RenderInspector(
             backgroundColor: $viewModel.backgroundColor,
             useSphericalHarmonics: $viewModel.useSphericalHarmonics,
+            rendererSelectionDisabled: mode == .multi,
             sphericalHarmonicsDisabled: !viewModel.hasSphericalHarmonicsData,
             sphericalHarmonicsWarning: sphericalHarmonicsWarning,
             showBoundingBoxes: $viewModel.showBoundingBoxes,

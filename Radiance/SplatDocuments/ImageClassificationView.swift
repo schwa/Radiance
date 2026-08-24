@@ -1,7 +1,7 @@
 #if os(iOS) || os(macOS)
 import SwiftUI
 
-struct ImageClassification: Identifiable, Equatable {
+struct ImageClassification: Identifiable, Equatable, Sendable {
     let label: String
     let confidence: Float
 

@@ -4,7 +4,7 @@ import Splats
 import SwiftUI
 import UniformTypeIdentifiers
 
-private nonisolated let logger = Logger(subsystem: "com.schwa.Radiance", category: "SplatSceneDocument")
+nonisolated private let logger = Logger(subsystem: "com.schwa.Radiance", category: "SplatSceneDocument")
 
 /// A document representing a splat scene with multiple clouds
 struct SplatSceneDocument: FileDocument {

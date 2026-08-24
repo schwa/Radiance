@@ -108,7 +108,7 @@ import MetalSprocketsSupport
 // MARK: - SplatConvertible Protocol
 
 protocol SplatConvertible {
-    init(_ splat: GenericSplat)
+    nonisolated init(_ splat: GenericSplat)
 }
 
 extension SparkSplat: SplatConvertible {}
@@ -117,7 +117,7 @@ extension Antimatter15GPUSplat: SplatConvertible {}
 // MARK: - GPUSplatCloud Loading
 
 extension SplatCloudDescriptor {
-    func loadGPUSplatCloud<S>(modelTransform: simd_float4x4 = .identity) throws -> GPUSplatCloud<S> where S: SplatConvertible & SortableSplatProtocol {
+    nonisolated func loadGPUSplatCloud<S>(modelTransform: simd_float4x4 = .identity) throws -> GPUSplatCloud<S> where S: SplatConvertible & SortableSplatProtocol {
         let device = _MTLCreateSystemDefaultDevice()
 
         var splats: [S] = []
@@ -203,7 +203,7 @@ extension SplatCloudDescriptor {
     }
 
     /// Returns the number of floats per splat for a given SH degree
-    private static func shFloatsPerSplat(degree: UInt8) -> Int {
+    nonisolated private static func shFloatsPerSplat(degree: UInt8) -> Int {
         switch degree {
         case 0:
             return 0

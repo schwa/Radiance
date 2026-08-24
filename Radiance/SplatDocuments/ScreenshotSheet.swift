@@ -208,7 +208,8 @@ struct ScreenshotSheet: View {
         isRendering = false
     }
 
-    static func renderToImage(width: Int, height: Int, cloudInfos: [(descriptor: SplatCloudDescriptor, modelTransform: simd_float4x4)], sceneTransform: simd_float4x4, cameraMatrix: simd_float4x4, verticalAngleOfView: Double, backgroundColor: Color.Resolved) throws -> CGImage {
+    // swiftlint:disable:next function_parameter_count
+    nonisolated static func renderToImage(width: Int, height: Int, cloudInfos: [(descriptor: SplatCloudDescriptor, modelTransform: simd_float4x4)], sceneTransform: simd_float4x4, cameraMatrix: simd_float4x4, verticalAngleOfView: Double, backgroundColor: Color.Resolved) throws -> CGImage {
         // Load first cloud only for now (to match CLI behavior)
         guard let firstInfo = cloudInfos.first else {
             throw NSError(domain: "ScreenshotSheet", code: 1, userInfo: [NSLocalizedDescriptionKey: "No clouds to render"])
@@ -232,7 +233,7 @@ struct ScreenshotSheet: View {
         // Create sort manager and sort synchronously for this single-frame render
         let sortManager = try AsyncSortManager(device: renderer.device, splatClouds: [cloud], capacity: cloud.count)
         let sortParameters = SortParameters(camera: cameraMatrix, model: sceneTransform)
-        let sortedIndices = try sortManager.sortNowSync(sortParameters)
+        let sortedIndices = sortManager.sortNowSync(sortParameters)
 
         // Set background color from viewModel
         renderer.renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(

@@ -71,7 +71,7 @@ struct SplatDocumentContentView: View {
     @State private var showExportDialog = false
     @State private var classifications: [ImageClassification] = []
     @State private var classificationError: String?
-    @State private var hasClassifiedCurrentDocument = false
+    @State private var classificationTask: Task<Void, Never>?
 
     // Multi mode specific
     @State private var showAddCloudPicker = false
@@ -106,6 +106,9 @@ struct SplatDocumentContentView: View {
         .onChange(of: viewModel.loadingState) {
             classifyCurrentRenderingIfNeeded()
         }
+        .onChange(of: viewModel.cameraMatrix) {
+            classifyCurrentRenderingIfNeeded()
+        }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if !classifications.isEmpty {
                 ImageClassificationBarView(classifications: classifications)
@@ -115,7 +118,9 @@ struct SplatDocumentContentView: View {
             get: { classificationError != nil },
             set: { if !$0 { classificationError = nil } }
         )) {
-            Button("OK", role: .cancel) {}
+            Button("OK", role: .cancel) {
+                classificationError = nil
+            }
         } message: {
             Text(classificationError ?? "Unknown error")
         }
@@ -126,7 +131,7 @@ struct SplatDocumentContentView: View {
     }
 
     private func classifyCurrentRenderingIfNeeded() {
-        guard mode == .single, viewModel.loadingState == .ready, !hasClassifiedCurrentDocument else {
+        guard mode == .single, viewModel.loadingState == .ready, classificationTask == nil else {
             return
         }
 
@@ -135,25 +140,40 @@ struct SplatDocumentContentView: View {
             return
         }
 
-        hasClassifiedCurrentDocument = true
-        Task {
+        let cameraMatrix = viewModel.cameraMatrix
+        let aspectRatio = max(viewModel.viewSize.height, 1) / max(viewModel.viewSize.width, 1)
+        let height = max(Int(512 * aspectRatio), 1)
+        let verticalAngleOfView = viewModel.verticalAngleOfView
+        let backgroundColor = viewModel.backgroundColor.resolve(in: .init())
+
+        classificationTask = Task {
             do {
-                let aspectRatio = max(viewModel.viewSize.height, 1) / max(viewModel.viewSize.width, 1)
-                let image = try ScreenshotSheet.renderToImage(
-                    width: 512,
-                    height: max(Int(512 * aspectRatio), 1),
-                    cloudInfos: data.cloudInfos,
-                    sceneTransform: data.sceneTransform,
-                    cameraMatrix: viewModel.cameraMatrix,
-                    verticalAngleOfView: viewModel.verticalAngleOfView,
-                    backgroundColor: viewModel.backgroundColor.resolve(in: .init())
-                )
-                let observations = try await ClassifyImageRequest().perform(on: image)
-                classifications = observations.prefix(5).map {
-                    ImageClassification(label: $0.identifier, confidence: $0.confidence)
-                }
+                let newClassifications = try await Task.detached {
+                    let image = try ScreenshotSheet.renderToImage(
+                        width: 512,
+                        height: height,
+                        cloudInfos: data.cloudInfos,
+                        sceneTransform: data.sceneTransform,
+                        cameraMatrix: cameraMatrix,
+                        verticalAngleOfView: verticalAngleOfView,
+                        backgroundColor: backgroundColor
+                    )
+                    let observations = try await ClassifyImageRequest().perform(on: image)
+                    return observations.prefix(5).map {
+                        ImageClassification(label: $0.identifier, confidence: $0.confidence)
+                    }
+                }.value
+                try Task.checkCancellation()
+                classifications = newClassifications
             } catch {
-                classificationError = error.localizedDescription
+                if !Task.isCancelled {
+                    classificationError = error.localizedDescription
+                }
+            }
+
+            classificationTask = nil
+            if viewModel.cameraMatrix != cameraMatrix {
+                classifyCurrentRenderingIfNeeded()
             }
         }
     }
@@ -224,7 +244,8 @@ struct SplatDocumentContentView: View {
             }
             .onChange(of: fileURL, initial: true) { _, newURL in
                 confirmedLoad = false
-                hasClassifiedCurrentDocument = false
+                classificationTask?.cancel()
+                classificationTask = nil
                 classifications = []
                 classificationError = nil
                 Task {

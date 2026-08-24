@@ -236,7 +236,7 @@ struct SplatScene: nonisolated Codable, Sendable {
     }
 
     nonisolated init() {
-
+        version = 1
     }
 }
 

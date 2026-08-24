@@ -1,5 +1,6 @@
 #if os(iOS) || os(macOS)
 import CoreImage
+import FoundationModels
 import GeometryLite3D
 import Interaction3D
 import MetalSprockets
@@ -72,6 +73,11 @@ struct SplatDocumentContentView: View {
     @State private var showExportDialog = false
     @State private var classifications: [ImageClassification] = []
     @State private var classificationError: String?
+    @State private var imageOrientation: RenderedImageAnalysis.Orientation?
+    @State private var imageViewpoint: RenderedImageAnalysis.Viewpoint?
+    @State private var imageFraming: RenderedImageAnalysis.Framing?
+    @State private var imageDescription: String?
+    @State private var isDescribingImage = false
     @State private var subjectMask: CGImage?
     @State private var highlightsSubjects = false
     @State private var classificationTask: Task<Void, Never>?
@@ -205,6 +211,87 @@ struct SplatDocumentContentView: View {
             if viewModel.cameraMatrix != cameraMatrix || viewModel.sceneTransform != sceneTransform || viewModel.viewSize != viewSize || viewModel.verticalAngleOfView != verticalAngleOfView || highlightsSubjects != shouldGenerateSubjectMask {
                 classifyCurrentRenderingIfNeeded()
             }
+        }
+    }
+    private func flipImage() {
+        viewModel.modelRotationZ = (viewModel.modelRotationZ + .pi).truncatingRemainder(dividingBy: 2 * .pi)
+        imageOrientation = nil
+        imageViewpoint = nil
+        imageFraming = nil
+        imageDescription = nil
+    }
+
+    private func describeCurrentRendering() {
+        guard #available(iOS 27, macOS 27, *) else {
+            classificationError = "Image descriptions require iOS or macOS 27."
+            return
+        }
+        guard mode == .single, viewModel.loadingState == .ready else {
+            return
+        }
+
+        let data = screenshotData
+        guard !data.cloudInfos.isEmpty else {
+            return
+        }
+
+        let viewSize = viewModel.viewSize
+        let aspectRatio = max(viewSize.height, 1) / max(viewSize.width, 1)
+        let width = aspectRatio < 1 ? max(Int(512 / aspectRatio), 1) : 512
+        let height = aspectRatio < 1 ? 512 : max(Int(512 * aspectRatio), 1)
+        let cameraMatrix = viewModel.cameraMatrix
+        let verticalAngleOfView = viewModel.verticalAngleOfView
+        let backgroundColor = viewModel.backgroundColor.resolve(in: .init())
+        isDescribingImage = true
+
+        Task {
+            defer { isDescribingImage = false }
+            do {
+                let image = try await Task.detached {
+                    try ScreenshotSheet.renderToImage(
+                        width: width,
+                        height: height,
+                        cloudInfos: data.cloudInfos,
+                        sceneTransform: data.sceneTransform,
+                        cameraMatrix: cameraMatrix,
+                        verticalAngleOfView: verticalAngleOfView,
+                        backgroundColor: backgroundColor
+                    )
+                }.value
+                let model = SystemLanguageModel.default
+                guard model.isAvailable else {
+                    throw ImageDescriptionError.modelUnavailable
+                }
+                let response = try await LanguageModelSession(model: model).respond(
+                    generating: RenderedImageAnalysis.self
+                ) {
+                    """
+                    Analyze this rendered Gaussian-splat image.
+                    Set orientation to its visible orientation. Set viewpoint based on whether the camera
+                    is inside a scene or outside looking at an object or other subject.
+                    Set framing to the most important framing assessment for the main subject.
+                    In the description, briefly state:
+                    - whether the main subject is an object, person, place, room, landscape, or something else
+                    - what the image depicts and any obvious rendering problems
+                    Do not invent details that are not visible.
+                    """
+                    Attachment(image)
+                }
+                imageOrientation = response.content.orientation
+                imageViewpoint = response.content.viewpoint
+                imageFraming = response.content.framing
+                imageDescription = response.content.description
+            } catch {
+                classificationError = error.localizedDescription
+            }
+        }
+    }
+
+    private enum ImageDescriptionError: LocalizedError {
+        case modelUnavailable
+
+        var errorDescription: String? {
+            "The Foundation Model is unavailable on this Mac."
         }
     }
 
@@ -678,7 +765,14 @@ struct SplatDocumentContentView: View {
                 singleViewModel: viewModel,
                 tab: $inspectorTab,
                 classifications: classifications,
-                highlightsSubjects: $highlightsSubjects
+                highlightsSubjects: $highlightsSubjects,
+                imageOrientation: imageOrientation,
+                imageViewpoint: imageViewpoint,
+                imageFraming: imageFraming,
+                imageDescription: imageDescription,
+                isDescribingImage: isDescribingImage,
+                describeImage: describeCurrentRendering,
+                flipImage: flipImage
             ) {
                 showScreenshotSheet = true
             }

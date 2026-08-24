@@ -34,7 +34,7 @@ INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*] = UIStatusBarStyleDefault
 INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*] = UIStatusBarStyleDefault
 INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
 INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
-IPHONEOS_DEPLOYMENT_TARGET = 26
+IPHONEOS_DEPLOYMENT_TARGET = 27
 LD_RUNPATH_SEARCH_PATHS = @executable_path/Frameworks
 LD_RUNPATH_SEARCH_PATHS[sdk=macosx*] = @executable_path/../Frameworks
 PRODUCT_BUNDLE_IDENTIFIER = io.schwa.Radiance
@@ -43,4 +43,4 @@ REGISTER_APP_GROUPS = YES
 SDKROOT = auto
 SUPPORTED_PLATFORMS = iphoneos iphonesimulator macosx xros xrsimulator
 TARGETED_DEVICE_FAMILY = 1,2,7
-XROS_DEPLOYMENT_TARGET = 26
+XROS_DEPLOYMENT_TARGET = 27

@@ -209,6 +209,13 @@ struct InspectorView: View {
     @Binding var tab: InspectorTab
     let classifications: [ImageClassification]
     @Binding var highlightsSubjects: Bool
+    let imageOrientation: RenderedImageAnalysis.Orientation?
+    let imageViewpoint: RenderedImageAnalysis.Viewpoint?
+    let imageFraming: RenderedImageAnalysis.Framing?
+    let imageDescription: String?
+    let isDescribingImage: Bool
+    let describeImage: () -> Void
+    let flipImage: () -> Void
     // Multi-mode only: document and selection
     @Binding var document: SplatSceneDocument?
     @Binding var selectedCloud: SplatScene.CloudReference?
@@ -254,7 +261,14 @@ struct InspectorView: View {
                 case .analysis:
                     AnalysisInspectorView(
                         classifications: classifications,
-                        highlightsSubjects: $highlightsSubjects
+                        highlightsSubjects: $highlightsSubjects,
+                        imageOrientation: imageOrientation,
+                        imageViewpoint: imageViewpoint,
+                        imageFraming: imageFraming,
+                        imageDescription: imageDescription,
+                        isDescribingImage: isDescribingImage,
+                        describeImage: describeImage,
+                        flipCamera: flipImage
                     )
                 }
             }
@@ -457,6 +471,13 @@ extension InspectorView {
         tab: Binding<InspectorTab>,
         classifications: [ImageClassification],
         highlightsSubjects: Binding<Bool>,
+        imageOrientation: RenderedImageAnalysis.Orientation?,
+        imageViewpoint: RenderedImageAnalysis.Viewpoint?,
+        imageFraming: RenderedImageAnalysis.Framing?,
+        imageDescription: String?,
+        isDescribingImage: Bool,
+        describeImage: @escaping () -> Void,
+        flipImage: @escaping () -> Void,
         onScreenshot: (() -> Void)? = nil
     ) {
         self.mode = .single
@@ -464,6 +485,13 @@ extension InspectorView {
         self._tab = tab
         self.classifications = classifications
         self._highlightsSubjects = highlightsSubjects
+        self.imageOrientation = imageOrientation
+        self.imageViewpoint = imageViewpoint
+        self.imageFraming = imageFraming
+        self.imageDescription = imageDescription
+        self.isDescribingImage = isDescribingImage
+        self.describeImage = describeImage
+        self.flipImage = flipImage
         self._document = .constant(nil)
         self._selectedCloud = .constant(nil)
         self.onDeleteCloud = nil
@@ -484,6 +512,13 @@ extension InspectorView {
         self._tab = tab
         self.classifications = []
         self._highlightsSubjects = .constant(false)
+        self.imageOrientation = nil
+        self.imageViewpoint = nil
+        self.imageFraming = nil
+        self.imageDescription = nil
+        self.isDescribingImage = false
+        self.describeImage = { _ = () }
+        self.flipImage = { _ = () }
         self._document = document
         self._selectedCloud = selectedCloud
         self.onDeleteCloud = onDeleteCloud

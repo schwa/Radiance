@@ -1,4 +1,5 @@
 #if os(iOS) || os(macOS)
+import CoreImage
 import GeometryLite3D
 import Interaction3D
 import MetalSprockets
@@ -71,6 +72,8 @@ struct SplatDocumentContentView: View {
     @State private var showExportDialog = false
     @State private var classifications: [ImageClassification] = []
     @State private var classificationError: String?
+    @State private var subjectMask: CGImage?
+    @State private var highlightsSubjects = false
     @State private var classificationTask: Task<Void, Never>?
 
     // Multi mode specific
@@ -109,9 +112,20 @@ struct SplatDocumentContentView: View {
         .onChange(of: viewModel.cameraMatrix) {
             classifyCurrentRenderingIfNeeded()
         }
+        .onChange(of: viewModel.viewSize) {
+            subjectMask = nil
+            classifyCurrentRenderingIfNeeded()
+        }
+        .onChange(of: highlightsSubjects) {
+            subjectMask = nil
+            classifyCurrentRenderingIfNeeded()
+        }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if !classifications.isEmpty {
-                ImageClassificationBarView(classifications: classifications)
+                ImageClassificationBarView(
+                    classifications: classifications,
+                    highlightsSubjects: $highlightsSubjects
+                )
             }
         }
         .alert("Classification Failed", isPresented: Binding(
@@ -141,10 +155,12 @@ struct SplatDocumentContentView: View {
         }
 
         let cameraMatrix = viewModel.cameraMatrix
-        let aspectRatio = max(viewModel.viewSize.height, 1) / max(viewModel.viewSize.width, 1)
+        let viewSize = viewModel.viewSize
+        let aspectRatio = max(viewSize.height, 1) / max(viewSize.width, 1)
         let height = max(Int(512 * aspectRatio), 1)
         let verticalAngleOfView = viewModel.verticalAngleOfView
         let backgroundColor = viewModel.backgroundColor.resolve(in: .init())
+        let shouldGenerateSubjectMask = highlightsSubjects
 
         classificationTask = Task {
             do {
@@ -159,12 +175,20 @@ struct SplatDocumentContentView: View {
                         backgroundColor: backgroundColor
                     )
                     let observations = try await ClassifyImageRequest().perform(on: image)
-                    return observations.prefix(5).map {
+                    let classifications = observations.prefix(5).map {
                         ImageClassification(label: $0.identifier, confidence: $0.confidence)
                     }
+                    let subjectMask: CGImage?
+                    if shouldGenerateSubjectMask {
+                        subjectMask = try await Self.generateSubjectMask(for: image)
+                    } else {
+                        subjectMask = nil
+                    }
+                    return (classifications, subjectMask)
                 }.value
                 try Task.checkCancellation()
-                classifications = newClassifications
+                classifications = newClassifications.0
+                subjectMask = newClassifications.1
             } catch {
                 if !Task.isCancelled {
                     classificationError = error.localizedDescription
@@ -172,10 +196,21 @@ struct SplatDocumentContentView: View {
             }
 
             classificationTask = nil
-            if viewModel.cameraMatrix != cameraMatrix {
+            if viewModel.cameraMatrix != cameraMatrix || viewModel.viewSize != viewSize || highlightsSubjects != shouldGenerateSubjectMask {
                 classifyCurrentRenderingIfNeeded()
             }
         }
+    }
+
+    nonisolated private static func generateSubjectMask(for image: CGImage) async throws -> CGImage? {
+        let requestHandler = ImageRequestHandler(image)
+        guard let observation = try await requestHandler.perform(GenerateForegroundInstanceMaskRequest()), !observation.allInstances.isEmpty else {
+            return nil
+        }
+
+        let pixelBuffer = try observation.generateScaledMask(for: observation.allInstances, scaledToImageFrom: requestHandler)
+        let mask = CIImage(cvPixelBuffer: pixelBuffer).applyingFilter("CIMaskToAlpha")
+        return CIContext().createCGImage(mask, from: mask.extent)
     }
 
     // MARK: - Prepared Data for Screenshot
@@ -247,6 +282,7 @@ struct SplatDocumentContentView: View {
                 classificationTask?.cancel()
                 classificationTask = nil
                 classifications = []
+                subjectMask = nil
                 classificationError = nil
                 Task {
                     await viewModel.load(url: newURL, contentType: singleDocument?.contentType)
@@ -512,6 +548,15 @@ struct SplatDocumentContentView: View {
                 sortManager: sortManager,
                 cameraMode: viewModel.cameraMode
             )
+            .overlay {
+                if highlightsSubjects, let subjectMask {
+                    Image(decorative: subjectMask, scale: 1)
+                        .resizable()
+                        .colorMultiply(.accentColor)
+                        .opacity(0.45)
+                        .allowsHitTesting(false)
+                }
+            }
             .ignoresSafeArea()
             .onGeometryChange(for: CGSize.self, of: \.size) { viewModel.viewSize = $0 }
         } else {

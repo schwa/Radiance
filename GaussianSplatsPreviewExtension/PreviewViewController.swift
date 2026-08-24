@@ -13,58 +13,13 @@ import UniformTypeIdentifiers
 class PreviewViewController: NSViewController, QLPreviewingController {
     // swiftlint:disable:next async_without_await
     func preparePreviewOfFile(at url: URL) async throws {
-        let contentType = UTType(filenameExtension: url.pathExtension)
-
-        // Load splats
-        var splats: [SparkSplat] = []
-
-        switch contentType {
-        case .spz:
-            let reader = try SPZReader(url: url)
-            splats.reserveCapacity(reader.splatCount)
-            try reader.read { _, extendedSplat in
-                splats.append(SparkSplat(extendedSplat.genericSplat))
-            }
-
-        case .ply:
-            let reader = try PLYSplatReader(url: url)
-            splats.reserveCapacity(reader.splatCount)
-            try reader.read { _, extendedSplat in
-                splats.append(SparkSplat(extendedSplat.genericSplat))
-            }
-
-        case .antimatter15Splat:
-            let reader = try Antimatter15Reader(url: url)
-            splats.reserveCapacity(reader.splatCount)
-            try reader.read { _, extendedSplat in
-                splats.append(SparkSplat(extendedSplat.genericSplat))
-            }
-
-        case .sog:
-            let reader = try SOGReaderCPU(url: url)
-            splats.reserveCapacity(reader.splatCount)
-            try reader.read { _, extendedSplat in
-                splats.append(SparkSplat(extendedSplat.genericSplat))
-            }
-
-        default:
-            throw NSError(
-                domain: "PreviewViewController",
-                code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "Unsupported file type: \(contentType?.identifier ?? "unknown")"]
-            )
+        guard let device = MTLCreateSystemDefaultDevice() else {
+            throw NSError(domain: "PreviewViewController", code: 1, userInfo: [NSLocalizedDescriptionKey: "No Metal device available"])
         }
 
-        // Create splat cloud
         let modelMatrix = simd_float4x4(xRotation: .radians(.pi))
-
-        let device = _MTLCreateSystemDefaultDevice()
-        let splatCloud = try GPUSplatCloud(
-            device: device,
-            splats: splats,
-            modelTransform: modelMatrix
-        )
-
+        let result = try SplatLoader.read(device: device, url: url)
+        let splatCloud = GPUSplatCloud(result, modelTransform: modelMatrix)
         // Create and host the SwiftUI view
         let previewView = try SplatPreviewView(splatCloud: splatCloud)
         let hostingView = NSHostingView(rootView: previewView)

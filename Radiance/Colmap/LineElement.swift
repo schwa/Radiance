@@ -32,7 +32,7 @@ struct LineElement: Element {
             }
             .vertexDescriptor(LineVertex.descriptor)
             .depthCompare(function: .less, enabled: true)
-            .renderPipelineDescriptorModifier { descriptor in
+            .renderPipelineDescriptorTransformer { descriptor in
                 descriptor.colorAttachments[0].isBlendingEnabled = true
                 descriptor.colorAttachments[0].sourceRGBBlendFactor = .sourceAlpha
                 descriptor.colorAttachments[0].destinationRGBBlendFactor = .oneMinusSourceAlpha

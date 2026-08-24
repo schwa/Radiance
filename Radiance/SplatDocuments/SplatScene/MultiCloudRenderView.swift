@@ -129,8 +129,10 @@ struct MultiCloudRenderPass: Element {
                             modelMatrix: sceneTransform,
                             cameraMatrices: [cameraMatrix],
                             drawableSize: SIMD2<Float>(drawableSize),
-                            useSphericalHarmonics: useSphericalHarmonics,
-                            boundingBox: cullBoundingBox,
+                            configuration: .init(
+                                useSphericalHarmonics: useSphericalHarmonics,
+                                boundingBox: cullBoundingBox
+                            ),
                             sortedIndices: sortedIndices
                         )
                     }

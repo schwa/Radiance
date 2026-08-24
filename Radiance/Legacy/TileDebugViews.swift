@@ -2,6 +2,7 @@
 import MetalSprocketsGaussianSplats
 import SwiftUI
 
+#if false
 struct TileStatsOverlay: View {
     let resources: TileSplatResources
     var updateCounter: Int = 0
@@ -148,4 +149,5 @@ struct TileDebugToggles: View {
     }
 }
 
+#endif
 #endif

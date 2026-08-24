@@ -80,7 +80,8 @@ struct SplatDocumentContentView: View {
     @State private var subjectMask: CGImage?
     @State private var highlightsSubjects = false
     @State private var classificationTask: Task<Void, Never>?
-
+    @State private var bestViewTask: Task<Void, Never>?
+    @State private var bestViewError: String?
     // Multi mode specific
     @State private var showAddCloudPicker = false
     @State private var dragOffsets: [UUID: SIMD3<Float>] = [:]
@@ -143,6 +144,29 @@ struct SplatDocumentContentView: View {
             }
         } message: {
             Text(classificationError ?? "Unknown error")
+        }
+        .sheet(isPresented: Binding(
+            get: { bestViewTask != nil },
+            set: { if !$0 { cancelBestViewSearch() } }
+        )) {
+            VStack {
+                ProgressView("Finding Best View…")
+                Text("Comparing six views with the on-device model.")
+                    .foregroundStyle(.secondary)
+                Button("Cancel", role: .cancel, action: cancelBestViewSearch)
+            }
+            .padding()
+            .interactiveDismissDisabled()
+        }
+        .alert("Best View Failed", isPresented: Binding(
+            get: { bestViewError != nil },
+            set: { if !$0 { bestViewError = nil } }
+        )) {
+            Button("OK", role: .cancel) {
+                bestViewError = nil
+            }
+        } message: {
+            Text(bestViewError ?? "Unknown error")
         }
     }
 
@@ -220,6 +244,96 @@ struct SplatDocumentContentView: View {
     private func moveCameraInside() {
         viewModel.cameraMatrix = simd_float4x4(translation: viewModel.boundsCenter)
         clearImageAnalysis()
+    }
+
+    private func findBestView() {
+        guard #available(iOS 27, macOS 27, *) else {
+            bestViewError = "Best View requires iOS or macOS 27."
+            return
+        }
+        let model = SystemLanguageModel.default
+        guard model.isAvailable else {
+            bestViewError = "The Foundation Model is unavailable on this device."
+            return
+        }
+
+        let data = screenshotData
+        guard !data.cloudInfos.isEmpty else {
+            return
+        }
+        let candidates = bestViewCandidates
+        let verticalAngleOfView = viewModel.verticalAngleOfView
+        let backgroundColor = viewModel.backgroundColor.resolve(in: .init())
+
+        bestViewTask = Task {
+            defer { bestViewTask = nil }
+            do {
+                let images = try await Task.detached {
+                    try candidates.map { cameraMatrix in
+                        try ScreenshotSheet.renderToImage(
+                            width: 512,
+                            height: 512,
+                            cloudInfos: data.cloudInfos,
+                            sceneTransform: data.sceneTransform,
+                            cameraMatrix: cameraMatrix,
+                            verticalAngleOfView: verticalAngleOfView,
+                            backgroundColor: backgroundColor
+                        )
+                    }
+                }.value
+                try Task.checkCancellation()
+                let response = try await LanguageModelSession(model: model).respond(generating: BestViewSelection.self) {
+                    """
+                    Choose the best view of this Gaussian-splat scene. Prefer an upright, coherent, well-framed view with a clear subject and minimal rendering artifacts. Return the zero-based candidate number. The candidates are ordered 0 through 5.
+                    """
+                    Attachment(images[0])
+                    Attachment(images[1])
+                    Attachment(images[2])
+                    Attachment(images[3])
+                    Attachment(images[4])
+                    Attachment(images[5])
+                }
+                guard candidates.indices.contains(response.content.candidate) else {
+                    throw BestViewError.invalidSelection
+                }
+                viewModel.zoomToFit = false
+                viewModel.cameraMode = .object
+                viewModel.cameraMatrix = candidates[response.content.candidate]
+                clearImageAnalysis()
+            } catch is CancellationError {
+                return
+            } catch {
+                bestViewError = error.localizedDescription
+            }
+        }
+    }
+
+    private var bestViewCandidates: [simd_float4x4] {
+        let target = (viewModel.sceneTransform * SIMD4<Float>(viewModel.boundsCenter, 1)).xyz
+        let cameraPosition = SIMD3<Float>(viewModel.cameraMatrix.columns.3.x, viewModel.cameraMatrix.columns.3.y, viewModel.cameraMatrix.columns.3.z)
+        let boundsDistance = max(viewModel.boundsSize.x, max(viewModel.boundsSize.y, viewModel.boundsSize.z))
+        let distance = max(simd_distance(cameraPosition, target), max(boundsDistance, 1))
+        return [
+            LookAt(position: target + [0, 0, distance], target: target, up: [0, 1, 0]).cameraMatrix,
+            LookAt(position: target + [distance, 0, 0], target: target, up: [0, 1, 0]).cameraMatrix,
+            LookAt(position: target + [0, 0, -distance], target: target, up: [0, 1, 0]).cameraMatrix,
+            LookAt(position: target + [-distance, 0, 0], target: target, up: [0, 1, 0]).cameraMatrix,
+            LookAt(position: target + [0, distance, 0], target: target, up: [0, 0, -1]).cameraMatrix,
+            LookAt(position: target + [0, -distance, 0], target: target, up: [0, 0, 1]).cameraMatrix
+        ]
+    }
+
+    private func cancelBestViewSearch() {
+        bestViewTask?.cancel()
+        bestViewTask = nil
+    }
+
+    private enum BestViewError: LocalizedError {
+        case invalidSelection
+
+        var errorDescription: String? {
+            "The model did not select a valid view."
+        }
     }
 
     private func clearImageAnalysis() {
@@ -781,7 +895,8 @@ struct SplatDocumentContentView: View {
                 isDescribingImage: isDescribingImage,
                 describeImage: describeCurrentRendering,
                 flipImage: flipImage,
-                moveCameraInside: moveCameraInside
+                moveCameraInside: moveCameraInside,
+                findBestView: findBestView
             ) {
                 showScreenshotSheet = true
             }

@@ -218,6 +218,7 @@ struct InspectorView: View {
     let describeImage: () -> Void
     let flipImage: () -> Void
     let moveCameraInside: () -> Void
+    let findBestView: (() -> Void)?
     // Multi-mode only: document and selection
     @Binding var document: SplatSceneDocument?
     @Binding var selectedCloud: SplatScene.CloudReference?
@@ -420,7 +421,8 @@ struct InspectorView: View {
             zoomToFitDisabled: viewModel.boundsSize == .zero,
             boundsCenter: selectedCloudBoundsCenter,
             boundsSize: viewModel.boundsSize,
-            teleportDisabled: !hasTeleportTarget
+            teleportDisabled: !hasTeleportTarget,
+            findBestView: findBestView
         )
     }
 
@@ -483,6 +485,7 @@ extension InspectorView {
         describeImage: @escaping () -> Void,
         flipImage: @escaping () -> Void,
         moveCameraInside: @escaping () -> Void,
+        findBestView: @escaping () -> Void,
         onScreenshot: (() -> Void)? = nil
     ) {
         self.mode = .single
@@ -498,6 +501,7 @@ extension InspectorView {
         self.describeImage = describeImage
         self.flipImage = flipImage
         self.moveCameraInside = moveCameraInside
+        self.findBestView = findBestView
         self._document = .constant(nil)
         self._selectedCloud = .constant(nil)
         self.onDeleteCloud = nil
@@ -526,6 +530,7 @@ extension InspectorView {
         self.describeImage = { _ = () }
         self.flipImage = { _ = () }
         self.moveCameraInside = { _ = () }
+        self.findBestView = nil
         self._document = document
         self._selectedCloud = selectedCloud
         self.onDeleteCloud = onDeleteCloud

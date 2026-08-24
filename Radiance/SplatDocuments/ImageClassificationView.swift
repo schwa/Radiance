@@ -97,6 +97,11 @@ struct RenderedImageAnalysis {
     let description: String
 }
 
+@Generable
+struct BestViewSelection {
+    let candidate: Int
+}
+
 struct AnalysisInspectorView: View {
     let classifications: [ImageClassification]
     @Binding var highlightsSubjects: Bool

@@ -2,13 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
-	<key>UIApplicationSceneManifest</key>
-	<dict>
-		<key>UIApplicationSupportsMultipleScenes</key>
-		<true/>
-	</dict>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -40,17 +33,22 @@
 			</array>
 		</dict>
 	</array>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+	</dict>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.schwa.splatscene</string>
-			<key>UTTypeDescription</key>
-			<string>Splat Scene</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.json</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Splat Scene</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.schwa.splatscene</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -63,14 +61,14 @@
 	<key>UTImportedTypeDeclarations</key>
 	<array>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>public.polygon-file-format</string>
-			<key>UTTypeDescription</key>
-			<string>Polygon File Format</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.3d-content</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Polygon File Format</string>
+			<key>UTTypeIdentifier</key>
+			<string>public.polygon-file-format</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -80,14 +78,14 @@
 			</dict>
 		</dict>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.playcanvas.sog</string>
-			<key>UTTypeDescription</key>
-			<string>playcanvas.com Gaussian Splat</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.zip-archive</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>playcanvas.com Gaussian Splat</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.playcanvas.sog</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -97,14 +95,14 @@
 			</dict>
 		</dict>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.antimatter15.splat</string>
-			<key>UTTypeDescription</key>
-			<string>Antimatter15 Gaussian Splat</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Antimatter15 Gaussian Splat</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.antimatter15.splat</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -114,14 +112,14 @@
 			</dict>
 		</dict>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.nianticlabs.spz</string>
-			<key>UTTypeDescription</key>
-			<string>nianticlabs.com Gaussian Splat</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.data</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>nianticlabs.com Gaussian Splat</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.nianticlabs.spz</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>

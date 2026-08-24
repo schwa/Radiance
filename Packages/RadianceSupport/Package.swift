@@ -8,7 +8,7 @@ let package = Package(
     platforms: [
         .macOS(.v26),
         .iOS(.v26),
-        .visionOS(.v26),
+        .visionOS(.v26)
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -23,7 +23,7 @@ let package = Package(
         .target(
             name: "RadianceSupport",
             swiftSettings: [
-                .defaultIsolation(MainActor.self),
+                .defaultIsolation(MainActor.self)
             ]
         ),
         .testTarget(

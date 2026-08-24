@@ -163,7 +163,15 @@ struct ScreenshotSheet: View {
 
         // Render synchronously for preview (it's small)
         do {
-            let cgImage = try renderToImage(width: previewWidth, height: previewHeight)
+            let cgImage = try Self.renderToImage(
+                width: previewWidth,
+                height: previewHeight,
+                cloudInfos: cloudInfos,
+                sceneTransform: sceneTransform,
+                cameraMatrix: viewModel.cameraMatrix,
+                verticalAngleOfView: viewModel.verticalAngleOfView,
+                backgroundColor: viewModel.backgroundColor.resolve(in: .init())
+            )
             previewImage = cgImage
         } catch {
             errorMessage = "Preview failed: \(error.localizedDescription)"
@@ -182,7 +190,15 @@ struct ScreenshotSheet: View {
         errorMessage = nil
 
         do {
-            let cgImage = try renderToImage(width: width, height: height)
+            let cgImage = try Self.renderToImage(
+                width: width,
+                height: height,
+                cloudInfos: cloudInfos,
+                sceneTransform: sceneTransform,
+                cameraMatrix: viewModel.cameraMatrix,
+                verticalAngleOfView: viewModel.verticalAngleOfView,
+                backgroundColor: viewModel.backgroundColor.resolve(in: .init())
+            )
             exportImage = TransferableImage(cgImage: cgImage)
             isExporting = true
         } catch {
@@ -192,10 +208,7 @@ struct ScreenshotSheet: View {
         isRendering = false
     }
 
-    private func renderToImage(width: Int, height: Int) throws -> CGImage {
-        let cameraMatrix = viewModel.cameraMatrix
-        let bgColor = viewModel.backgroundColor.resolve(in: .init())
-
+    static func renderToImage(width: Int, height: Int, cloudInfos: [(descriptor: SplatCloudDescriptor, modelTransform: simd_float4x4)], sceneTransform: simd_float4x4, cameraMatrix: simd_float4x4, verticalAngleOfView: Double, backgroundColor: Color.Resolved) throws -> CGImage {
         // Load first cloud only for now (to match CLI behavior)
         guard let firstInfo = cloudInfos.first else {
             throw NSError(domain: "ScreenshotSheet", code: 1, userInfo: [NSLocalizedDescriptionKey: "No clouds to render"])
@@ -207,7 +220,7 @@ struct ScreenshotSheet: View {
 
         // Create projection
         let projection = PerspectiveProjection(
-            verticalAngleOfView: .degrees(Float(viewModel.verticalAngleOfView)),
+            verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
             depthMode: .standard(zClip: 0.01 ... 1_000)
         )
         let size = CGSize(width: width, height: height)
@@ -223,9 +236,9 @@ struct ScreenshotSheet: View {
 
         // Set background color from viewModel
         renderer.renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(
-            red: Double(bgColor.red),
-            green: Double(bgColor.green),
-            blue: Double(bgColor.blue),
+            red: Double(backgroundColor.red),
+            green: Double(backgroundColor.green),
+            blue: Double(backgroundColor.blue),
             alpha: 1.0
         )
 

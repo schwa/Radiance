@@ -10,6 +10,7 @@ import simd
 import Splats
 import SwiftUI
 import UniformTypeIdentifiers
+import Vision
 
 // MARK: - DebugCloudIndexParams Helper
 
@@ -68,6 +69,9 @@ struct SplatDocumentContentView: View {
     @State private var confirmedLoad = false
     @State private var showScreenshotSheet = false
     @State private var showExportDialog = false
+    @State private var classifications: [ImageClassification] = []
+    @State private var classificationError: String?
+    @State private var hasClassifiedCurrentDocument = false
 
     // Multi mode specific
     @State private var showAddCloudPicker = false
@@ -99,10 +103,59 @@ struct SplatDocumentContentView: View {
         }
         .toolbar { toolbarContent }
         .onAppear { setupInitialState() }
+        .onChange(of: viewModel.loadingState) {
+            classifyCurrentRenderingIfNeeded()
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if !classifications.isEmpty {
+                ImageClassificationBarView(classifications: classifications)
+            }
+        }
+        .alert("Classification Failed", isPresented: Binding(
+            get: { classificationError != nil },
+            set: { if !$0 { classificationError = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(classificationError ?? "Unknown error")
+        }
     }
 
     private func setupInitialState() {
         inspectorTab = mode == .multi ? .scene : .cloud
+    }
+
+    private func classifyCurrentRenderingIfNeeded() {
+        guard mode == .single, viewModel.loadingState == .ready, !hasClassifiedCurrentDocument else {
+            return
+        }
+
+        let data = screenshotData
+        guard !data.cloudInfos.isEmpty else {
+            return
+        }
+
+        hasClassifiedCurrentDocument = true
+        Task {
+            do {
+                let aspectRatio = max(viewModel.viewSize.height, 1) / max(viewModel.viewSize.width, 1)
+                let image = try ScreenshotSheet.renderToImage(
+                    width: 512,
+                    height: max(Int(512 * aspectRatio), 1),
+                    cloudInfos: data.cloudInfos,
+                    sceneTransform: data.sceneTransform,
+                    cameraMatrix: viewModel.cameraMatrix,
+                    verticalAngleOfView: viewModel.verticalAngleOfView,
+                    backgroundColor: viewModel.backgroundColor.resolve(in: .init())
+                )
+                let observations = try await ClassifyImageRequest().perform(on: image)
+                classifications = observations.prefix(5).map {
+                    ImageClassification(label: $0.identifier, confidence: $0.confidence)
+                }
+            } catch {
+                classificationError = error.localizedDescription
+            }
+        }
     }
 
     // MARK: - Prepared Data for Screenshot
@@ -171,6 +224,9 @@ struct SplatDocumentContentView: View {
             }
             .onChange(of: fileURL, initial: true) { _, newURL in
                 confirmedLoad = false
+                hasClassifiedCurrentDocument = false
+                classifications = []
+                classificationError = nil
                 Task {
                     await viewModel.load(url: newURL, contentType: singleDocument?.contentType)
                 }

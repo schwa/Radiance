@@ -112,6 +112,9 @@ struct SplatDocumentContentView: View {
         }
         .toolbar { toolbarContent }
         .onAppear { setupInitialState() }
+        .onChange(of: inspectorTab) {
+            classifyCurrentRenderingIfNeeded()
+        }
         .onChange(of: viewModel.loadingState) {
             classifyCurrentRenderingIfNeeded()
         }
@@ -175,7 +178,7 @@ struct SplatDocumentContentView: View {
     }
 
     private func classifyCurrentRenderingIfNeeded() {
-        guard mode == .single, viewModel.loadingState == .ready, classificationTask == nil else {
+        guard mode == .single, inspectorTab == .analysis, viewModel.loadingState == .ready, classificationTask == nil else {
             return
         }
 

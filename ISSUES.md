@@ -124,11 +124,13 @@ Actual: each image blocks on sortNowSync before rendering.
 ## 7: Automatic image classification triggers CPU sorting during normal rendering
 
 +++
-status: new
+status: closed
 priority: high
 kind: bug
-labels: rendering,performance,vision
+labels: rendering, performance, vision
 created: 2026-08-24T23:10:29Z
+updated: 2026-08-24T23:11:38Z
+closed: 2026-08-24T23:11:38Z
 +++
 
 In normal single-cloud Spark GPU mode, camera and scene changes automatically start image classification. Preparing the classification image uses the synchronous CPU-sorted offscreen renderer.
@@ -136,5 +138,7 @@ In normal single-cloud Spark GPU mode, camera and scene changes automatically st
 Expected: selecting Spark GPU mode does not perform CPU sorting during ordinary interactive rendering or background analysis.
 
 Actual: moving the camera triggers background classification, which calls the offscreen render path and blocks on sortNowSync.
+
+- `2026-08-24T23:11:38Z`: Image classification now starts only while the Analysis inspector is selected; ordinary Spark GPU rendering no longer invokes the CPU-sorted offscreen path.
 
 ---

@@ -98,6 +98,27 @@ struct RenderedImageAnalysis {
 }
 
 @Generable
+struct BestViewAssessment {
+    @Generable
+    enum SplatArtifacts {
+        case low
+        case moderate
+        case high
+    }
+
+    @Generable
+    enum Content {
+        case recognizable
+        case unrecognizable
+    }
+
+    let orientation: RenderedImageAnalysis.Orientation
+    let viewpoint: RenderedImageAnalysis.Viewpoint
+    let splatArtifacts: SplatArtifacts
+    let content: Content
+}
+
+@Generable
 struct BestViewSelection {
     let candidate: Int
 }

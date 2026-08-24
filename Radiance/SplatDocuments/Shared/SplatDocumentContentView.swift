@@ -82,6 +82,14 @@ struct SplatDocumentContentView: View {
     @State private var classificationTask: Task<Void, Never>?
     @State private var bestViewTask: Task<Void, Never>?
     @State private var bestViewError: String?
+    @State private var bestViewResults: [BestViewCandidate] = []
+    @State private var bestViewAttempts: [BestViewAttempt] = []
+    @State private var recommendedBestView: Int?
+    @State private var selectedBestView: Int?
+    @State private var bestViewMatrices: [simd_float4x4] = []
+    @State private var bestViewAttemptedCount = 0
+    @State private var bestViewRejectedCount = 0
+    @State private var bestViewTotalCount = 0
     // Multi mode specific
     @State private var showAddCloudPicker = false
     @State private var dragOffsets: [UUID: SIMD3<Float>] = [:]
@@ -146,17 +154,21 @@ struct SplatDocumentContentView: View {
             Text(classificationError ?? "Unknown error")
         }
         .sheet(isPresented: Binding(
-            get: { bestViewTask != nil },
+            get: { bestViewTask != nil || !bestViewResults.isEmpty },
             set: { if !$0 { cancelBestViewSearch() } }
         )) {
-            VStack {
-                ProgressView("Finding Best View…")
-                Text("Comparing six views with the on-device model.")
-                    .foregroundStyle(.secondary)
-                Button("Cancel", role: .cancel, action: cancelBestViewSearch)
-            }
-            .padding()
-            .interactiveDismissDisabled()
+            BestViewSheet(
+                candidates: bestViewResults,
+                attempts: bestViewAttempts,
+                isSearching: bestViewTask != nil,
+                attemptedCount: bestViewAttemptedCount,
+                rejectedCount: bestViewRejectedCount,
+                totalCount: bestViewTotalCount,
+                recommendedCandidate: recommendedBestView,
+                selectedCandidate: $selectedBestView,
+                onConfirm: confirmBestView,
+                onCancel: cancelBestViewSearch
+            )
         }
         .alert("Best View Failed", isPresented: Binding(
             get: { bestViewError != nil },
@@ -261,45 +273,95 @@ struct SplatDocumentContentView: View {
         guard !data.cloudInfos.isEmpty else {
             return
         }
-        let candidates = bestViewCandidates
+        let matrices = bestViewCandidateMatrices
+        bestViewAttemptedCount = 0
+        bestViewRejectedCount = 0
+        bestViewTotalCount = matrices.count
         let verticalAngleOfView = viewModel.verticalAngleOfView
         let backgroundColor = viewModel.backgroundColor.resolve(in: .init())
 
         bestViewTask = Task {
             defer { bestViewTask = nil }
             do {
-                let images = try await Task.detached {
-                    try candidates.map { cameraMatrix in
+                var acceptedImages: [CGImage] = []
+                for (attemptID, matrix) in matrices.enumerated() {
+                    try Task.checkCancellation()
+                    let image = try await Task.detached {
                         try ScreenshotSheet.renderToImage(
                             width: 512,
                             height: 512,
                             cloudInfos: data.cloudInfos,
                             sceneTransform: data.sceneTransform,
-                            cameraMatrix: cameraMatrix,
+                            cameraMatrix: matrix,
                             verticalAngleOfView: verticalAngleOfView,
                             backgroundColor: backgroundColor
                         )
+                    }.value
+                    bestViewAttempts.append(BestViewAttempt(id: attemptID, image: image, status: .pending))
+                    if Self.lacksVisualContent(image, backgroundColor: backgroundColor) {
+                        bestViewAttempts[bestViewAttempts.count - 1].status = .rejected
+                        bestViewAttemptedCount += 1
+                        bestViewRejectedCount += 1
+                        continue
                     }
-                }.value
-                try Task.checkCancellation()
+                    let assessment = try await LanguageModelSession(model: model).respond(generating: BestViewAssessment.self) {
+                        """
+                        Analyze this Gaussian-splat rendering strictly.
+                        Set content to recognizable only when the image clearly depicts a coherent room, place, or subject. Set it to unrecognizable for blank images, giant blobs, abstract colors, close-up splats, or images where no real content can be identified.
+                        Classify viewpoint as insideScene only when the image clearly looks like a view from within a room or environment. Do not infer insideScene merely because geometry surrounds the camera.
+                        Set splatArtifacts to high when floating, oversized, disconnected, blurry, or close-up splats obscure the scene; moderate when a few are visible; otherwise low.
+                        Classify orientation from recognizable visible content; otherwise use uncertain.
+                        """
+                        Attachment(image)
+                    }.content
+                    bestViewAttemptedCount += 1
+                    if assessment.content == .recognizable, assessment.viewpoint == .insideScene, assessment.splatArtifacts == .low {
+                        bestViewAttempts[bestViewAttempts.count - 1].status = .accepted
+                        let id = bestViewResults.count
+                        bestViewMatrices.append(matrix)
+                        bestViewResults.append(BestViewCandidate(
+                            id: id,
+                            image: image,
+                            orientation: assessment.orientation,
+                            viewpoint: assessment.viewpoint,
+                            splatArtifacts: assessment.splatArtifacts
+                        ))
+                        acceptedImages.append(image)
+                    } else {
+                        bestViewAttempts[bestViewAttempts.count - 1].status = .rejected
+                        bestViewRejectedCount += 1
+                    }
+                    if acceptedImages.count == 6 {
+                        break
+                    }
+                }
+
+                guard acceptedImages.count == 6 else {
+                    if bestViewResults.isEmpty {
+                        throw BestViewError.noUsableViews
+                    }
+                    recommendedBestView = bestViewResults.indices.first
+                    selectedBestView = recommendedBestView
+                    return
+                }
                 let response = try await LanguageModelSession(model: model).respond(generating: BestViewSelection.self) {
                     """
-                    Choose the best view of this Gaussian-splat scene. Prefer an upright, coherent, well-framed view with a clear subject and minimal rendering artifacts. Return the zero-based candidate number. The candidates are ordered 0 through 5.
+                    Choose the best of these six interior Gaussian-splat views.
+                    Prefer an upright, coherent scene with useful framing and the fewest visible floating-splat artifacts.
+                    Return its zero-based candidate number in attachment order.
                     """
-                    Attachment(images[0])
-                    Attachment(images[1])
-                    Attachment(images[2])
-                    Attachment(images[3])
-                    Attachment(images[4])
-                    Attachment(images[5])
+                    Attachment(acceptedImages[0])
+                    Attachment(acceptedImages[1])
+                    Attachment(acceptedImages[2])
+                    Attachment(acceptedImages[3])
+                    Attachment(acceptedImages[4])
+                    Attachment(acceptedImages[5])
                 }
-                guard candidates.indices.contains(response.content.candidate) else {
+                guard bestViewResults.indices.contains(response.content.candidate) else {
                     throw BestViewError.invalidSelection
                 }
-                viewModel.zoomToFit = false
-                viewModel.cameraMode = .object
-                viewModel.cameraMatrix = candidates[response.content.candidate]
-                clearImageAnalysis()
+                recommendedBestView = response.content.candidate
+                selectedBestView = response.content.candidate
             } catch is CancellationError {
                 return
             } catch {
@@ -308,31 +370,115 @@ struct SplatDocumentContentView: View {
         }
     }
 
-    private var bestViewCandidates: [simd_float4x4] {
-        let target = (viewModel.sceneTransform * SIMD4<Float>(viewModel.boundsCenter, 1)).xyz
-        let cameraPosition = SIMD3<Float>(viewModel.cameraMatrix.columns.3.x, viewModel.cameraMatrix.columns.3.y, viewModel.cameraMatrix.columns.3.z)
-        let boundsDistance = max(viewModel.boundsSize.x, max(viewModel.boundsSize.y, viewModel.boundsSize.z))
-        let distance = max(simd_distance(cameraPosition, target), max(boundsDistance, 1))
-        return [
-            LookAt(position: target + [0, 0, distance], target: target, up: [0, 1, 0]).cameraMatrix,
-            LookAt(position: target + [distance, 0, 0], target: target, up: [0, 1, 0]).cameraMatrix,
-            LookAt(position: target + [0, 0, -distance], target: target, up: [0, 1, 0]).cameraMatrix,
-            LookAt(position: target + [-distance, 0, 0], target: target, up: [0, 1, 0]).cameraMatrix,
-            LookAt(position: target + [0, distance, 0], target: target, up: [0, 0, -1]).cameraMatrix,
-            LookAt(position: target + [0, -distance, 0], target: target, up: [0, 0, 1]).cameraMatrix
+    nonisolated private static func lacksVisualContent(_ image: CGImage, backgroundColor: Color.Resolved) -> Bool {
+        let sampleSize = 32
+        let scale = CGAffineTransform(scaleX: CGFloat(sampleSize) / CGFloat(image.width), y: CGFloat(sampleSize) / CGFloat(image.height))
+        let image = CIImage(cgImage: image).transformed(by: scale)
+        var pixels = [UInt8](repeating: 0, count: sampleSize * sampleSize * 4)
+        CIContext().render(
+            image,
+            toBitmap: &pixels,
+            rowBytes: sampleSize * 4,
+            bounds: CGRect(x: 0, y: 0, width: sampleSize, height: sampleSize),
+            format: .RGBA8,
+            colorSpace: CGColorSpace(name: CGColorSpace.sRGB)
+        )
+        let background = [backgroundColor.red, backgroundColor.green, backgroundColor.blue].map { UInt8(clamping: Int($0 * 255)) }
+        var matchingBackgroundPixels = 0
+        var luminanceHistogram = [Int](repeating: 0, count: 32)
+        for index in stride(from: 0, to: pixels.count, by: 4) {
+            let red = Int(pixels[index])
+            let green = Int(pixels[index + 1])
+            let blue = Int(pixels[index + 2])
+            if abs(red - Int(background[0])) < 8, abs(green - Int(background[1])) < 8, abs(blue - Int(background[2])) < 8 {
+                matchingBackgroundPixels += 1
+            }
+            let luminance = (red * 54 + green * 183 + blue * 19) / 256
+            luminanceHistogram[min(luminance / 8, 31)] += 1
+        }
+        let pixelCount = sampleSize * sampleSize
+        let entropy = luminanceHistogram.reduce(0.0) { result, count in
+            guard count > 0 else {
+                return result
+            }
+            let probability = Double(count) / Double(pixelCount)
+            return result - probability * log2(probability)
+        }
+        let occupiedBins = luminanceHistogram.count { $0 > pixelCount / 100 }
+        return matchingBackgroundPixels * 100 >= pixelCount * 98 || entropy < 0.75 || occupiedBins < 2
+    }
+
+    private var bestViewCandidateMatrices: [simd_float4x4] {
+        let center = viewModel.boundsCenter
+        let offset = viewModel.boundsSize * SIMD3<Float>(0.25, 0.1, 0.25)
+        let localPositions = [
+            center,
+            center + [-offset.x, 0, -offset.z],
+            center + [offset.x, 0, -offset.z],
+            center + [-offset.x, 0, offset.z],
+            center + [offset.x, 0, offset.z],
+            center + [-offset.x, offset.y, 0],
+            center + [offset.x, offset.y, 0],
+            center + [0, -offset.y, -offset.z],
+            center + [0, -offset.y, offset.z]
         ]
+        let localDirections: [SIMD3<Float>] = [
+            [0, 0, -1],
+            [1, 0, 0],
+            [0, 0, 1],
+            [-1, 0, 0]
+        ]
+        let worldUp = (viewModel.sceneTransform * SIMD4<Float>(0, 1, 0, 0)).xyz
+        let transformedPositions = localPositions.map { (viewModel.sceneTransform * SIMD4<Float>($0, 1)).xyz }
+        let worldPositions = [SIMD3<Float>.zero, viewModel.boundsCenter] + transformedPositions
+        return worldPositions.flatMap { position in
+            localDirections.map { localDirection in
+                let direction = (viewModel.sceneTransform * SIMD4<Float>(localDirection, 0)).xyz
+                return LookAt(position: position, target: position + direction, up: worldUp).cameraMatrix
+            }
+        }
+    }
+
+    private func confirmBestView() {
+        guard let selectedBestView, bestViewMatrices.indices.contains(selectedBestView) else {
+            return
+        }
+        viewModel.zoomToFit = false
+        viewModel.cameraMode = .object
+        viewModel.cameraMatrix = bestViewMatrices[selectedBestView]
+        clearImageAnalysis()
+        clearBestViewSearch()
     }
 
     private func cancelBestViewSearch() {
         bestViewTask?.cancel()
+        clearBestViewSearch()
+    }
+
+    private func clearBestViewSearch() {
         bestViewTask = nil
+        bestViewResults = []
+        bestViewAttempts = []
+        bestViewMatrices = []
+        recommendedBestView = nil
+        selectedBestView = nil
+        bestViewAttemptedCount = 0
+        bestViewRejectedCount = 0
+        bestViewTotalCount = 0
     }
 
     private enum BestViewError: LocalizedError {
         case invalidSelection
+        case noUsableViews
 
         var errorDescription: String? {
-            "The model did not select a valid view."
+            switch self {
+            case .invalidSelection:
+                "The model did not select a valid view."
+
+            case .noUsableViews:
+                "No recognizable interior views were found."
+            }
         }
     }
 

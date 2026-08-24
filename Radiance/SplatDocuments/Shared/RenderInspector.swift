@@ -24,8 +24,8 @@ struct RenderInspector<CullingContent: View>: View {
                     get: { viewModel.renderer },
                     set: { viewModel.renderer = $0 }
                 )) {
-                    ForEach(SplatRenderer.allCases.filter { $0 != .spark }, id: \.self) { renderer in
-                        Text(renderer == .gpu ? "Spark (GPU Sort)" : renderer.rawValue.capitalized).tag(renderer)
+                    ForEach(SplatRenderer.allCases.filter { $0 != .sparkCPU }, id: \.self) { renderer in
+                        Text(renderer == .sparkGPU ? "Spark (GPU Sort)" : renderer.rawValue.capitalized).tag(renderer)
                     }
                 }
             }

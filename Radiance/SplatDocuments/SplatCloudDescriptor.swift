@@ -50,7 +50,8 @@ struct SplatCloudDescriptor: Sendable {
             shDegree = reader.shDegree
 
         case .antimatter15Splat:
-            splatCount = 0
+            let reader = try Antimatter15Reader(url: url)
+            splatCount = reader.splatCount
             shDegree = 0
 
         case .sog:
@@ -83,7 +84,13 @@ struct SplatCloudDescriptor: Sendable {
                 bounds.expand(by: extendedSplat.genericSplat.position)
             }
 
-        case .antimatter15Splat, .sog:
+        case .antimatter15Splat:
+            let reader = try Antimatter15Reader(url: url)
+            try reader.read { _, extendedSplat in
+                bounds.expand(by: extendedSplat.genericSplat.position)
+            }
+
+        case .sog:
             break
 
         default:
@@ -100,9 +107,6 @@ import MetalSprocketsSupport
 
 extension SplatCloudDescriptor {
     nonisolated func loadGPUSplatCloud(modelTransform: simd_float4x4 = .identity) throws -> GPUSplatCloud<SparkSplat> {
-        guard contentType != .antimatter15Splat else {
-            throw SplatLoaderError.unsupportedFormat(url.pathExtension)
-        }
         guard let device = MTLCreateSystemDefaultDevice() else {
             throw NSError(domain: "SplatCloudDescriptor", code: 1, userInfo: [NSLocalizedDescriptionKey: "No Metal device available"])
         }

@@ -68,7 +68,7 @@ struct SplatRenderView: View {
     /// Render view with the appropriate camera controller applied based on camera mode
     @ViewBuilder
     private var cameraControlledRenderView: some View {
-        if mode == .single, viewModel.renderer != .spark, let cloud = clouds.first {
+        if mode == .single, viewModel.renderer != .sparkCPU, let cloud = clouds.first {
             let projection = PerspectiveProjection(
                 verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
                 depthMode: .standard(zClip: 0.01 ... 1_000)

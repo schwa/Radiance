@@ -200,7 +200,7 @@ final class SplatViewModel {
 
     // MARK: - Render Settings
 
-    var renderer: SplatRenderer = .gpu
+    var renderer: SplatRenderer = .sparkGPU
     var backgroundColor: Color = .black
     var useSphericalHarmonics: Bool = true
     var showBoundingBoxes: Bool = false

@@ -79,6 +79,11 @@ struct SplatRenderView: View {
             sortManager: sortManager,
             debugParams: debugParams,
             onFrame: viewModel.recordFrame,
+            onDrawableSizeChange: { size in
+                if viewModel.viewSize != size {
+                    viewModel.viewSize = size
+                }
+            },
             sortingEnabled: viewModel.sortingEnabled
         )
 
@@ -153,11 +158,12 @@ enum InspectorTab: String, CaseIterable {
     case scene = "Scene"    // Multi-cloud mode only
     case camera = "Camera"
     case render = "Render"
+    case analysis = "Analysis"
 
     static func tabs(for mode: SplatContentMode) -> [Self] {
         switch mode {
         case .single:
-            return [.cloud, .camera, .render]
+            return [.cloud, .camera, .render, .analysis]
 
         case .multi:
             return [.scene, .cloud, .camera, .render]
@@ -171,7 +177,8 @@ struct InspectorView: View {
     let mode: SplatContentMode
     @Bindable var viewModel: SplatViewModel
     @Binding var tab: InspectorTab
-
+    let classifications: [ImageClassification]
+    @Binding var highlightsSubjects: Bool
     // Multi-mode only: document and selection
     @Binding var document: SplatSceneDocument?
     @Binding var selectedCloud: SplatScene.CloudReference?
@@ -213,6 +220,12 @@ struct InspectorView: View {
 
                 case .render:
                     renderContent
+
+                case .analysis:
+                    AnalysisInspectorView(
+                        classifications: classifications,
+                        highlightsSubjects: $highlightsSubjects
+                    )
                 }
             }
             .formStyle(.grouped)
@@ -411,11 +424,15 @@ extension InspectorView {
     init(
         singleViewModel: SplatViewModel,
         tab: Binding<InspectorTab>,
+        classifications: [ImageClassification],
+        highlightsSubjects: Binding<Bool>,
         onScreenshot: (() -> Void)? = nil
     ) {
         self.mode = .single
         self.viewModel = singleViewModel
         self._tab = tab
+        self.classifications = classifications
+        self._highlightsSubjects = highlightsSubjects
         self._document = .constant(nil)
         self._selectedCloud = .constant(nil)
         self.onDeleteCloud = nil
@@ -434,6 +451,8 @@ extension InspectorView {
         self.mode = .multi
         self.viewModel = multiViewModel
         self._tab = tab
+        self.classifications = []
+        self._highlightsSubjects = .constant(false)
         self._document = document
         self._selectedCloud = selectedCloud
         self.onDeleteCloud = onDeleteCloud

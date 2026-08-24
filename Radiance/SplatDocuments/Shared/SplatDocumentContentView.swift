@@ -110,23 +110,24 @@ struct SplatDocumentContentView: View {
             classifyCurrentRenderingIfNeeded()
         }
         .onChange(of: viewModel.cameraMatrix) {
+            subjectMask = nil
             classifyCurrentRenderingIfNeeded()
         }
         .onChange(of: viewModel.viewSize) {
             subjectMask = nil
             classifyCurrentRenderingIfNeeded()
         }
-        .onChange(of: highlightsSubjects) {
+        .onChange(of: viewModel.sceneTransform) {
             subjectMask = nil
             classifyCurrentRenderingIfNeeded()
         }
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            if !classifications.isEmpty {
-                ImageClassificationBarView(
-                    classifications: classifications,
-                    highlightsSubjects: $highlightsSubjects
-                )
-            }
+        .onChange(of: viewModel.verticalAngleOfView) {
+            subjectMask = nil
+            classifyCurrentRenderingIfNeeded()
+        }
+        .onChange(of: highlightsSubjects) {
+            subjectMask = nil
+            classifyCurrentRenderingIfNeeded()
         }
         .alert("Classification Failed", isPresented: Binding(
             get: { classificationError != nil },
@@ -155,9 +156,11 @@ struct SplatDocumentContentView: View {
         }
 
         let cameraMatrix = viewModel.cameraMatrix
+        let sceneTransform = data.sceneTransform
         let viewSize = viewModel.viewSize
         let aspectRatio = max(viewSize.height, 1) / max(viewSize.width, 1)
-        let height = max(Int(512 * aspectRatio), 1)
+        let width = aspectRatio < 1 ? max(Int(512 / aspectRatio), 1) : 512
+        let height = aspectRatio < 1 ? 512 : max(Int(512 * aspectRatio), 1)
         let verticalAngleOfView = viewModel.verticalAngleOfView
         let backgroundColor = viewModel.backgroundColor.resolve(in: .init())
         let shouldGenerateSubjectMask = highlightsSubjects
@@ -166,10 +169,10 @@ struct SplatDocumentContentView: View {
             do {
                 let newClassifications = try await Task.detached {
                     let image = try ScreenshotSheet.renderToImage(
-                        width: 512,
+                        width: width,
                         height: height,
                         cloudInfos: data.cloudInfos,
-                        sceneTransform: data.sceneTransform,
+                        sceneTransform: sceneTransform,
                         cameraMatrix: cameraMatrix,
                         verticalAngleOfView: verticalAngleOfView,
                         backgroundColor: backgroundColor
@@ -187,8 +190,11 @@ struct SplatDocumentContentView: View {
                     return (classifications, subjectMask)
                 }.value
                 try Task.checkCancellation()
-                classifications = newClassifications.0
-                subjectMask = newClassifications.1
+                let renderingChanged = viewModel.cameraMatrix != cameraMatrix || viewModel.sceneTransform != sceneTransform || viewModel.viewSize != viewSize || viewModel.verticalAngleOfView != verticalAngleOfView || highlightsSubjects != shouldGenerateSubjectMask
+                if !renderingChanged {
+                    classifications = newClassifications.0
+                    subjectMask = newClassifications.1
+                }
             } catch {
                 if !Task.isCancelled {
                     classificationError = error.localizedDescription
@@ -196,7 +202,7 @@ struct SplatDocumentContentView: View {
             }
 
             classificationTask = nil
-            if viewModel.cameraMatrix != cameraMatrix || viewModel.viewSize != viewSize || highlightsSubjects != shouldGenerateSubjectMask {
+            if viewModel.cameraMatrix != cameraMatrix || viewModel.sceneTransform != sceneTransform || viewModel.viewSize != viewSize || viewModel.verticalAngleOfView != verticalAngleOfView || highlightsSubjects != shouldGenerateSubjectMask {
                 classifyCurrentRenderingIfNeeded()
             }
         }
@@ -558,7 +564,6 @@ struct SplatDocumentContentView: View {
                 }
             }
             .ignoresSafeArea()
-            .onGeometryChange(for: CGSize.self, of: \.size) { viewModel.viewSize = $0 }
         } else {
             ProgressView("Initializing...")
         }
@@ -658,7 +663,6 @@ struct SplatDocumentContentView: View {
                 onDragChange: handleAxisDrag,
                 onDragEnd: commitDrag
             )
-            .onGeometryChange(for: CGSize.self, of: \.size) { viewModel.viewSize = $0 }
         } else if multiDocument != nil {
             ProgressView("Initializing...")
         }
@@ -672,7 +676,9 @@ struct SplatDocumentContentView: View {
         case .single:
             InspectorView(
                 singleViewModel: viewModel,
-                tab: $inspectorTab
+                tab: $inspectorTab,
+                classifications: classifications,
+                highlightsSubjects: $highlightsSubjects
             ) {
                 showScreenshotSheet = true
             }

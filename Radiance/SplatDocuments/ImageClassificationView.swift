@@ -8,34 +8,31 @@ struct ImageClassification: Identifiable, Equatable, Sendable {
     var id: String { label }
 }
 
-struct ImageClassificationBarView: View {
+struct AnalysisInspectorView: View {
     let classifications: [ImageClassification]
     @Binding var highlightsSubjects: Bool
 
     var body: some View {
-        ScrollView(.horizontal) {
-            HStack {
-                Label("Classification", systemImage: "sparkles")
-                    .bold()
+        Section("Subjects") {
+            Toggle("Highlight Subjects", isOn: $highlightsSubjects)
+        }
 
-                Toggle("Highlight Subjects", isOn: $highlightsSubjects)
-                    .toggleStyle(.switch)
-
-                ForEach(classifications) { classification in
-                    Text("\(classification.label) \(classification.confidence, format: .percent.precision(.fractionLength(1)))")
+        Section("Classification") {
+            ForEach(classifications) { classification in
+                LabeledContent(classification.label) {
+                    Text(classification.confidence, format: .percent.precision(.fractionLength(1)))
                 }
             }
-            .padding()
         }
-        .scrollIndicators(.hidden)
-        .background(.bar)
     }
 }
 
 #Preview {
-    ImageClassificationBarView(classifications: [
-        ImageClassification(label: "train", confidence: 0.82),
-        ImageClassification(label: "railroad", confidence: 0.11)
-    ], highlightsSubjects: .constant(true))
+    Form {
+        AnalysisInspectorView(classifications: [
+            ImageClassification(label: "train", confidence: 0.82),
+            ImageClassification(label: "railroad", confidence: 0.11)
+        ], highlightsSubjects: .constant(true))
+    }
 }
 #endif

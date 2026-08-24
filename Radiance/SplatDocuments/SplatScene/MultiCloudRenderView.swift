@@ -26,6 +26,7 @@ struct MultiCloudRenderView: View {
 
     // FPS tracking callback
     var onFrame: (() -> Void)?
+    var onDrawableSizeChange: ((CGSize) -> Void)?
 
     // Sorting control
     var sortingEnabled: Bool = true
@@ -48,6 +49,7 @@ struct MultiCloudRenderView: View {
     var body: some View {
         RenderView { _, drawableSize in
             onFrame?()
+            onDrawableSizeChange?(drawableSize)
             return MultiCloudRenderPass(
                 clouds: clouds,
                 cameraMatrix: cameraMatrix,

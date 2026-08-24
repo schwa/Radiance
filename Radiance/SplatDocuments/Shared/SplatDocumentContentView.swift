@@ -266,9 +266,12 @@ struct SplatDocumentContentView: View {
                     generating: RenderedImageAnalysis.self
                 ) {
                     """
-                    Analyze this rendered Gaussian-splat image.
-                    Set orientation to its visible orientation. Set viewpoint based on whether the camera
-                    is inside a scene or outside looking at an object or other subject.
+                    Analyze this rendered Gaussian-splat image. Set orientation to its visible orientation.
+                    Classify viewpoint as insideScene when the reconstruction surrounds the camera like a room,
+                    landscape, or navigable environment. Classify it as outsideLookingAtSubject when viewing the
+                    reconstruction externally, including when it appears as disconnected, oversized, blurry, or
+                    overlapping splats against empty space. Rendering artifacts do not make the viewpoint uncertain.
+                    Use uncertain only when there is not enough visible evidence to distinguish the two.
                     Set framing to the most important framing assessment for the main subject.
                     In the description, briefly state:
                     - whether the main subject is an object, person, place, room, landscape, or something else

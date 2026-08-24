@@ -227,15 +227,9 @@ struct ScreenshotSheet: View {
         let size = CGSize(width: width, height: height)
         let projectionMatrix = projection.projectionMatrix(for: size)
 
-        // Render offscreen - using single cloud constructor like CLI
         let renderer = try OffscreenRenderer(size: size)
+        let sortResources = try GPUSortResources(device: renderer.device, capacity: cloud.count, slotCount: 1)
 
-        // Create sort manager and sort synchronously for this single-frame render
-        let sortManager = try AsyncSortManager(device: renderer.device, splatClouds: [cloud], capacity: cloud.count)
-        let sortParameters = SortParameters(camera: cameraMatrix, model: sceneTransform)
-        let sortedIndices = sortManager.sortNowSync(sortParameters)
-
-        // Set background color from viewModel
         renderer.renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColor(
             red: Double(backgroundColor.red),
             green: Double(backgroundColor.green),
@@ -243,17 +237,14 @@ struct ScreenshotSheet: View {
             alpha: 1.0
         )
 
-        // Use single-cloud constructor (matches CLI exactly)
-        let renderPass = try RenderPass {
-            try SparkSplatRenderPipeline(
-                splatCloud: cloud,
-                projectionMatrix: projectionMatrix,
-                modelMatrix: sceneTransform,
-                cameraMatrix: cameraMatrix,
-                drawableSize: SIMD2<Float>(size),
-                sortedIndices: sortedIndices
-            )
-        }
+        let renderPass = try GPUSortedSplatRenderPipeline(
+            splatCloud: cloud,
+            projectionMatrix: projectionMatrix,
+            modelMatrix: sceneTransform,
+            cameraMatrix: cameraMatrix,
+            drawableSize: SIMD2<Float>(size),
+            resources: sortResources
+        )
 
         let rendering = try renderer.render(renderPass)
         return try rendering.cgImage

@@ -106,11 +106,13 @@ Actual: head movement causes the immersive path to request CPU-sorted indices.
 ## 6: Offscreen rendering performs synchronous CPU sorting
 
 +++
-status: new
+status: closed
 priority: high
 kind: task
 labels: rendering, performance, foundation-models
 created: 2026-08-24T23:09:54Z
+updated: 2026-08-24T23:14:18Z
+closed: 2026-08-24T23:14:18Z
 +++
 
 Screenshot export and Best View candidate generation use the shared offscreen renderer, which synchronously sorts splats on the CPU before every image. Best View repeats this for all six candidates.
@@ -118,6 +120,8 @@ Screenshot export and Best View candidate generation use the shared offscreen re
 Expected: offscreen rendering, screenshots, and model-analysis renders sort splats on the GPU.
 
 Actual: each image blocks on sortNowSync before rendering.
+
+- `2026-08-24T23:14:18Z`: The shared offscreen renderer now uses GPUSortedSplatRenderPipeline, covering screenshots and Best View candidate renders.
 
 ---
 
@@ -140,5 +144,6 @@ Expected: selecting Spark GPU mode does not perform CPU sorting during ordinary 
 Actual: moving the camera triggers background classification, which calls the offscreen render path and blocks on sortNowSync.
 
 - `2026-08-24T23:11:38Z`: Image classification now starts only while the Analysis inspector is selected; ordinary Spark GPU rendering no longer invokes the CPU-sorted offscreen path.
+- `2026-08-24T23:14:18Z`: Corrected implementation: automatic classification remains enabled. The shared offscreen renderer now uses Spark GPU sorting instead of hiding classification outside the Analysis inspector.
 
 ---

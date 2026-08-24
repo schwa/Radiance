@@ -29,8 +29,7 @@ struct SplatRenderView: View {
     // Debug rendering (nil = normal rendering, non-nil = debug mode)
     var debugParams: DebugParams?
 
-    // Sort manager (required)
-    var sortManager: AsyncSortManager<SparkSplat>
+    var sortManager: AsyncSortManager<SparkSplat>?
 
     // Camera mode for selecting the appropriate controller
     var cameraMode: CameraMode = .object
@@ -97,7 +96,7 @@ struct SplatRenderView: View {
             case .spatialScene:
                 renderView.modifier(SpatialSceneCameraController(transform: $cameraMatrix))
             }
-        } else {
+        } else if let sortManager {
             let renderView = MultiCloudRenderView(
                 clouds: clouds,
                 cameraMatrix: cameraMatrix,

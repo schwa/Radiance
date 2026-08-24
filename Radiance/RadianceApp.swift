@@ -58,9 +58,27 @@ struct RadianceApp: App {
 
         #if os(visionOS)
         ImmersiveSpace(id: "GaussianSplatImmersive") {
+            let state = ImmersiveState.shared
+            let splatCloud = state.splatCloud
+            let renderState = state.renderState
+            let worldModelMatrix = state.worldModelMatrix
             ImmersiveRenderContent(progressive: false) { context in
-                try ImmersiveRenderPass(context: context, label: "GaussianSplat") {
-                    try GaussianSplatImmersiveContent(context: context)
+                if let splatCloud, let renderState {
+                    try ImmersiveGPUSortElement(
+                        context: context,
+                        splatCloud: splatCloud,
+                        modelMatrix: worldModelMatrix,
+                        renderState: renderState
+                    )
+                    try ImmersiveRenderPass(context: context, label: "GaussianSplat") {
+                        try SplatImmersiveElement(
+                            context: context,
+                            splatCloud: splatCloud,
+                            modelMatrix: worldModelMatrix,
+                            renderer: .sparkGPU,
+                            renderState: renderState
+                        )
+                    }
                 }
             }
         }

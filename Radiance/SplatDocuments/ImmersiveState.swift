@@ -13,17 +13,14 @@ final class ImmersiveState {
     var isImmersive = false
     var splatCloud: GPUSplatCloud<SparkSplat>? {
         didSet {
-            updateSortManager()
+            renderState = try? splatCloud.map(SplatImmersiveRenderState.init)
         }
     }
-    var sortManager: AsyncSortManager<SparkSplat>?
-    var sortedIndices: SplatIndices?
-    private var sortListenerTask: Task<Void, Never>?
+    var renderState: SplatImmersiveRenderState?
     var modelMatrix = simd_float4x4(xRotation: .radians(.pi))
     var scale: Float = 1.0
     var translation: SIMD3<Float> = .zero
 
-    // Updated each frame from ImmersiveContent
     var headPosition: SIMD3<Float> = .zero
     var headForward: SIMD3<Float> = [0, 0, -1]
 
@@ -32,37 +29,15 @@ final class ImmersiveState {
         // This line intentionally left blank.
     }
 
-    private func updateSortManager() {
-        sortListenerTask?.cancel()
-        sortListenerTask = nil
-        sortedIndices = nil
-        guard let splatCloud else {
-            sortManager = nil
-            return
-        }
-        guard let device = MTLCreateSystemDefaultDevice() else {
-            sortManager = nil
-            return
-        }
-        sortManager = try? AsyncSortManager(device: device, splatClouds: [splatCloud], capacity: splatCloud.count)
-        if let sortManager {
-            sortListenerTask = Task { @MainActor [weak self] in
-                for await indices in sortManager.sortedIndicesStream {
-                    if let old = self?.sortedIndices {
-                        sortManager.release(old)
-                    }
-                    self?.sortedIndices = indices
-                }
-            }
-        }
-    }
-
-    func requestSort(cameraMatrix: simd_float4x4) {
-        let worldModelMatrix = simd_float4x4(translation: translation)
+    var worldModelMatrix: simd_float4x4 {
+        simd_float4x4(translation: translation)
             * simd_float4x4(scale: SIMD3<Float>(repeating: scale))
             * modelMatrix
-        let parameters = SortParameters(camera: cameraMatrix, model: worldModelMatrix)
-        sortManager?.requestSort(parameters)
+    }
+
+    func updateHead(cameraMatrix: simd_float4x4) {
+        headPosition = SIMD3<Float>(cameraMatrix.columns.3.x, cameraMatrix.columns.3.y, cameraMatrix.columns.3.z)
+        headForward = -SIMD3<Float>(cameraMatrix.columns.2.x, cameraMatrix.columns.2.y, cameraMatrix.columns.2.z)
     }
 
     func recenter(distance: Float = 2.0) {

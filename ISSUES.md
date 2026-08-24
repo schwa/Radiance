@@ -52,11 +52,13 @@ Actual: every relevant view change schedules CPU sorting before rendering.
 ## 3: Single-cloud loading creates an unused CPU sort manager
 
 +++
-status: new
+status: closed
 priority: medium
 kind: task
 labels: rendering, performance
 created: 2026-08-24T23:09:54Z
+updated: 2026-08-24T23:23:53Z
+closed: 2026-08-24T23:23:53Z
 +++
 
 Loading a single cloud creates an AsyncSortManager even when the active renderer is Spark GPU.
@@ -65,16 +67,20 @@ Expected: the default GPU renderer does not allocate or maintain CPU sorting inf
 
 Actual: SplatViewModel creates a CPU sort manager for loaded clouds regardless of the selected renderer.
 
+- `2026-08-24T23:23:53Z`: Single-cloud Spark GPU rendering no longer creates or requires the view model's CPU sort manager.
+
 ---
 
 ## 4: Quick Look previews perform CPU sorting
 
 +++
-status: new
+status: closed
 priority: high
 kind: task
 labels: rendering, quicklook, performance
 created: 2026-08-24T23:09:54Z
+updated: 2026-08-24T23:23:53Z
+closed: 2026-08-24T23:23:53Z
 +++
 
 Quick Look splat previews depend on AsyncSortManager and request a CPU sort whenever the camera changes.
@@ -83,16 +89,20 @@ Expected: preview rendering sorts splats on the GPU.
 
 Actual: preview interaction routes through the CPU-sorted Spark pipeline.
 
+- `2026-08-24T23:23:53Z`: Quick Look previews now use GPUSortedSplatRenderPipeline and GPUSortResources.
+
 ---
 
 ## 5: Immersive rendering performs CPU sorting
 
 +++
-status: new
+status: closed
 priority: high
 kind: task
 labels: rendering, visionos, performance
 created: 2026-08-24T23:09:54Z
+updated: 2026-08-24T23:23:53Z
+closed: 2026-08-24T23:23:53Z
 +++
 
 visionOS immersive rendering owns an AsyncSortManager and requests CPU sorts as the camera changes.
@@ -100,6 +110,8 @@ visionOS immersive rendering owns an AsyncSortManager and requests CPU sorts as 
 Expected: immersive rendering keeps per-frame splat sorting on the GPU.
 
 Actual: head movement causes the immersive path to request CPU-sorted indices.
+
+- `2026-08-24T23:23:53Z`: visionOS immersive rendering now encodes SplatImmersiveGPUSortElement before the render pass and renders with Spark GPU.
 
 ---
 

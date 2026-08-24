@@ -743,39 +743,35 @@ struct SplatDocumentContentView: View {
 
     @ViewBuilder
     private func singleRenderView(cloud: GPUSplatCloud<SparkSplat>) -> some View {
-        if let sortManager = viewModel.sortManager {
-            SplatRenderView(
-                mode: .single,
-                clouds: [cloud],
-                sceneTransform: viewModel.sceneTransform,
-                useSphericalHarmonics: viewModel.effectiveUseSphericalHarmonics,
-                backgroundColor: viewModel.backgroundColorArray,
-                cameraMatrix: $viewModel.cameraMatrix,
-                verticalAngleOfView: $viewModel.verticalAngleOfView,
-                cullBoundingBox: viewModel.cullBoundingBox,
-                showBoundingBoxes: viewModel.showBoundingBoxes,
-                boundingBoxInfos: singleModeBoundingBoxInfos,
-                debugParams: viewModel.debugModeEnabled ? computeDebugParams(
-                    mode: viewModel.debugMode,
-                    boundsCenter: viewModel.boundsCenter,
-                    boundsSize: viewModel.boundsSize
-                ) : nil,
-                sortManager: sortManager,
-                cameraMode: viewModel.cameraMode
-            )
-            .overlay {
-                if highlightsSubjects, let subjectMask {
-                    Image(decorative: subjectMask, scale: 1)
-                        .resizable()
-                        .colorMultiply(.accentColor)
-                        .opacity(0.45)
-                        .allowsHitTesting(false)
-                }
+        SplatRenderView(
+            mode: .single,
+            clouds: [cloud],
+            sceneTransform: viewModel.sceneTransform,
+            useSphericalHarmonics: viewModel.effectiveUseSphericalHarmonics,
+            backgroundColor: viewModel.backgroundColorArray,
+            cameraMatrix: $viewModel.cameraMatrix,
+            verticalAngleOfView: $viewModel.verticalAngleOfView,
+            cullBoundingBox: viewModel.cullBoundingBox,
+            showBoundingBoxes: viewModel.showBoundingBoxes,
+            boundingBoxInfos: singleModeBoundingBoxInfos,
+            debugParams: viewModel.debugModeEnabled ? computeDebugParams(
+                mode: viewModel.debugMode,
+                boundsCenter: viewModel.boundsCenter,
+                boundsSize: viewModel.boundsSize
+            ) : nil,
+            sortManager: nil,
+            cameraMode: viewModel.cameraMode
+        )
+        .overlay {
+            if highlightsSubjects, let subjectMask {
+                Image(decorative: subjectMask, scale: 1)
+                    .resizable()
+                    .colorMultiply(.accentColor)
+                    .opacity(0.45)
+                    .allowsHitTesting(false)
             }
-            .ignoresSafeArea()
-        } else {
-            ProgressView("Initializing...")
         }
+        .ignoresSafeArea()
     }
 
     /// Compute debug shader parameters based on mode and bounds

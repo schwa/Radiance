@@ -338,7 +338,6 @@ final class SplatViewModel {
                     bounds: BoundingBox(min: boundsCenter - boundsSize / 2, max: boundsCenter + boundsSize / 2)
                 )
                 loadedClouds = [loadedCloud]
-                updateSortManager(for: [gpuCloud])
                 updateSceneTransform()
                 loadingState = .ready
             } catch {

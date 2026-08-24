@@ -28,7 +28,6 @@ enum SplatLoadingState: Equatable {
 struct LoadedSplatCloud: Identifiable {
     let id: UUID
     var displayName: String
-    /// The GPU cloud (nil if not yet loaded, e.g. for large files awaiting confirmation)
     var cloud: GPUSplatCloud<SparkSplat>?
     let descriptor: SplatCloudDescriptor
     var bounds: BoundingBox?
@@ -327,17 +326,10 @@ final class SplatViewModel {
                     boundsSize = computedBounds.size
                 }
 
-                // Only auto-load if not a large file (< 1M splats)
-                let gpuCloud: GPUSplatCloud<SparkSplat>?
-                if descriptor.splatCount < 1_000_000 {
-                    gpuCloud = try descriptor.loadGPUSplatCloud()
-                    #if os(visionOS)
-                    ImmersiveState.shared.splatCloud = gpuCloud
-                    #endif
-                } else {
-                    gpuCloud = nil
-                }
-
+                let gpuCloud = try descriptor.loadGPUSplatCloud()
+                #if os(visionOS)
+                ImmersiveState.shared.splatCloud = gpuCloud
+                #endif
                 let loadedCloud = LoadedSplatCloud(
                     id: UUID(),
                     displayName: url.deletingPathExtension().lastPathComponent,
@@ -346,40 +338,12 @@ final class SplatViewModel {
                     bounds: BoundingBox(min: boundsCenter - boundsSize / 2, max: boundsCenter + boundsSize / 2)
                 )
                 loadedClouds = [loadedCloud]
-                if let gpuCloud {
-                    updateSortManager(for: [gpuCloud])
-                }
+                updateSortManager(for: [gpuCloud])
                 updateSceneTransform()
                 loadingState = .ready
             } catch {
                 loadingState = .error("Failed to load splat file: \(error.localizedDescription)")
             }
-        }
-    }
-
-    /// Force load the splat cloud (for large files that weren't auto-loaded)
-    func loadSplatCloud() {
-        guard loadedClouds.count == 1, var first = loadedClouds.first, first.cloud == nil else {
-            return
-        }
-
-        do {
-            let gpuCloud: GPUSplatCloud<SparkSplat> = try first.descriptor.loadGPUSplatCloud()
-            first = LoadedSplatCloud(
-                id: first.id,
-                displayName: first.displayName,
-                cloud: gpuCloud,
-                descriptor: first.descriptor,
-                bounds: first.bounds
-            )
-            loadedClouds = [first]
-            updateSortManager(for: [gpuCloud])
-
-            #if os(visionOS)
-            ImmersiveState.shared.splatCloud = gpuCloud
-            #endif
-        } catch {
-            loadingState = .error("Failed to load splat cloud: \(error.localizedDescription)")
         }
     }
 

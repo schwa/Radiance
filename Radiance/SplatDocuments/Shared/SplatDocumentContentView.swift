@@ -68,7 +68,6 @@ struct SplatDocumentContentView: View {
     @State private var columnVisibility: NavigationSplitViewVisibility = .detailOnly
 
     // Single mode specific
-    @State private var confirmedLoad = false
     @State private var showScreenshotSheet = false
     @State private var showExportDialog = false
     @State private var classifications: [ImageClassification] = []
@@ -383,7 +382,6 @@ struct SplatDocumentContentView: View {
                 // Export completion handled by system
             }
             .onChange(of: fileURL, initial: true) { _, newURL in
-                confirmedLoad = false
                 classificationTask?.cancel()
                 classificationTask = nil
                 classifications = []
@@ -591,9 +589,7 @@ struct SplatDocumentContentView: View {
             errorContent(message: message)
 
         case .ready:
-            if needsConfirmation {
-                confirmationContent
-            } else if let splatCloud = viewModel.splatCloud {
+            if let splatCloud = viewModel.splatCloud {
                 singleRenderView(cloud: splatCloud)
             } else {
                 ContentUnavailableView("No file to render", systemImage: "questionmark")
@@ -867,31 +863,6 @@ struct SplatDocumentContentView: View {
             Label("Error", systemImage: "exclamationmark.triangle")
         } description: {
             Text(message)
-        }
-    }
-
-    private var needsConfirmation: Bool {
-        guard let descriptor = viewModel.descriptor else {
-            return false
-        }
-        if viewModel.isImageConversion {
-            return false
-        }
-        return descriptor.splatCount >= 1_000_000 && !confirmedLoad
-    }
-
-    @ViewBuilder
-    private var confirmationContent: some View {
-        ContentUnavailableView {
-            Label("Large Splat Cloud", systemImage: "exclamationmark.triangle.fill")
-        } description: {
-            Text("This file contains \(viewModel.descriptor!.splatCount.formatted()) splats which may take a while to load and could impact performance.")
-        } actions: {
-            Button("Load Anyway") {
-                confirmedLoad = true
-                viewModel.loadSplatCloud()
-            }
-            .buttonStyle(.borderedProminent)
         }
     }
 

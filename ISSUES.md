@@ -376,16 +376,19 @@ ModelDownloadView and SampleAssetsDownloadView bridge URLSession download tasks 
 ## 20: Image description work is untracked and reports cancellation as failure
 
 +++
-status: open
+status: closed
 priority: medium
 kind: bug
 labels: swift, concurrency, analysis, cancellation, effort:s
 created: 2026-08-25T02:12:55Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-08-25T02:30:06Z
+closed: 2026-08-25T02:30:06Z
 +++
 
 Image description starts an unstructured task without retaining its handle. The operation cannot be cancelled when the document or view changes, and its catch path treats cancellation like an analysis failure. A stale description can finish after the rendered view has changed and replace current analysis fields.
 
 - `2026-08-25T02:18:13Z`: Related to #17: both cover cancellation and stale work in Analysis; #20 is scoped to image-description task ownership.
+- `2026-08-25T02:30:06Z`: Regression test exempt: the stale publication requires Foundation Models plus a rendered SwiftUI document lifecycle, which the current unit target cannot host. Verified cancellation checks and macOS build.
+- `2026-08-25T02:30:06Z`: Tracked and cancelled image-description work on replacement/document changes, suppressed cancellation errors, and checked cancellation before publishing results.
 
 ---

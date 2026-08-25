@@ -81,6 +81,7 @@ struct SplatDocumentContentView: View {
     @State private var subjectMask: CGImage?
     @State private var highlightsSubjects = false
     @State private var classificationTask: Task<Void, Never>?
+    @State private var imageDescriptionTask: Task<Void, Never>?
     @State private var bestViewTask: Task<Void, Never>?
     @State private var bestViewError: String?
     @State private var bestViewResults: [BestViewCandidate] = []
@@ -646,8 +647,11 @@ struct SplatDocumentContentView: View {
         let backgroundColor = viewModel.backgroundColor.resolve(in: .init())
         isDescribingImage = true
 
-        Task {
-            defer { isDescribingImage = false }
+        imageDescriptionTask?.cancel()
+        imageDescriptionTask = Task {
+            defer {
+                isDescribingImage = false
+            }
             do {
                 let image = try await Task.detached {
                     try ScreenshotSheet.renderToImage(
@@ -660,6 +664,7 @@ struct SplatDocumentContentView: View {
                         backgroundColor: backgroundColor
                     )
                 }.value
+                try Task.checkCancellation()
                 let model = SystemLanguageModel.default
                 guard model.isAvailable else {
                     throw ImageDescriptionError.modelUnavailable
@@ -682,10 +687,13 @@ struct SplatDocumentContentView: View {
                     """
                     Attachment(image)
                 }
+                try Task.checkCancellation()
                 imageOrientation = response.content.orientation
                 imageViewpoint = response.content.viewpoint
                 imageFraming = response.content.framing
                 imageDescription = response.content.description
+            } catch is CancellationError {
+                return
             } catch {
                 classificationError = error.localizedDescription
             }
@@ -778,6 +786,8 @@ struct SplatDocumentContentView: View {
             .task(id: fileURL) {
                 classificationTask?.cancel()
                 classificationTask = nil
+                imageDescriptionTask?.cancel()
+                imageDescriptionTask = nil
                 classifications = []
                 subjectMask = nil
                 classificationError = nil

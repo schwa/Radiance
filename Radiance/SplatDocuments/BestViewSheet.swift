@@ -1,24 +1,71 @@
 #if os(iOS) || os(macOS)
 import CoreGraphics
+import Foundation
+import ImageIO
+import simd
 import SwiftUI
+import UniformTypeIdentifiers
+
+#if canImport(AppKit)
+import AppKit
+#elseif canImport(UIKit)
+import UIKit
+#endif
 
 struct BestViewCandidate: Identifiable {
     let id: Int
     let image: CGImage
+    let cameraMatrix: simd_float4x4
     let orientation: RenderedImageAnalysis.Orientation
     let viewpoint: RenderedImageAnalysis.Viewpoint
     let splatArtifacts: BestViewAssessment.SplatArtifacts
 }
 
+enum BestViewRejectionReason {
+    case empty
+    case noContent
+    case outside
+    case tooSplatty
+    case sideways
+    case upsideDown
+    case uncertainOrientation
+
+    var title: String {
+        switch self {
+        case .empty:
+            "Empty"
+
+        case .noContent:
+            "No Content"
+
+        case .outside:
+            "Outside"
+
+        case .tooSplatty:
+            "Too Splatty"
+
+        case .sideways:
+            "Sideways"
+
+        case .upsideDown:
+            "Upside Down"
+
+        case .uncertainOrientation:
+            "Orientation?"
+        }
+    }
+}
+
 enum BestViewAttemptStatus {
     case pending
     case accepted
-    case rejected
+    case rejected(BestViewRejectionReason)
 }
 
 struct BestViewAttempt: Identifiable {
     let id: Int
     let image: CGImage
+    let cameraMatrix: simd_float4x4
     var status: BestViewAttemptStatus
 }
 
@@ -31,8 +78,19 @@ struct BestViewSheet: View {
     let totalCount: Int
     let recommendedCandidate: Int?
     @Binding var selectedCandidate: Int?
+    @State private var copyError: String?
     let onConfirm: () -> Void
     let onCancel: () -> Void
+
+    @ViewBuilder
+    private func copyContextMenu(image: CGImage, cameraMatrix: simd_float4x4) -> some View {
+        Button("Copy Camera Transform", systemImage: "camera") {
+            copyCameraTransform(cameraMatrix)
+        }
+        Button("Copy Image File", systemImage: "photo") {
+            copyImageFile(image)
+        }
+    }
 
     @ViewBuilder
     private var attemptRibbon: some View {
@@ -44,15 +102,21 @@ struct BestViewSheet: View {
                             Image(decorative: attempt.image, scale: 1)
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: 72, height: 72)
+                                .frame(width: 96, height: 72)
                                 .clipShape(.rect(cornerRadius: 8))
-                                .overlay {
-                                    if attempt.status == .rejected {
-                                        Image(systemName: "xmark.circle.fill")
-                                            .font(.title)
-                                            .foregroundStyle(.white, .red)
-                                            .accessibilityHidden(true)
+                                .overlay(alignment: .bottom) {
+                                    if case .rejected(let reason) = attempt.status {
+                                        Label(reason.title, systemImage: "xmark")
+                                            .font(.caption)
+                                            .bold()
+                                            .foregroundStyle(.white)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 4)
+                                            .background(.red, in: .capsule)
                                     }
+                                }
+                                .contextMenu {
+                                    copyContextMenu(image: attempt.image, cameraMatrix: attempt.cameraMatrix)
                                 }
                         }
                     }
@@ -70,82 +134,130 @@ struct BestViewSheet: View {
         }
     }
 
+    private func copyCameraTransform(_ matrix: simd_float4x4) {
+        let columns = [matrix.columns.0, matrix.columns.1, matrix.columns.2, matrix.columns.3]
+        let string = columns
+            .map { column in
+                "[\(column.x), \(column.y), \(column.z), \(column.w)]"
+            }
+            .joined(separator: ",\n")
+        #if canImport(AppKit)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString("[\n\(string)\n]", forType: .string)
+        #elseif canImport(UIKit)
+        UIPasteboard.general.string = "[\n\(string)\n]"
+        #endif
+    }
+
+    private func copyImageFile(_ image: CGImage) {
+        do {
+            let directory = URL.cachesDirectory.appending(path: "BestView", directoryHint: .isDirectory)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            let url = directory.appending(path: "best-view-\(UUID()).png")
+            guard let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else {
+                throw CopyImageError.cannotCreateFile
+            }
+            CGImageDestinationAddImage(destination, image, nil)
+            guard CGImageDestinationFinalize(destination) else {
+                throw CopyImageError.cannotWriteFile
+            }
+            #if canImport(AppKit)
+            let pasteboard = NSPasteboard.general
+            pasteboard.clearContents()
+            pasteboard.setString(url.absoluteString, forType: .fileURL)
+            #elseif canImport(UIKit)
+            UIPasteboard.general.url = url
+            #endif
+        } catch {
+            copyError = error.localizedDescription
+        }
+    }
+
+    private enum CopyImageError: LocalizedError {
+        case cannotCreateFile
+        case cannotWriteFile
+
+        var errorDescription: String? {
+            switch self {
+            case .cannotCreateFile:
+                "Could not create the cached image file."
+
+            case .cannotWriteFile:
+                "Could not write the cached image file."
+            }
+        }
+    }
+
     private var statusText: String {
         "\(candidates.count) accepted · \(rejectedCount) rejected · \(attemptedCount) of \(totalCount) checked"
     }
 
     var body: some View {
         NavigationStack {
-            Group {
-                if candidates.isEmpty {
-                    VStack {
-                        ProgressView("Finding Best View…")
-                            .padding()
-                        Text(statusText)
-                            .foregroundStyle(.secondary)
-                        attemptRibbon
+            ScrollView {
+                VStack {
+                    Text(statusText)
+                        .foregroundStyle(.secondary)
+                    attemptRibbon
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
+                        ForEach(candidates) { candidate in
+                            Button {
+                                selectedCandidate = candidate.id
+                            } label: {
+                                Image(decorative: candidate.image, scale: 1)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .overlay(alignment: .bottomLeading) {
+                                        VStack(alignment: .leading) {
+                                            Text(candidate.viewpoint.bestViewTitle)
+                                            Text(candidate.orientation.title)
+                                            Text(candidate.splatArtifacts.title)
+                                        }
+                                        .bold()
+                                        .foregroundStyle(.white)
+                                        .padding()
+                                        .background(.black.opacity(0.65), in: .rect(cornerRadius: 8))
+                                        .padding()
+                                    }
+                                    .overlay(alignment: .topTrailing) {
+                                        if candidate.id == recommendedCandidate {
+                                            Label("Best", systemImage: "sparkles")
+                                                .labelStyle(.iconOnly)
+                                                .padding()
+                                                .background(.tint, in: .circle)
+                                                .foregroundStyle(.white)
+                                                .padding()
+                                        }
+                                    }
+                                    .overlay {
+                                        if candidate.id == selectedCandidate {
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(.tint, lineWidth: 4)
+                                        }
+                                    }
+                                    .contextMenu {
+                                        copyContextMenu(image: candidate.image, cameraMatrix: candidate.cameraMatrix)
+                                    }
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("View \(candidate.id + 1), \(candidate.viewpoint.bestViewTitle), \(candidate.orientation.title)")
+                            .accessibilityAddTraits(candidate.id == selectedCandidate ? .isSelected : [])
+                        }
                     }
-                } else {
-                    VStack {
+                    .padding()
+                }
+            }
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack {
+                        Text("Best View")
+                            .font(.headline)
                         if isSearching {
-                            VStack {
-                                ProgressView("Trying more interior views…")
-                                    .padding()
-                                Text(statusText)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        attemptRibbon
-                        ScrollView {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 180))]) {
-                            ForEach(candidates) { candidate in
-                                Button {
-                                    selectedCandidate = candidate.id
-                                } label: {
-                                    Image(decorative: candidate.image, scale: 1)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .overlay(alignment: .bottomLeading) {
-                                            VStack(alignment: .leading) {
-                                                Text(candidate.viewpoint.bestViewTitle)
-                                                Text(candidate.orientation.title)
-                                                Text(candidate.splatArtifacts.title)
-                                            }
-                                            .bold()
-                                            .foregroundStyle(.white)
-                                            .padding()
-                                            .background(.black.opacity(0.65), in: .rect(cornerRadius: 8))
-                                            .padding()
-                                        }
-                                        .overlay(alignment: .topTrailing) {
-                                            if candidate.id == recommendedCandidate {
-                                                Label("Best", systemImage: "sparkles")
-                                                    .labelStyle(.iconOnly)
-                                                    .padding()
-                                                    .background(.tint, in: .circle)
-                                                    .foregroundStyle(.white)
-                                                    .padding()
-                                            }
-                                        }
-                                        .overlay {
-                                            if candidate.id == selectedCandidate {
-                                                RoundedRectangle(cornerRadius: 8)
-                                                    .stroke(.tint, lineWidth: 4)
-                                            }
-                                        }
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityLabel("View \(candidate.id + 1), \(candidate.viewpoint.bestViewTitle), \(candidate.orientation.title)")
-                                .accessibilityAddTraits(candidate.id == selectedCandidate ? .isSelected : [])
-                            }
-                        }
-                        .padding()
+                            ProgressView()
+                                .controlSize(.small)
                         }
                     }
                 }
-            }
-            .navigationTitle("Best View")
-            .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: onCancel)
                 }
@@ -156,6 +268,16 @@ struct BestViewSheet: View {
             }
         }
         .interactiveDismissDisabled()
+        .alert("Copy Failed", isPresented: Binding(
+            get: { copyError != nil },
+            set: { if !$0 { copyError = nil } }
+        )) {
+            Button("OK", role: .cancel) {
+                copyError = nil
+            }
+        } message: {
+            Text(copyError ?? "Unknown error")
+        }
     }
 }
 

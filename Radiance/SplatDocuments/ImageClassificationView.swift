@@ -119,6 +119,11 @@ struct BestViewAssessment {
 }
 
 @Generable
+struct BestViewOrientationAssessment {
+    let orientation: RenderedImageAnalysis.Orientation
+}
+
+@Generable
 struct BestViewSelection {
     let candidate: Int
 }

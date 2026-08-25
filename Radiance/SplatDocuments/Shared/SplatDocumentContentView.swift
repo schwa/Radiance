@@ -284,7 +284,13 @@ struct SplatDocumentContentView: View {
             defer { bestViewTask = nil }
             do {
                 var acceptedImages: [CGImage] = []
-                for (attemptID, matrix) in matrices.enumerated() {
+                var pendingMatrices = matrices.map { (matrix: $0, allowsCorrection: true) }
+                var attemptID = 0
+                while attemptID < pendingMatrices.count {
+                    let pending = pendingMatrices[attemptID]
+                    let matrix = pending.matrix
+                    let currentAttemptID = attemptID
+                    attemptID += 1
                     try Task.checkCancellation()
                     let image = try await Task.detached {
                         try ScreenshotSheet.renderToImage(
@@ -297,9 +303,10 @@ struct SplatDocumentContentView: View {
                             backgroundColor: backgroundColor
                         )
                     }.value
-                    bestViewAttempts.append(BestViewAttempt(id: attemptID, image: image, status: .pending))
+                    try Task.checkCancellation()
+                    bestViewAttempts.append(BestViewAttempt(id: currentAttemptID, image: image, cameraMatrix: matrix, status: .pending))
                     if Self.lacksVisualContent(image, backgroundColor: backgroundColor) {
-                        bestViewAttempts[bestViewAttempts.count - 1].status = .rejected
+                        updateBestViewAttempt(id: currentAttemptID, status: .rejected(.empty))
                         bestViewAttemptedCount += 1
                         bestViewRejectedCount += 1
                         continue
@@ -310,26 +317,50 @@ struct SplatDocumentContentView: View {
                         Set content to recognizable only when the image clearly depicts a coherent room, place, or subject. Set it to unrecognizable for blank images, giant blobs, abstract colors, close-up splats, or images where no real content can be identified.
                         Classify viewpoint as insideScene only when the image clearly looks like a view from within a room or environment. Do not infer insideScene merely because geometry surrounds the camera.
                         Set splatArtifacts to high when floating, oversized, disconnected, blurry, or close-up splats obscure the scene; moderate when a few are visible; otherwise low.
-                        Classify orientation from recognizable visible content; otherwise use uncertain.
+                        Classify orientation as image-plane rotation, not camera direction. Use architectural cues: floors belong below ceilings, walls and cabinets should be vertical, and counters should be horizontal. A recognizable room rotated 90 degrees is sideways even when its contents remain clear. Use uncertain only when there are no reliable gravity cues.
                         """
                         Attachment(image)
                     }.content
+                    try Task.checkCancellation()
                     bestViewAttemptedCount += 1
-                    if assessment.content == .recognizable, assessment.viewpoint == .insideScene, assessment.splatArtifacts == .low {
-                        bestViewAttempts[bestViewAttempts.count - 1].status = .accepted
+                    let isGoodScene = assessment.content == .recognizable && assessment.viewpoint == .insideScene && assessment.splatArtifacts == .low
+                    let orientation: RenderedImageAnalysis.Orientation
+                    if isGoodScene {
+                        orientation = try await LanguageModelSession(model: model).respond(generating: BestViewOrientationAssessment.self) {
+                            """
+                            Determine only the image-plane orientation of this room.
+                            Upright means floors are below ceilings, walls and cabinets are vertical, and counters are horizontal.
+                            Use sidewaysLeft or sidewaysRight for a 90-degree rotation and upsideDown for a 180-degree rotation.
+                            """
+                            Attachment(image)
+                        }.content.orientation
+                    } else {
+                        orientation = assessment.orientation
+                    }
+                    try Task.checkCancellation()
+                    if isGoodScene, orientation == .upright {
+                        updateBestViewAttempt(id: currentAttemptID, status: .accepted)
                         let id = bestViewResults.count
                         bestViewMatrices.append(matrix)
                         bestViewResults.append(BestViewCandidate(
                             id: id,
                             image: image,
-                            orientation: assessment.orientation,
+                            cameraMatrix: matrix,
+                            orientation: orientation,
                             viewpoint: assessment.viewpoint,
                             splatArtifacts: assessment.splatArtifacts
                         ))
                         acceptedImages.append(image)
                     } else {
-                        bestViewAttempts[bestViewAttempts.count - 1].status = .rejected
+                        updateBestViewAttempt(id: currentAttemptID, status: .rejected(rejectionReason(for: assessment, orientation: orientation)))
                         bestViewRejectedCount += 1
+                        if isGoodScene, pending.allowsCorrection {
+                            let corrections = correctedCameraMatrices(matrix, for: orientation).map {
+                                (matrix: $0, allowsCorrection: false)
+                            }
+                            pendingMatrices.insert(contentsOf: corrections, at: attemptID)
+                            bestViewTotalCount = pendingMatrices.count
+                        }
                     }
                     if acceptedImages.count == 6 {
                         break
@@ -368,6 +399,56 @@ struct SplatDocumentContentView: View {
                 bestViewError = error.localizedDescription
             }
         }
+    }
+
+    private func updateBestViewAttempt(id: Int, status: BestViewAttemptStatus) {
+        guard let index = bestViewAttempts.firstIndex(where: { $0.id == id }) else {
+            return
+        }
+        bestViewAttempts[index].status = status
+    }
+
+    private func rejectionReason(for assessment: BestViewAssessment, orientation: RenderedImageAnalysis.Orientation) -> BestViewRejectionReason {
+        if assessment.content != .recognizable {
+            return .noContent
+        }
+        if assessment.viewpoint != .insideScene {
+            return .outside
+        }
+        if assessment.splatArtifacts != .low {
+            return .tooSplatty
+        }
+        switch orientation {
+        case .sidewaysLeft, .sidewaysRight:
+            return .sideways
+
+        case .upsideDown:
+            return .upsideDown
+
+        case .uncertain:
+            return .uncertainOrientation
+
+        case .upright:
+            return .noContent
+        }
+    }
+
+    private func correctedCameraMatrices(_ matrix: simd_float4x4, for orientation: RenderedImageAnalysis.Orientation) -> [simd_float4x4] {
+        let angles: [Float]
+        switch orientation {
+        case .upsideDown:
+            angles = [.pi]
+
+        case .sidewaysLeft:
+            angles = [-.pi / 2, .pi / 2]
+
+        case .sidewaysRight:
+            angles = [.pi / 2, -.pi / 2]
+
+        case .upright, .uncertain:
+            angles = []
+        }
+        return angles.map { matrix * simd_float4x4(zRotation: .radians($0)) }
     }
 
     nonisolated private static func lacksVisualContent(_ image: CGImage, backgroundColor: Color.Resolved) -> Bool {

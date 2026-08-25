@@ -11,6 +11,7 @@ struct ModelDownloadView: View {
 
     @State private var state: DownloadState = .checking
     @State private var downloadTask: URLSessionDownloadTask?
+    @State private var downloadOperation: Task<Void, Never>?
 
     private var modelURL: URL {
         destinationDirectory.appendingPathComponent("\(modelName).mlmodelc")
@@ -36,11 +37,7 @@ struct ModelDownloadView: View {
                     .controlSize(.small)
 
             case .notDownloaded:
-                Button("Download Model") {
-                    Task {
-                        await download()
-                    }
-                }
+                Button("Download Model", action: startDownload)
                 .buttonStyle(.borderedProminent)
 
             case let .downloading(progress, bytesWritten, totalBytes):
@@ -88,17 +85,21 @@ struct ModelDownloadView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Label(message, systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(.red)
-                    Button("Try Again") {
-                        Task {
-                            await download()
-                        }
-                    }
+                    Button("Try Again", action: startDownload)
                     .buttonStyle(.bordered)
                 }
             }
         }
         .task {
             checkModelExists()
+        }
+        .onDisappear(perform: cancelDownload)
+    }
+
+    private func startDownload() {
+        downloadOperation?.cancel()
+        downloadOperation = Task {
+            await download()
         }
     }
 
@@ -111,6 +112,7 @@ struct ModelDownloadView: View {
     }
 
     private func download() async {
+        defer { downloadOperation = nil }
         state = .downloading(progress: 0, bytesWritten: 0, totalBytes: 0)
 
         do {
@@ -132,7 +134,7 @@ struct ModelDownloadView: View {
             } else {
                 state = .error("Model file not found after extraction")
             }
-        } catch is CancellationError {
+        } catch where Task.isCancelled {
             state = .notDownloaded
         } catch {
             state = .error(error.localizedDescription)
@@ -199,6 +201,8 @@ struct ModelDownloadView: View {
     }
 
     private func cancelDownload() {
+        downloadOperation?.cancel()
+        downloadOperation = nil
         downloadTask?.cancel()
         downloadTask = nil
         state = .notDownloaded

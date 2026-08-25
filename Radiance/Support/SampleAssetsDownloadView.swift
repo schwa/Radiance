@@ -8,6 +8,7 @@ struct SampleAssetsDownloadView: View {
     @State private var state: DownloadState = .idle
     @State private var showFolderPicker = false
     @State private var downloadTask: URLSessionDownloadTask?
+    @State private var downloadOperation: Task<Void, Never>?
 
     private let assetsURL = URL(string: "https://raw.githubusercontent.com/sparkjsdev/spark/main/examples/assets.json")!
 
@@ -94,17 +95,24 @@ struct SampleAssetsDownloadView: View {
         ) { result in
             switch result {
             case .success(let url):
-                Task {
-                    await downloadAssets(to: url)
-                }
+                startDownload(to: url)
 
             case .failure(let error):
                 state = .error(error.localizedDescription)
             }
         }
+        .onDisappear(perform: cancelDownload)
+    }
+
+    private func startDownload(to destinationFolder: URL) {
+        downloadOperation?.cancel()
+        downloadOperation = Task {
+            await downloadAssets(to: destinationFolder)
+        }
     }
 
     private func downloadAssets(to destinationFolder: URL) async {
+        defer { downloadOperation = nil }
         state = .fetchingManifest
 
         do {
@@ -148,7 +156,7 @@ struct SampleAssetsDownloadView: View {
             // Reveal in Finder
             NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: destinationFolder.path)
             #endif
-        } catch is CancellationError {
+        } catch where Task.isCancelled {
             state = .idle
         } catch {
             state = .error(error.localizedDescription)
@@ -178,6 +186,8 @@ struct SampleAssetsDownloadView: View {
     }
 
     private func cancelDownload() {
+        downloadOperation?.cancel()
+        downloadOperation = nil
         downloadTask?.cancel()
         downloadTask = nil
         state = .idle

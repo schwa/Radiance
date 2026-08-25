@@ -350,15 +350,19 @@ AsyncView launches its action in Task.detached from a SwiftUI .task modifier. Wh
 ## 19: Download operations are not connected to Swift task cancellation
 
 +++
-status: open
+status: closed
 priority: high
 kind: bug
 labels: swift, concurrency, downloads, cancellation, effort:m
 created: 2026-08-25T02:12:55Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-08-25T02:26:08Z
+closed: 2026-08-25T02:26:08Z
 +++
 
 ModelDownloadView and SampleAssetsDownloadView bridge URLSession download tasks with checked continuations but do not connect cancellation of the awaiting Swift task to URLSessionDownloadTask.cancel(). Button actions also launch untracked tasks. Removing the view or cancelling its Swift task can leave downloads running and continuations waiting until URLSession completes independently.
+
+- `2026-08-25T02:26:08Z`: Regression test exempt: the current tests do not expose the URLSession delegate/download lifecycle or SwiftUI view disappearance. Verified task ownership, cancellation teardown, and macOS build.
+- `2026-08-25T02:26:08Z`: Tracked download operations, cancelled Swift and URLSession tasks together, and cancelled downloads when their views disappear.
 
 ---
 

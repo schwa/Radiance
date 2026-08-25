@@ -52,6 +52,8 @@ Expected: interactive multi-cloud rendering keeps splat sorting on the GPU.
 
 Actual: every relevant view change schedules CPU sorting before rendering.
 
+- `2026-08-25T02:26:36Z`: Inspected MetalSprocketsGaussianSplats GPU sorting APIs and the current multi-cloud render pass. Punting: GPUSortedSplatRenderPipeline accepts one GPUSplatCloud, while correct alpha compositing requires one global ordering across clouds; independently sorting each cloud would render incorrectly. Unblocker: add/identify a GPU sort API for multiple clouds or a supported way to combine their GPU buffers before sorting.
+
 ---
 
 ## 3: Single-cloud loading creates an unused CPU sort manager
@@ -271,6 +273,8 @@ updated: 2026-08-25T02:18:27Z
 +++
 
 The shared Xcode configuration enables approachable concurrency and MainActor default isolation but sets SWIFT_VERSION to 5.0 and leaves complete strict-concurrency checking disabled. Data-race diagnostics that the project intends to satisfy under Swift 6.2 are therefore not enforced consistently with the RadianceSupport package, which already uses Swift 6.
+
+- `2026-08-25T02:27:44Z`: Attempted Swift 6 plus complete strict-concurrency checking. Build failed in existing code: Shape conformance isolation, timer and Notification sending races, SplatScene initialization, URLSession delegate Sendable closures, and AsyncView metatype capture. Reverted the setting change; the issue remains open for an incremental migration.
 
 ---
 

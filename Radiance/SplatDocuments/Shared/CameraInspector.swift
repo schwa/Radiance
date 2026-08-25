@@ -13,7 +13,6 @@ struct CameraInspector: View {
     var boundsCenter: SIMD3<Float> = .zero
     var boundsSize: SIMD3<Float> = .zero
     var teleportDisabled: Bool = false
-    var findBestView: (() -> Void)?
 
     @Environment(\.displayScale) private var displayScale
 
@@ -32,10 +31,6 @@ struct CameraInspector: View {
                 teleportToCenter()
             }
             .disabled(teleportDisabled)
-
-            if let findBestView {
-                Button("Find Best View", systemImage: "sparkles", action: findBestView)
-            }
         }
 
         cameraTransformSection

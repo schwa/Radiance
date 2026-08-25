@@ -136,6 +136,14 @@ struct SplatDocumentContentView: View {
             subjectMask = nil
             classifyCurrentRenderingIfNeeded()
         }
+        .onChange(of: viewModel.analysisModelTransform) {
+            subjectMask = nil
+            classifyCurrentRenderingIfNeeded()
+        }
+        .onChange(of: viewModel.analysisCameraTransform) {
+            subjectMask = nil
+            classifyCurrentRenderingIfNeeded()
+        }
         .onChange(of: viewModel.verticalAngleOfView) {
             subjectMask = nil
             classifyCurrentRenderingIfNeeded()
@@ -187,6 +195,13 @@ struct SplatDocumentContentView: View {
         inspectorTab = mode == .multi ? .scene : .cloud
     }
 
+    private var renderCameraMatrix: Binding<simd_float4x4> {
+        Binding(
+            get: { viewModel.renderCameraMatrix },
+            set: { viewModel.cameraMatrix = viewModel.analysisCameraTransform.inverse * $0 }
+        )
+    }
+
     private func classifyCurrentRenderingIfNeeded() {
         guard mode == .single, viewModel.loadingState == .ready, classificationTask == nil else {
             return
@@ -197,7 +212,7 @@ struct SplatDocumentContentView: View {
             return
         }
 
-        let cameraMatrix = viewModel.cameraMatrix
+        let cameraMatrix = viewModel.renderCameraMatrix
         let sceneTransform = data.sceneTransform
         let viewSize = viewModel.viewSize
         let aspectRatio = max(viewSize.height, 1) / max(viewSize.width, 1)
@@ -241,7 +256,7 @@ struct SplatDocumentContentView: View {
                     return (classifications, subjectMask, visionAnalysis)
                 }.value
                 try Task.checkCancellation()
-                let renderingChanged = viewModel.cameraMatrix != cameraMatrix || viewModel.sceneTransform != sceneTransform || viewModel.viewSize != viewSize || viewModel.verticalAngleOfView != verticalAngleOfView || highlightsSubjects != shouldGenerateSubjectMask
+                let renderingChanged = viewModel.renderCameraMatrix != cameraMatrix || viewModel.renderSceneTransform != sceneTransform || viewModel.viewSize != viewSize || viewModel.verticalAngleOfView != verticalAngleOfView || highlightsSubjects != shouldGenerateSubjectMask
                 if !renderingChanged {
                     classifications = newClassifications.0
                     subjectMask = newClassifications.1
@@ -254,13 +269,13 @@ struct SplatDocumentContentView: View {
             }
 
             classificationTask = nil
-            if viewModel.cameraMatrix != cameraMatrix || viewModel.sceneTransform != sceneTransform || viewModel.viewSize != viewSize || viewModel.verticalAngleOfView != verticalAngleOfView || highlightsSubjects != shouldGenerateSubjectMask {
+            if viewModel.renderCameraMatrix != cameraMatrix || viewModel.renderSceneTransform != sceneTransform || viewModel.viewSize != viewSize || viewModel.verticalAngleOfView != verticalAngleOfView || highlightsSubjects != shouldGenerateSubjectMask {
                 classifyCurrentRenderingIfNeeded()
             }
         }
     }
     private func flipImage() {
-        viewModel.modelRotationZ = (viewModel.modelRotationZ + .pi).truncatingRemainder(dividingBy: 2 * .pi)
+        viewModel.analysisModelTransform = simd_float4x4(zRotation: .radians(.pi)) * viewModel.analysisModelTransform
         clearImageAnalysis()
     }
 
@@ -269,13 +284,22 @@ struct SplatDocumentContentView: View {
             return
         }
         viewModel.zoomToFit = false
-        viewModel.cameraMatrix *= simd_float4x4(zRotation: .degrees(Float(horizonAngleDegrees)))
+        let correction = simd_float4x4(zRotation: .degrees(-Float(horizonAngleDegrees)))
+        viewModel.analysisModelTransform = correction * viewModel.analysisModelTransform
+        clearImageAnalysis()
+        visionImageAnalysis = nil
+    }
+
+    private func resetAnalysis() {
+        viewModel.resetAnalysisTransforms()
         clearImageAnalysis()
         visionImageAnalysis = nil
     }
 
     private func moveCameraInside() {
-        viewModel.cameraMatrix = simd_float4x4(translation: viewModel.boundsCenter)
+        let center = (viewModel.renderSceneTransform * SIMD4<Float>(viewModel.boundsCenter, 1)).xyz
+        let desiredCamera = simd_float4x4(translation: center)
+        viewModel.analysisCameraTransform = desiredCamera * viewModel.cameraMatrix.inverse
         clearImageAnalysis()
     }
 
@@ -537,12 +561,12 @@ struct SplatDocumentContentView: View {
             [0, 0, 1],
             [-1, 0, 0]
         ]
-        let worldUp = (viewModel.sceneTransform * SIMD4<Float>(0, 1, 0, 0)).xyz
-        let transformedPositions = localPositions.map { (viewModel.sceneTransform * SIMD4<Float>($0, 1)).xyz }
+        let worldUp = (viewModel.renderSceneTransform * SIMD4<Float>(0, 1, 0, 0)).xyz
+        let transformedPositions = localPositions.map { (viewModel.renderSceneTransform * SIMD4<Float>($0, 1)).xyz }
         let worldPositions = [SIMD3<Float>.zero, viewModel.boundsCenter] + transformedPositions
         return worldPositions.flatMap { position in
             localDirections.map { localDirection in
-                let direction = (viewModel.sceneTransform * SIMD4<Float>(localDirection, 0)).xyz
+                let direction = (viewModel.renderSceneTransform * SIMD4<Float>(localDirection, 0)).xyz
                 return LookAt(position: position, target: position + direction, up: worldUp).cameraMatrix
             }
         }
@@ -554,7 +578,8 @@ struct SplatDocumentContentView: View {
         }
         viewModel.zoomToFit = false
         viewModel.cameraMode = .object
-        viewModel.cameraMatrix = bestViewMatrices[selectedBestView]
+        let desiredCamera = bestViewMatrices[selectedBestView]
+        viewModel.analysisCameraTransform = desiredCamera * viewModel.cameraMatrix.inverse
         clearImageAnalysis()
         clearBestViewSearch()
     }
@@ -616,7 +641,7 @@ struct SplatDocumentContentView: View {
         let aspectRatio = max(viewSize.height, 1) / max(viewSize.width, 1)
         let width = aspectRatio < 1 ? max(Int(512 / aspectRatio), 1) : 512
         let height = aspectRatio < 1 ? 512 : max(Int(512 * aspectRatio), 1)
-        let cameraMatrix = viewModel.cameraMatrix
+        let cameraMatrix = viewModel.renderCameraMatrix
         let verticalAngleOfView = viewModel.verticalAngleOfView
         let backgroundColor = viewModel.backgroundColor.resolve(in: .init())
         isDescribingImage = true
@@ -695,7 +720,7 @@ struct SplatDocumentContentView: View {
             let infos = viewModel.loadedClouds.map { loadedCloud in
                 (descriptor: loadedCloud.descriptor, modelTransform: simd_float4x4.identity)
             }
-            return (infos, viewModel.sceneTransform)
+            return (infos, viewModel.renderSceneTransform)
 
         case .multi:
             guard let doc = multiDocument else {
@@ -1001,10 +1026,10 @@ struct SplatDocumentContentView: View {
         SplatRenderView(
             mode: .single,
             clouds: [cloud],
-            sceneTransform: viewModel.sceneTransform,
+            sceneTransform: viewModel.renderSceneTransform,
             useSphericalHarmonics: viewModel.effectiveUseSphericalHarmonics,
             backgroundColor: viewModel.backgroundColorArray,
-            cameraMatrix: $viewModel.cameraMatrix,
+            cameraMatrix: renderCameraMatrix,
             verticalAngleOfView: $viewModel.verticalAngleOfView,
             cullBoundingBox: viewModel.cullBoundingBox,
             showBoundingBoxes: viewModel.showBoundingBoxes,
@@ -1068,7 +1093,7 @@ struct SplatDocumentContentView: View {
             BoundingBoxInfo(
                 id: UUID(),
                 bounds: bounds,
-                modelMatrix: viewModel.sceneTransform,
+                modelMatrix: viewModel.renderSceneTransform,
                 color: .white
             )
         ]
@@ -1149,6 +1174,7 @@ struct SplatDocumentContentView: View {
                 flipImage: flipImage,
                 moveCameraInside: moveCameraInside,
                 snapToHorizon: snapToHorizon,
+                resetAnalysis: resetAnalysis,
                 findBestView: findBestView
             ) {
                 showScreenshotSheet = true

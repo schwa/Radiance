@@ -219,6 +219,7 @@ struct InspectorView: View {
     let flipImage: () -> Void
     let moveCameraInside: () -> Void
     let snapToHorizon: () -> Void
+    let resetAnalysis: () -> Void
     let findBestView: (() -> Void)?
     // Multi-mode only: document and selection
     @Binding var document: SplatSceneDocument?
@@ -275,7 +276,9 @@ struct InspectorView: View {
                         describeImage: describeImage,
                         flipCamera: flipImage,
                         moveCameraInside: moveCameraInside,
-                        snapToHorizon: snapToHorizon
+                        snapToHorizon: snapToHorizon,
+                        findBestView: findBestView ?? { _ = () },
+                        resetAnalysis: resetAnalysis
                     )
                 }
             }
@@ -424,8 +427,7 @@ struct InspectorView: View {
             zoomToFitDisabled: viewModel.boundsSize == .zero,
             boundsCenter: selectedCloudBoundsCenter,
             boundsSize: viewModel.boundsSize,
-            teleportDisabled: !hasTeleportTarget,
-            findBestView: findBestView
+            teleportDisabled: !hasTeleportTarget
         )
     }
 
@@ -490,6 +492,7 @@ extension InspectorView {
         flipImage: @escaping () -> Void,
         moveCameraInside: @escaping () -> Void,
         snapToHorizon: @escaping () -> Void,
+        resetAnalysis: @escaping () -> Void,
         findBestView: @escaping () -> Void,
         onScreenshot: (() -> Void)? = nil
     ) {
@@ -508,6 +511,7 @@ extension InspectorView {
         self.flipImage = flipImage
         self.moveCameraInside = moveCameraInside
         self.snapToHorizon = snapToHorizon
+        self.resetAnalysis = resetAnalysis
         self.findBestView = findBestView
         self._document = .constant(nil)
         self._selectedCloud = .constant(nil)
@@ -539,6 +543,7 @@ extension InspectorView {
         self.flipImage = { _ = () }
         self.moveCameraInside = { _ = () }
         self.snapToHorizon = { _ = () }
+        self.resetAnalysis = { _ = () }
         self.findBestView = nil
         self._document = document
         self._selectedCloud = selectedCloud

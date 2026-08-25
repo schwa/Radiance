@@ -152,6 +152,16 @@ final class SplatViewModel {
 
     /// Computed scene transform matrix
     private(set) var sceneTransform = simd_float4x4(xRotation: .radians(.pi))
+    var analysisModelTransform = simd_float4x4.identity
+    var analysisCameraTransform = simd_float4x4.identity
+
+    var renderSceneTransform: simd_float4x4 { analysisModelTransform * sceneTransform }
+    var renderCameraMatrix: simd_float4x4 { analysisCameraTransform * cameraMatrix }
+
+    func resetAnalysisTransforms() {
+        analysisModelTransform = .identity
+        analysisCameraTransform = .identity
+    }
 
     private func updateSceneTransform() {
         let rotX = simd_float4x4(xRotation: .radians(modelRotationX))
@@ -617,6 +627,7 @@ final class SplatViewModel {
         boundsSize = .zero
         resourceAccess.stopAccessing()
         loadedCloudIDs = []
+        resetAnalysisTransforms()
     }
 
     deinit {

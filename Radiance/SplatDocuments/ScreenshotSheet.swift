@@ -168,7 +168,7 @@ struct ScreenshotSheet: View {
                 height: previewHeight,
                 cloudInfos: cloudInfos,
                 sceneTransform: sceneTransform,
-                cameraMatrix: viewModel.cameraMatrix,
+                cameraMatrix: viewModel.renderCameraMatrix,
                 verticalAngleOfView: viewModel.verticalAngleOfView,
                 backgroundColor: viewModel.backgroundColor.resolve(in: .init())
             )
@@ -195,7 +195,7 @@ struct ScreenshotSheet: View {
                 height: height,
                 cloudInfos: cloudInfos,
                 sceneTransform: sceneTransform,
-                cameraMatrix: viewModel.cameraMatrix,
+                cameraMatrix: viewModel.renderCameraMatrix,
                 verticalAngleOfView: viewModel.verticalAngleOfView,
                 backgroundColor: viewModel.backgroundColor.resolve(in: .init())
             )

@@ -156,8 +156,15 @@ struct AnalysisInspectorView: View {
     let flipCamera: () -> Void
     let moveCameraInside: () -> Void
     let snapToHorizon: () -> Void
+    let findBestView: () -> Void
+    let resetAnalysis: () -> Void
 
     var body: some View {
+        Section("View Analysis") {
+            Button("Find Best View", systemImage: "sparkles", action: findBestView)
+            Button("Reset Analysis", systemImage: "arrow.counterclockwise", action: resetAnalysis)
+        }
+
         Section("Subjects") {
             Toggle("Highlight Subjects", isOn: $highlightsSubjects)
         }
@@ -259,7 +266,9 @@ struct AnalysisInspectorView: View {
             describeImage: { _ = () },
             flipCamera: { _ = () },
             moveCameraInside: { _ = () },
-            snapToHorizon: { _ = () }
+            snapToHorizon: { _ = () },
+            findBestView: { _ = () },
+            resetAnalysis: { _ = () }
         )
     }
 }

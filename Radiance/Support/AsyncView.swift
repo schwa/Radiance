@@ -19,10 +19,10 @@ struct AsyncView<T: Sendable, Content>: View where Content: View {
             ProgressView()
                 .task {
                     do {
-                        let value = try await Task.detached {
-                            try await action()
-                        }.value
+                        let value = try await action()
                         result = .success(value)
+                    } catch is CancellationError {
+                        return
                     } catch {
                         result = .failure(error)
                     }

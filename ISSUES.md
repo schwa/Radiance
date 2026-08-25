@@ -337,17 +337,20 @@ Classification, Best View, and image-description operations wrap offscreen rende
 ## 18: AsyncView work survives SwiftUI task cancellation
 
 +++
-status: open
+status: closed
 priority: medium
 kind: bug
 labels: swift, concurrency, cancellation, effort:xs
 created: 2026-08-25T02:12:55Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-08-25T02:28:32Z
+closed: 2026-08-25T02:28:32Z
 +++
 
 AsyncView launches its action in Task.detached from a SwiftUI .task modifier. When the view disappears, SwiftUI cancels the parent task but the detached action continues independently and can retain resources or perform obsolete work.
 
 - `2026-08-25T02:18:13Z`: Related to #17: both involve detached work escaping parent cancellation, but #18 is the reusable AsyncView helper.
+- `2026-08-25T02:28:32Z`: Regression test exempt: AsyncView is a SwiftUI lifecycle wrapper and the current test target has no view-hosting cancellation harness; the fix is the direct structured await in its .task. Verified with a macOS build.
+- `2026-08-25T02:28:32Z`: Kept the action in SwiftUI's lifecycle task and ignored normal cancellation instead of detaching it.
 
 ---
 

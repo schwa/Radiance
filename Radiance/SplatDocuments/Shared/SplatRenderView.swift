@@ -218,6 +218,7 @@ struct InspectorView: View {
     let describeImage: () -> Void
     let flipImage: () -> Void
     let moveCameraInside: () -> Void
+    let snapToHorizon: () -> Void
     let findBestView: (() -> Void)?
     // Multi-mode only: document and selection
     @Binding var document: SplatSceneDocument?
@@ -273,7 +274,8 @@ struct InspectorView: View {
                         isDescribingImage: isDescribingImage,
                         describeImage: describeImage,
                         flipCamera: flipImage,
-                        moveCameraInside: moveCameraInside
+                        moveCameraInside: moveCameraInside,
+                        snapToHorizon: snapToHorizon
                     )
                 }
             }
@@ -487,6 +489,7 @@ extension InspectorView {
         describeImage: @escaping () -> Void,
         flipImage: @escaping () -> Void,
         moveCameraInside: @escaping () -> Void,
+        snapToHorizon: @escaping () -> Void,
         findBestView: @escaping () -> Void,
         onScreenshot: (() -> Void)? = nil
     ) {
@@ -504,6 +507,7 @@ extension InspectorView {
         self.describeImage = describeImage
         self.flipImage = flipImage
         self.moveCameraInside = moveCameraInside
+        self.snapToHorizon = snapToHorizon
         self.findBestView = findBestView
         self._document = .constant(nil)
         self._selectedCloud = .constant(nil)
@@ -534,6 +538,7 @@ extension InspectorView {
         self.describeImage = { _ = () }
         self.flipImage = { _ = () }
         self.moveCameraInside = { _ = () }
+        self.snapToHorizon = { _ = () }
         self.findBestView = nil
         self._document = document
         self._selectedCloud = selectedCloud

@@ -155,6 +155,7 @@ struct AnalysisInspectorView: View {
     let describeImage: () -> Void
     let flipCamera: () -> Void
     let moveCameraInside: () -> Void
+    let snapToHorizon: () -> Void
 
     var body: some View {
         Section("Subjects") {
@@ -209,7 +210,15 @@ struct AnalysisInspectorView: View {
         if let visionImageAnalysis {
             Section("Vision") {
                 if let horizonAngleDegrees = visionImageAnalysis.horizonAngleDegrees {
-                    LabeledContent("Horizon Angle", value: horizonAngleDegrees.formatted(.number.precision(.fractionLength(1))) + "°")
+                    LabeledContent("Horizon Angle") {
+                        HStack {
+                            Text(horizonAngleDegrees.formatted(.number.precision(.fractionLength(1))) + "°")
+                            if let horizonConfidence = visionImageAnalysis.horizonConfidence, horizonConfidence > 0.8 {
+                                Button("Snap", action: snapToHorizon)
+                                    .controlSize(.small)
+                            }
+                        }
+                    }
                     if let horizonConfidence = visionImageAnalysis.horizonConfidence {
                         LabeledContent("Horizon Confidence") {
                             Text(horizonConfidence, format: .percent.precision(.fractionLength(1)))
@@ -249,7 +258,8 @@ struct AnalysisInspectorView: View {
             isDescribingImage: false,
             describeImage: { _ = () },
             flipCamera: { _ = () },
-            moveCameraInside: { _ = () }
+            moveCameraInside: { _ = () },
+            snapToHorizon: { _ = () }
         )
     }
 }

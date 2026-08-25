@@ -264,6 +264,16 @@ struct SplatDocumentContentView: View {
         clearImageAnalysis()
     }
 
+    private func snapToHorizon() {
+        guard let analysis = visionImageAnalysis, let horizonAngleDegrees = analysis.horizonAngleDegrees, let confidence = analysis.horizonConfidence, confidence > 0.8 else {
+            return
+        }
+        viewModel.zoomToFit = false
+        viewModel.cameraMatrix *= simd_float4x4(zRotation: .degrees(Float(horizonAngleDegrees)))
+        clearImageAnalysis()
+        visionImageAnalysis = nil
+    }
+
     private func moveCameraInside() {
         viewModel.cameraMatrix = simd_float4x4(translation: viewModel.boundsCenter)
         clearImageAnalysis()
@@ -1138,6 +1148,7 @@ struct SplatDocumentContentView: View {
                 describeImage: describeCurrentRendering,
                 flipImage: flipImage,
                 moveCameraInside: moveCameraInside,
+                snapToHorizon: snapToHorizon,
                 findBestView: findBestView
             ) {
                 showScreenshotSheet = true

@@ -4,6 +4,7 @@ import Foundation
 import GeometryLite3D
 import Metal
 import MetalSprocketsGaussianSplats
+import MetalSprocketsGaussianSplatsDebug
 import MetalSprocketsGaussianSplatShaders
 import Observation
 import Sharp

@@ -11,6 +11,8 @@
 		451155A42EC3EF9700C04880 /* GeometryLite3D in Frameworks */ = {isa = PBXBuildFile; productRef = 451155A32EC3EF9700C04880 /* GeometryLite3D */; };
 		452D31B02F15791E0034906D /* Interaction3D in Frameworks */ = {isa = PBXBuildFile; productRef = 452D31AF2F15791E0034906D /* Interaction3D */; };
 		453915A62F74A5DF00D7A039 /* MetalSprocketsGaussianSplats in Frameworks */ = {isa = PBXBuildFile; productRef = 453915A52F74A5DF00D7A039 /* MetalSprocketsGaussianSplats */; };
+		45DB00012F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug in Frameworks */ = {isa = PBXBuildFile; productRef = 45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */; };
+		45DB00022F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug in Frameworks */ = {isa = PBXBuildFile; productRef = 45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */; };
 		454CBDFB2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 454CBDEC2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		45629B962F74A0A200463117 /* MetalSprocketsGaussianSplats in Frameworks */ = {isa = PBXBuildFile; productRef = 45629B952F74A0A200463117 /* MetalSprocketsGaussianSplats */; };
 		45629B982F74A0A200463117 /* Splats in Frameworks */ = {isa = PBXBuildFile; productRef = 45629B972F74A0A200463117 /* Splats */; };
@@ -112,6 +114,7 @@
 				456A49122F76029700E7F4A7 /* RadianceSupport in Frameworks */,
 				4502C67F2F451AE10030C282 /* Interaction3D in Frameworks */,
 				453915A62F74A5DF00D7A039 /* MetalSprocketsGaussianSplats in Frameworks */,
+				45DB00012F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,6 +128,7 @@
 				456A49142F76029E00E7F4A7 /* RadianceSupport in Frameworks */,
 				45E9BB732EF504C00016C77E /* Sharp in Frameworks */,
 				45629B962F74A0A200463117 /* MetalSprocketsGaussianSplats in Frameworks */,
+				45DB00022F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug in Frameworks */,
 				45E9BB762EF519850016C77E /* Sharp in Frameworks */,
 				45B4CDDB2EF86B8D00BFC1FC /* ZIPFoundation in Frameworks */,
 			);
@@ -183,6 +187,7 @@
 			packageProductDependencies = (
 				4502C67E2F451AE10030C282 /* Interaction3D */,
 				453915A52F74A5DF00D7A039 /* MetalSprocketsGaussianSplats */,
+				45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */,
 				456A49112F76029700E7F4A7 /* RadianceSupport */,
 			);
 			productName = GaussianSplatsPreviewExtension;
@@ -215,6 +220,7 @@
 				45B4CDDA2EF86B8D00BFC1FC /* ZIPFoundation */,
 				452D31AF2F15791E0034906D /* Interaction3D */,
 				45629B952F74A0A200463117 /* MetalSprocketsGaussianSplats */,
+				45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */,
 				45629B972F74A0A200463117 /* Splats */,
 				456A49132F76029E00E7F4A7 /* RadianceSupport */,
 			);
@@ -492,6 +498,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */;
 			productName = MetalSprocketsGaussianSplats;
+		};
+		45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */;
+			productName = MetalSprocketsGaussianSplatsDebug;
 		};
 		45629B952F74A0A200463117 /* MetalSprocketsGaussianSplats */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -3,6 +3,7 @@ import GeometryLite3D
 import Interaction3D
 import MetalSprockets
 import MetalSprocketsGaussianSplats
+import MetalSprocketsGaussianSplatsDebug
 import MetalSprocketsGaussianSplatShaders
 import MetalSprocketsSupport
 import MetalSprocketsUI
@@ -67,7 +68,7 @@ struct SplatRenderView: View {
     /// Render view with the appropriate camera controller applied based on camera mode
     @ViewBuilder
     private var cameraControlledRenderView: some View {
-        if mode == .single, viewModel.renderer != .sparkCPU, let cloud = clouds.first {
+        if mode == .single, debugParams == nil, viewModel.renderer != .sparkCPU, let cloud = clouds.first {
             let projection = PerspectiveProjection(
                 verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
                 depthMode: .standard(zClip: 0.01 ... 1_000)
@@ -78,8 +79,7 @@ struct SplatRenderView: View {
                 modelMatrix: sceneTransform,
                 projection: projection
             )
-            .splatRenderer(debugParams == nil ? viewModel.renderer : .sparkGPU)
-            .splatDebugParams(debugParams)
+            .splatRenderer(viewModel.renderer)
             .onGeometryChange(for: CGSize.self, of: \.size) { size in
                 if viewModel.viewSize != size {
                     viewModel.viewSize = size

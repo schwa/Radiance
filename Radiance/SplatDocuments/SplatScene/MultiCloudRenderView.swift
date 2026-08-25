@@ -3,6 +3,7 @@ import GeometryLite3D
 import Interaction3D
 import MetalSprockets
 import MetalSprocketsGaussianSplats
+import MetalSprocketsGaussianSplatsDebug
 import MetalSprocketsGaussianSplatShaders
 import MetalSprocketsUI
 import simd

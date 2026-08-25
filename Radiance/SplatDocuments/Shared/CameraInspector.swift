@@ -1,5 +1,6 @@
 #if os(iOS) || os(macOS)
 import GeometryLite3D
+import Interaction3D
 import simd
 import SwiftUI
 
@@ -7,132 +8,129 @@ struct CameraInspector: View {
     @Binding var cameraMode: CameraMode
     @Binding var zoomToFit: Bool
     @Binding var verticalAngleOfView: Double
+    @Binding var nearClip: Double
+    @Binding var farClip: Double
     @Binding var cameraMatrix: simd_float4x4
     var viewSize: CGSize
-    var zoomToFitDisabled: Bool = false
+    var zoomToFitDisabled = false
     var boundsCenter: SIMD3<Float> = .zero
-    var boundsSize: SIMD3<Float> = .zero
-    var teleportDisabled: Bool = false
+    var teleportDisabled = false
 
     @Environment(\.displayScale) private var displayScale
 
     var body: some View {
-        Section("Camera") {
+        Section("Control") {
             Picker("Mode", selection: $cameraMode) {
                 ForEach(CameraMode.allCases, id: \.self) { mode in
                     Text(mode.rawValue).tag(mode)
                 }
             }
             .pickerStyle(.segmented)
-            Toggle("Zoom to Fit", isOn: $zoomToFit)
+            .labelsHidden()
+
+            Text(controlDescription)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+
+        Section {
+            CameraPositionEditor(matrix: $cameraMatrix)
+                .disabled(teleportDisabled)
+            Text("Metres from cloud origin. Drag a label to scrub.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        } header: {
+            sectionHeader("Position", actionTitle: "Reset", action: resetPosition)
+        }
+
+        Section {
+            CameraOrientationEditor(matrix: $cameraMatrix)
+        } header: {
+            sectionHeader("Orientation", actionTitle: "Level", action: levelCamera)
+        }
+
+        Section("Lens") {
+            AngleOfViewControl(verticalDegrees: $verticalAngleOfView, aspectRatio: aspectRatio)
+            ClippingRangeControl(near: $nearClip, far: $farClip)
+            Text("Vertical \(verticalAngleOfView.formatted(.number.precision(.fractionLength(0))))° at \(aspectRatio.formatted(.number.precision(.fractionLength(2)))):1.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+
+        Section("Framing") {
+            Toggle("Keep cloud in frame", isOn: $zoomToFit)
                 .disabled(cameraMode != .object || zoomToFitDisabled)
-
-            Button("Teleport to Center") {
-                teleportToCenter()
-            }
-            .disabled(teleportDisabled)
+            LabeledContent("Orbit target", value: "cloud centre")
+                .foregroundStyle(.secondary)
         }
 
-        cameraTransformSection
-
-        Section("Field of View") {
-            Slider(value: $verticalAngleOfView, in: 30...120) {
-                Text("FOV")
-            }
-            LabeledContent("FOV", value: "\(Int(verticalAngleOfView))°")
-        }
-
-        viewportSection
-    }
-
-    private func teleportToCenter() {
-        cameraMatrix = simd_float4x4(translation: boundsCenter)
-    }
-
-    @ViewBuilder
-    private var cameraTransformSection: some View {
-        let position = cameraPosition
-        let rotation = cameraRotationDegrees
-
-        Section("Position") {
-            LabeledContent("X", value: position.x.formatted(.number.precision(.fractionLength(3))))
-                .monospacedDigit()
-            LabeledContent("Y", value: position.y.formatted(.number.precision(.fractionLength(3))))
-                .monospacedDigit()
-            LabeledContent("Z", value: position.z.formatted(.number.precision(.fractionLength(3))))
-                .monospacedDigit()
-        }
-        .animation(nil, value: position)
-
-        Section("Rotation") {
-            LabeledContent("Pitch", value: rotation.x.formatted(.number.precision(.fractionLength(1))) + "°")
-                .monospacedDigit()
-            LabeledContent("Yaw", value: rotation.y.formatted(.number.precision(.fractionLength(1))) + "°")
-                .monospacedDigit()
-            LabeledContent("Roll", value: rotation.z.formatted(.number.precision(.fractionLength(1))) + "°")
-                .monospacedDigit()
-        }
-        .animation(nil, value: rotation)
-    }
-
-    private var cameraPosition: SIMD3<Float> {
-        SIMD3<Float>(cameraMatrix.columns.3.x, cameraMatrix.columns.3.y, cameraMatrix.columns.3.z)
-    }
-
-    private var cameraRotationDegrees: SIMD3<Float> {
-        let m = cameraMatrix
-        let pitch = asin(-m.columns.2.y)
-        let yaw: Float
-        let roll: Float
-
-        if cos(pitch) > 0.0001 {
-            yaw = atan2(m.columns.2.x, m.columns.2.z)
-            roll = atan2(m.columns.0.y, m.columns.1.y)
-        } else {
-            yaw = atan2(-m.columns.0.z, m.columns.0.x)
-            roll = 0
-        }
-
-        let toDegrees: Float = 180.0 / .pi
-        return SIMD3<Float>(pitch * toDegrees, yaw * toDegrees, roll * toDegrees)
-    }
-
-    @ViewBuilder
-    private var viewportSection: some View {
-        Section("Viewport") {
-            LabeledContent("Size", value: "\(formattedDimension(viewSize.width)) × \(formattedDimension(viewSize.height))")
-            LabeledContent("Aspect Ratio", value: aspectRatioString(for: viewSize))
-            LabeledContent("Megapixels", value: megapixelsString(for: viewSize))
-            if displayScale != 1 {
-                LabeledContent("Scale", value: "\(Int(displayScale))x")
+        Section {
+            DisclosureGroup("Viewport readout") {
+                LabeledContent("Size", value: "\(formattedDimension(viewSize.width)) × \(formattedDimension(viewSize.height))")
+                LabeledContent("Aspect ratio", value: aspectRatio.formatted(.number.precision(.fractionLength(2))) + ":1")
+                LabeledContent("Megapixels", value: megapixels.formatted(.number.precision(.fractionLength(2))) + " MP")
+                if displayScale != 1 {
+                    LabeledContent("Scale", value: "\(Int(displayScale))x")
+                }
             }
         }
     }
 
-    private func aspectRatioString(for size: CGSize) -> String {
-        guard size.width > 0, size.height > 0 else {
-            return "—"
+    private var controlDescription: LocalizedStringKey {
+        switch cameraMode {
+        case .object:
+            "Orbit and zoom around the cloud centre."
+
+        case .room:
+            "Move through the scene at a fixed height."
+
+        case .spatialScene:
+            "Move and rotate freely through the spatial scene."
         }
-        let ratio = Double(size.width / size.height)
-        return ratio.formatted(.number.precision(.fractionLength(2))) + ":1"
     }
 
-    private func megapixelsString(for size: CGSize) -> String {
-        guard size.width > 0, size.height > 0 else {
-            return "—"
+    private var aspectRatio: Double {
+        guard viewSize.height > 0 else {
+            return 1
         }
-        let pixels = size.width * displayScale * size.height * displayScale
-        let megapixels = Double(pixels / 1_000_000)
-        return megapixels.formatted(.number.precision(.fractionLength(2))) + " MP"
+        return Double(viewSize.width / viewSize.height)
+    }
+
+    private var megapixels: Double {
+        guard viewSize.width > 0, viewSize.height > 0 else {
+            return 0
+        }
+        return Double(viewSize.width * displayScale * viewSize.height * displayScale / 1_000_000)
+    }
+
+    private func sectionHeader(_ title: LocalizedStringKey, actionTitle: LocalizedStringKey, action: @escaping () -> Void) -> some View {
+        HStack {
+            Text(title)
+            Spacer()
+            Button(actionTitle, action: action)
+                .textCase(nil)
+        }
+    }
+
+    private func resetPosition() {
+        var pose = CameraPose(matrix: cameraMatrix)
+        pose.position = boundsCenter
+        cameraMatrix = pose.matrix
+    }
+
+    private func levelCamera() {
+        var pose = CameraPose(matrix: cameraMatrix)
+        pose.rotationDegrees.x = 0
+        pose.rotationDegrees.z = 0
+        cameraMatrix = pose.matrix
     }
 
     private func formattedDimension(_ value: CGFloat) -> String {
-        let pts = Int(value)
-        if displayScale == 1 {
-            return "\(pts)"
+        let points = Int(value)
+        guard displayScale != 1 else {
+            return "\(points)"
         }
-        let px = Int(value * displayScale)
-        return "\(pts) (\(px))"
+        return "\(points) (\(Int(value * displayScale)))"
     }
 }
 #endif

@@ -11,14 +11,14 @@
 		451155A42EC3EF9700C04880 /* GeometryLite3D in Frameworks */ = {isa = PBXBuildFile; productRef = 451155A32EC3EF9700C04880 /* GeometryLite3D */; };
 		452D31B02F15791E0034906D /* Interaction3D in Frameworks */ = {isa = PBXBuildFile; productRef = 452D31AF2F15791E0034906D /* Interaction3D */; };
 		453915A62F74A5DF00D7A039 /* MetalSprocketsGaussianSplats in Frameworks */ = {isa = PBXBuildFile; productRef = 453915A52F74A5DF00D7A039 /* MetalSprocketsGaussianSplats */; };
-		45DB00012F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug in Frameworks */ = {isa = PBXBuildFile; productRef = 45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */; };
-		45DB00022F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug in Frameworks */ = {isa = PBXBuildFile; productRef = 45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */; };
 		454CBDFB2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 454CBDEC2EF753EC00A16AD0 /* GaussianSplatsPreviewExtension.appex */; platformFilters = (macos, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		45629B962F74A0A200463117 /* MetalSprocketsGaussianSplats in Frameworks */ = {isa = PBXBuildFile; productRef = 45629B952F74A0A200463117 /* MetalSprocketsGaussianSplats */; };
 		45629B982F74A0A200463117 /* Splats in Frameworks */ = {isa = PBXBuildFile; productRef = 45629B972F74A0A200463117 /* Splats */; };
 		456A49122F76029700E7F4A7 /* RadianceSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 456A49112F76029700E7F4A7 /* RadianceSupport */; };
 		456A49142F76029E00E7F4A7 /* RadianceSupport in Frameworks */ = {isa = PBXBuildFile; productRef = 456A49132F76029E00E7F4A7 /* RadianceSupport */; };
 		45B4CDDB2EF86B8D00BFC1FC /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 45B4CDDA2EF86B8D00BFC1FC /* ZIPFoundation */; };
+		45DB00012F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug in Frameworks */ = {isa = PBXBuildFile; productRef = 45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */; };
+		45DB00022F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug in Frameworks */ = {isa = PBXBuildFile; productRef = 45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */; };
 		45E9BB732EF504C00016C77E /* Sharp in Frameworks */ = {isa = PBXBuildFile; productRef = 45E9BB722EF504C00016C77E /* Sharp */; };
 		45E9BB762EF519850016C77E /* Sharp in Frameworks */ = {isa = PBXBuildFile; productRef = 45E9BB752EF519850016C77E /* Sharp */; };
 /* End PBXBuildFile section */
@@ -450,7 +450,7 @@
 			repositoryURL = "https://github.com/schwa/Interaction3D";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.8;
+				minimumVersion = 0.1.9;
 			};
 		};
 		45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */ = {
@@ -499,11 +499,6 @@
 			package = 45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */;
 			productName = MetalSprocketsGaussianSplats;
 		};
-		45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */;
-			productName = MetalSprocketsGaussianSplatsDebug;
-		};
 		45629B952F74A0A200463117 /* MetalSprocketsGaussianSplats */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */;
@@ -526,6 +521,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
 			productName = ZIPFoundation;
+		};
+		45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */;
+			productName = MetalSprocketsGaussianSplatsDebug;
 		};
 		45E9BB722EF504C00016C77E /* Sharp */ = {
 			isa = XCSwiftPackageProductDependency;

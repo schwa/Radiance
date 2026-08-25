@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/Interaction3D",
       "state" : {
-        "revision" : "21b66350ebfcaf1cad1466a532d6bdde33a86932",
-        "version" : "0.1.8"
+        "revision" : "f96337d25b98b593113162f2788ac040c8b37ecc",
+        "version" : "0.1.9"
       }
     },
     {

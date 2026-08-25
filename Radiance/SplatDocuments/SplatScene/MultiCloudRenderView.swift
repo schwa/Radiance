@@ -17,6 +17,8 @@ struct MultiCloudRenderView: View {
     let cameraMatrix: simd_float4x4
     let sceneTransform: simd_float4x4
     let verticalAngleOfView: Double
+    let nearClip: Double
+    let farClip: Double
     let useSphericalHarmonics: Bool
     let backgroundColor: [Float]
     var cullBoundingBox: BoundingBox3D?
@@ -84,8 +86,18 @@ struct MultiCloudRenderView: View {
             }
         }
         .onChange(of: verticalAngleOfView, initial: true) {
-            projection = PerspectiveProjection(verticalAngleOfView: .degrees(Float(verticalAngleOfView)), depthMode: .standard(zClip: 0.01 ... 1_000))
+            updateProjection()
         }
+        .onChange(of: nearClip) {
+            updateProjection()
+        }
+        .onChange(of: farClip) {
+            updateProjection()
+        }
+    }
+
+    private func updateProjection() {
+        projection = PerspectiveProjection(verticalAngleOfView: .degrees(Float(verticalAngleOfView)), depthMode: .standard(zClip: Float(nearClip) ... Float(farClip)))
     }
 
     private func requestSort() {

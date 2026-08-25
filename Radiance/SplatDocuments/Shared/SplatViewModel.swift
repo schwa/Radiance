@@ -190,6 +190,8 @@ final class SplatViewModel {
     var verticalAngleOfView: Double = 90 {
         didSet { updateCameraForZoomToFit() }
     }
+    var nearClip: Double = 0.01
+    var farClip: Double = 1_000
     var zoomToFit: Bool = false {
         didSet {
             if zoomToFit {

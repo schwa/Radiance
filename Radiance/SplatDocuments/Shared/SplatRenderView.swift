@@ -22,6 +22,8 @@ struct SplatRenderView: View {
 
     @Binding var cameraMatrix: simd_float4x4
     @Binding var verticalAngleOfView: Double
+    let nearClip: Double
+    let farClip: Double
 
     var cullBoundingBox: BoundingBox3D?
     var showBoundingBoxes: Bool = false
@@ -71,7 +73,7 @@ struct SplatRenderView: View {
         if mode == .single, debugParams == nil, viewModel.renderer != .sparkCPU, let cloud = clouds.first {
             let projection = PerspectiveProjection(
                 verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
-                depthMode: .standard(zClip: 0.01 ... 1_000)
+                depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
             )
             let renderView = SplatView(
                 splatCloud: cloud,
@@ -102,6 +104,8 @@ struct SplatRenderView: View {
                 cameraMatrix: cameraMatrix,
                 sceneTransform: sceneTransform,
                 verticalAngleOfView: verticalAngleOfView,
+                nearClip: nearClip,
+                farClip: farClip,
                 useSphericalHarmonics: useSphericalHarmonics,
                 backgroundColor: backgroundColor,
                 cullBoundingBox: cullBoundingBox,
@@ -150,7 +154,7 @@ struct SplatRenderView: View {
     private var boundingBoxOverlay: some View {
         let projection = PerspectiveProjection(
             verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
-            depthMode: .standard(zClip: 0.01 ... 1_000)
+            depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
         )
         let projectionMatrix = projection.projectionMatrix(for: viewportSize)
         let viewMatrix = cameraMatrix.inverse
@@ -422,13 +426,15 @@ struct InspectorView: View {
             cameraMode: $viewModel.cameraMode,
             zoomToFit: $viewModel.zoomToFit,
             verticalAngleOfView: $viewModel.verticalAngleOfView,
+            nearClip: $viewModel.nearClip,
+            farClip: $viewModel.farClip,
             cameraMatrix: $viewModel.cameraMatrix,
             viewSize: viewModel.viewSize,
             zoomToFitDisabled: viewModel.boundsSize == .zero,
             boundsCenter: selectedCloudBoundsCenter,
-            boundsSize: viewModel.boundsSize,
             teleportDisabled: !hasTeleportTarget
         )
+        .cameraControlStyle(.compact)
     }
 
     // MARK: - Render Content

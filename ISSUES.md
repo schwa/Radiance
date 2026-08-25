@@ -319,18 +319,21 @@ Single-document loading starts an unstructured task whenever fileURL changes. A 
 ## 17: Detached rendering work ignores analysis cancellation
 
 +++
-status: open
+status: closed
 priority: medium
 kind: bug
 labels: swift, concurrency, analysis, cancellation, effort:m
 created: 2026-08-25T02:12:55Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-08-25T02:33:29Z
+closed: 2026-08-25T02:33:29Z
 +++
 
 Classification, Best View, and image-description operations wrap offscreen rendering in Task.detached and then await the detached task. Detached tasks do not inherit cancellation from the stored analysis tasks, so cancelling or replacing analysis cannot stop the render and completion is delayed until that independent work finishes.
 
 - `2026-08-25T02:18:13Z`: Related to #20: both cover cancellation and stale work in Analysis; #17 concerns detached rendering and #20 image-description task ownership.
 - `2026-08-25T02:18:13Z`: Also related to #18, which tracks the same detached-task cancellation failure in AsyncView.
+- `2026-08-25T02:33:29Z`: Regression test exempt: offscreen Metal rendering and cancellation require a live GPU/render lifecycle not exposed by the current unit target. Verified structured cancellation checks and macOS build.
+- `2026-08-25T02:33:29Z`: Replaced detached renders with an explicitly concurrent structured helper that checks cancellation before and after rendering.
 
 ---
 

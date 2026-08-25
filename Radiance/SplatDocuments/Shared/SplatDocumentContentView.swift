@@ -225,37 +225,35 @@ struct SplatDocumentContentView: View {
 
         classificationTask = Task {
             do {
-                let newClassifications = try await Task.detached {
-                    let image = try ScreenshotSheet.renderToImage(
-                        width: width,
-                        height: height,
-                        cloudInfos: data.cloudInfos,
-                        sceneTransform: sceneTransform,
-                        cameraMatrix: cameraMatrix,
-                        verticalAngleOfView: verticalAngleOfView,
-                        backgroundColor: backgroundColor
-                    )
-                    async let observations = ClassifyImageRequest().perform(on: image)
-                    async let horizon = DetectHorizonRequest().perform(on: image)
-                    async let aesthetics = CalculateImageAestheticsScoresRequest().perform(on: image)
-                    let (classificationObservations, horizonObservation, aestheticsObservation) = try await (observations, horizon, aesthetics)
-                    let classifications = classificationObservations.prefix(5).map {
-                        ImageClassification(label: $0.identifier, confidence: $0.confidence)
-                    }
-                    let visionAnalysis = VisionImageAnalysis(
-                        horizonAngleDegrees: horizonObservation?.angle.converted(to: .degrees).value,
-                        horizonConfidence: horizonObservation?.confidence,
-                        aestheticsScore: aestheticsObservation.overallScore,
-                        isUtility: aestheticsObservation.isUtility
-                    )
-                    let subjectMask: CGImage?
-                    if shouldGenerateSubjectMask {
-                        subjectMask = try await Self.generateSubjectMask(for: image)
-                    } else {
-                        subjectMask = nil
-                    }
-                    return (classifications, subjectMask, visionAnalysis)
-                }.value
+                let image = try await Self.renderAnalysisImage(
+                    width: width,
+                    height: height,
+                    cloudInfos: data.cloudInfos,
+                    sceneTransform: sceneTransform,
+                    cameraMatrix: cameraMatrix,
+                    verticalAngleOfView: verticalAngleOfView,
+                    backgroundColor: backgroundColor
+                )
+                async let observations = ClassifyImageRequest().perform(on: image)
+                async let horizon = DetectHorizonRequest().perform(on: image)
+                async let aesthetics = CalculateImageAestheticsScoresRequest().perform(on: image)
+                let (classificationObservations, horizonObservation, aestheticsObservation) = try await (observations, horizon, aesthetics)
+                let topClassifications = classificationObservations.prefix(5).map {
+                    ImageClassification(label: $0.identifier, confidence: $0.confidence)
+                }
+                let visionAnalysis = VisionImageAnalysis(
+                    horizonAngleDegrees: horizonObservation?.angle.converted(to: .degrees).value,
+                    horizonConfidence: horizonObservation?.confidence,
+                    aestheticsScore: aestheticsObservation.overallScore,
+                    isUtility: aestheticsObservation.isUtility
+                )
+                let generatedSubjectMask: CGImage?
+                if shouldGenerateSubjectMask {
+                    generatedSubjectMask = try await Self.generateSubjectMask(for: image)
+                } else {
+                    generatedSubjectMask = nil
+                }
+                let newClassifications = (topClassifications, generatedSubjectMask, visionAnalysis)
                 try Task.checkCancellation()
                 let renderingChanged = viewModel.renderCameraMatrix != cameraMatrix || viewModel.renderSceneTransform != sceneTransform || viewModel.viewSize != viewSize || viewModel.verticalAngleOfView != verticalAngleOfView || highlightsSubjects != shouldGenerateSubjectMask
                 if !renderingChanged {
@@ -338,17 +336,15 @@ struct SplatDocumentContentView: View {
                     let currentAttemptID = attemptID
                     attemptID += 1
                     try Task.checkCancellation()
-                    let image = try await Task.detached {
-                        try ScreenshotSheet.renderToImage(
-                            width: 512,
-                            height: 512,
-                            cloudInfos: data.cloudInfos,
-                            sceneTransform: data.sceneTransform,
-                            cameraMatrix: matrix,
-                            verticalAngleOfView: verticalAngleOfView,
-                            backgroundColor: backgroundColor
-                        )
-                    }.value
+                    let image = try await Self.renderAnalysisImage(
+                        width: 512,
+                        height: 512,
+                        cloudInfos: data.cloudInfos,
+                        sceneTransform: data.sceneTransform,
+                        cameraMatrix: matrix,
+                        verticalAngleOfView: verticalAngleOfView,
+                        backgroundColor: backgroundColor
+                    )
                     try Task.checkCancellation()
                     bestViewAttempts.append(BestViewAttempt(id: currentAttemptID, image: image, cameraMatrix: matrix, status: .pending))
                     if Self.lacksVisualContent(image, backgroundColor: backgroundColor) {
@@ -653,17 +649,15 @@ struct SplatDocumentContentView: View {
                 isDescribingImage = false
             }
             do {
-                let image = try await Task.detached {
-                    try ScreenshotSheet.renderToImage(
-                        width: width,
-                        height: height,
-                        cloudInfos: data.cloudInfos,
-                        sceneTransform: data.sceneTransform,
-                        cameraMatrix: cameraMatrix,
-                        verticalAngleOfView: verticalAngleOfView,
-                        backgroundColor: backgroundColor
-                    )
-                }.value
+                let image = try await Self.renderAnalysisImage(
+                    width: width,
+                    height: height,
+                    cloudInfos: data.cloudInfos,
+                    sceneTransform: data.sceneTransform,
+                    cameraMatrix: cameraMatrix,
+                    verticalAngleOfView: verticalAngleOfView,
+                    backgroundColor: backgroundColor
+                )
                 try Task.checkCancellation()
                 let model = SystemLanguageModel.default
                 guard model.isAvailable else {
@@ -706,6 +700,22 @@ struct SplatDocumentContentView: View {
         var errorDescription: String? {
             "The Foundation Model is unavailable on this Mac."
         }
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    @concurrent nonisolated private static func renderAnalysisImage(width: Int, height: Int, cloudInfos: [(descriptor: SplatCloudDescriptor, modelTransform: simd_float4x4)], sceneTransform: simd_float4x4, cameraMatrix: simd_float4x4, verticalAngleOfView: Double, backgroundColor: Color.Resolved) async throws -> CGImage {
+        try Task.checkCancellation()
+        let image = try ScreenshotSheet.renderToImage(
+            width: width,
+            height: height,
+            cloudInfos: cloudInfos,
+            sceneTransform: sceneTransform,
+            cameraMatrix: cameraMatrix,
+            verticalAngleOfView: verticalAngleOfView,
+            backgroundColor: backgroundColor
+        )
+        try Task.checkCancellation()
+        return image
     }
 
     nonisolated private static func generateSubjectMask(for image: CGImage) async throws -> CGImage? {

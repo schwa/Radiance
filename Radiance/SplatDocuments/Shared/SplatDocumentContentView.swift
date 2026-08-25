@@ -994,7 +994,7 @@ struct SplatDocumentContentView: View {
     private var singleModeMainContent: some View {
         switch viewModel.loadingState {
         case .idle, .loading:
-            ContentUnavailableView("Loading…", systemImage: "circle.dotted")
+            ProgressView("Loading…")
 
         case .converting(let status):
             conversionContent(status: status)

@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/Interaction3D",
       "state" : {
-        "branch" : "main",
-        "revision" : "e50d33ec58b1b4078f5417efc6764c6eb582c58b"
+        "revision" : "21b66350ebfcaf1cad1466a532d6bdde33a86932",
+        "version" : "0.1.8"
       }
     },
     {
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/MetalSprocketsGaussianSplats",
       "state" : {
-        "branch" : "main",
-        "revision" : "f907984f6eba9dddfdbf58842b0f3671c6b6b89c"
+        "revision" : "8960349cc417d3d0149a9bbead87552386a75d6b",
+        "version" : "0.1.10"
       }
     },
     {
@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/SpaceMouse",
       "state" : {
-        "branch" : "main",
-        "revision" : "b5182a7d024b4e8206b4ff21842867d4cabc5fe3"
+        "revision" : "b5182a7d024b4e8206b4ff21842867d4cabc5fe3",
+        "version" : "0.0.1"
       }
     },
     {

@@ -449,16 +449,16 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/Interaction3D";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.8;
 			};
 		};
 		45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/MetalSprocketsGaussianSplats";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.10;
 			};
 		};
 		45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {

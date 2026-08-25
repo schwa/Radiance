@@ -2,6 +2,7 @@ import os
 import simd
 import Splats
 import SwiftUI
+import Synchronization
 import UniformTypeIdentifiers
 
 nonisolated private let logger = Logger(subsystem: "com.schwa.Radiance", category: "SplatSceneDocument")
@@ -51,7 +52,7 @@ struct SplatSceneDocument: FileDocument {
 
 /// Helper to manage security-scoped resource access for multiple URLs
 final class ScopedResourceAccess {
-    nonisolated(unsafe) private var accessingURLs: [URL] = []
+    private let accessingURLs = Mutex<[URL]>([])
 
     /// Start accessing all cloud URLs in a scene
     func startAccessing(scene: SplatScene) -> [ResolvedCloud] {
@@ -62,7 +63,7 @@ final class ScopedResourceAccess {
                 let (url, isStale) = try cloud.resolveURL()
                 #if os(macOS)
                 if url.startAccessingSecurityScopedResource() {
-                    accessingURLs.append(url)
+                    accessingURLs.withLock { $0.append(url) }
                 }
                 #endif
                 resolved.append(ResolvedCloud(
@@ -82,12 +83,15 @@ final class ScopedResourceAccess {
 
     /// Stop accessing all resources
     nonisolated func stopAccessing() {
+        let urls = accessingURLs.withLock { urls in
+            defer { urls.removeAll() }
+            return urls
+        }
         #if os(macOS)
-        for url in accessingURLs {
+        for url in urls {
             url.stopAccessingSecurityScopedResource()
         }
         #endif
-        accessingURLs.removeAll()
     }
 
     deinit {

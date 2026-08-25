@@ -277,15 +277,19 @@ The shared Xcode configuration enables approachable concurrency and MainActor de
 ## 15: Security-scoped resource tracking has unsynchronized mutable state
 
 +++
-status: open
+status: closed
 priority: high
 kind: bug
 labels: swift, concurrency, resources, effort:s
 created: 2026-08-25T02:12:55Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-08-25T02:21:18Z
+closed: 2026-08-25T02:21:18Z
 +++
 
 ScopedResourceAccess marks its mutable accessingURLs collection nonisolated(unsafe). startAccessing mutates the collection from the type's isolation context while nonisolated stopAccessing and deinit read and clear it without synchronization. Concurrent teardown or reload can race, potentially leaking access grants or stopping a resource while it is in use.
+
+- `2026-08-25T02:21:18Z`: Regression test exempt: security-scoped URL access and concurrent deinitialization are macOS lifecycle behavior without an existing injectable unit boundary. Verified with a macOS build.
+- `2026-08-25T02:21:18Z`: Protected resource URL ownership with Synchronization.Mutex and atomically drained tracked URLs.
 
 ---
 

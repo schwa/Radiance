@@ -9,6 +9,13 @@ struct ImageClassification: Identifiable, Equatable, Sendable {
     var id: String { label }
 }
 
+struct VisionImageAnalysis: Equatable, Sendable {
+    let horizonAngleDegrees: Double?
+    let horizonConfidence: Float?
+    let aestheticsScore: Float
+    let isUtility: Bool
+}
+
 @Generable
 struct RenderedImageAnalysis {
     @Generable
@@ -112,8 +119,16 @@ struct BestViewAssessment {
         case unrecognizable
     }
 
+    @Generable
+    enum SceneKind {
+        case indoor
+        case outdoor
+        case object
+        case uncertain
+    }
+
     let orientation: RenderedImageAnalysis.Orientation
-    let viewpoint: RenderedImageAnalysis.Viewpoint
+    let sceneKind: SceneKind
     let splatArtifacts: SplatArtifacts
     let content: Content
 }
@@ -130,6 +145,7 @@ struct BestViewSelection {
 
 struct AnalysisInspectorView: View {
     let classifications: [ImageClassification]
+    let visionImageAnalysis: VisionImageAnalysis?
     @Binding var highlightsSubjects: Bool
     let imageOrientation: RenderedImageAnalysis.Orientation?
     let imageViewpoint: RenderedImageAnalysis.Viewpoint?
@@ -190,6 +206,23 @@ struct AnalysisInspectorView: View {
             }
         }
 
+        if let visionImageAnalysis {
+            Section("Vision") {
+                if let horizonAngleDegrees = visionImageAnalysis.horizonAngleDegrees {
+                    LabeledContent("Horizon Angle", value: horizonAngleDegrees.formatted(.number.precision(.fractionLength(1))) + "°")
+                    if let horizonConfidence = visionImageAnalysis.horizonConfidence {
+                        LabeledContent("Horizon Confidence") {
+                            Text(horizonConfidence, format: .percent.precision(.fractionLength(1)))
+                        }
+                    }
+                } else {
+                    LabeledContent("Horizon", value: "Not Detected")
+                }
+                LabeledContent("Aesthetics Score", value: visionImageAnalysis.aestheticsScore.formatted(.number.precision(.fractionLength(2))))
+                LabeledContent("Image Type", value: visionImageAnalysis.isUtility ? "Utility" : "Aesthetic")
+            }
+        }
+
         Section("Classification") {
             ForEach(classifications) { classification in
                 LabeledContent(classification.label) {
@@ -207,6 +240,7 @@ struct AnalysisInspectorView: View {
                 ImageClassification(label: "train", confidence: 0.82),
                 ImageClassification(label: "railroad", confidence: 0.11)
             ],
+            visionImageAnalysis: VisionImageAnalysis(horizonAngleDegrees: 1.2, horizonConfidence: 0.91, aestheticsScore: 0.72, isUtility: false),
             highlightsSubjects: .constant(true),
             imageOrientation: .upright,
             imageViewpoint: .outsideLookingAtSubject,

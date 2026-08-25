@@ -17,14 +17,14 @@ struct BestViewCandidate: Identifiable {
     let image: CGImage
     let cameraMatrix: simd_float4x4
     let orientation: RenderedImageAnalysis.Orientation
-    let viewpoint: RenderedImageAnalysis.Viewpoint
+    let sceneKind: BestViewAssessment.SceneKind
     let splatArtifacts: BestViewAssessment.SplatArtifacts
 }
 
 enum BestViewRejectionReason {
     case empty
     case noContent
-    case outside
+    case object
     case tooSplatty
     case sideways
     case upsideDown
@@ -38,8 +38,8 @@ enum BestViewRejectionReason {
         case .noContent:
             "No Content"
 
-        case .outside:
-            "Outside"
+        case .object:
+            "Object"
 
         case .tooSplatty:
             "Too Splatty"
@@ -209,7 +209,7 @@ struct BestViewSheet: View {
                                     .scaledToFit()
                                     .overlay(alignment: .bottomLeading) {
                                         VStack(alignment: .leading) {
-                                            Text(candidate.viewpoint.bestViewTitle)
+                                            Text(candidate.sceneKind.title)
                                             Text(candidate.orientation.title)
                                             Text(candidate.splatArtifacts.title)
                                         }
@@ -240,22 +240,20 @@ struct BestViewSheet: View {
                                     }
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("View \(candidate.id + 1), \(candidate.viewpoint.bestViewTitle), \(candidate.orientation.title)")
+                            .accessibilityLabel("View \(candidate.id + 1), \(candidate.sceneKind.title), \(candidate.orientation.title)")
                             .accessibilityAddTraits(candidate.id == selectedCandidate ? .isSelected : [])
                         }
                     }
                     .padding()
                 }
             }
+            .navigationTitle("Best View")
             .toolbar {
-                ToolbarItem(placement: .principal) {
-                    HStack {
-                        Text("Best View")
-                            .font(.headline)
-                        if isSearching {
-                            ProgressView()
-                                .controlSize(.small)
-                        }
+                if isSearching {
+                    ToolbarItem {
+                        ProgressView()
+                            .controlSize(.small)
+                            .accessibilityLabel("Finding Best View")
                     }
                 }
                 ToolbarItem(placement: .cancellationAction) {
@@ -281,13 +279,16 @@ struct BestViewSheet: View {
     }
 }
 
-private extension RenderedImageAnalysis.Viewpoint {
-    var bestViewTitle: String {
+private extension BestViewAssessment.SceneKind {
+    var title: String {
         switch self {
-        case .insideScene:
-            "Scene"
+        case .indoor:
+            "Indoor Scene"
 
-        case .outsideLookingAtSubject:
+        case .outdoor:
+            "Outdoor Scene"
+
+        case .object:
             "Object"
 
         case .uncertain:

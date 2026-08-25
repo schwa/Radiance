@@ -208,6 +208,7 @@ struct InspectorView: View {
     @Bindable var viewModel: SplatViewModel
     @Binding var tab: InspectorTab
     let classifications: [ImageClassification]
+    let visionImageAnalysis: VisionImageAnalysis?
     @Binding var highlightsSubjects: Bool
     let imageOrientation: RenderedImageAnalysis.Orientation?
     let imageViewpoint: RenderedImageAnalysis.Viewpoint?
@@ -263,6 +264,7 @@ struct InspectorView: View {
                 case .analysis:
                     AnalysisInspectorView(
                         classifications: classifications,
+                        visionImageAnalysis: visionImageAnalysis,
                         highlightsSubjects: $highlightsSubjects,
                         imageOrientation: imageOrientation,
                         imageViewpoint: imageViewpoint,
@@ -475,6 +477,7 @@ extension InspectorView {
         singleViewModel: SplatViewModel,
         tab: Binding<InspectorTab>,
         classifications: [ImageClassification],
+        visionImageAnalysis: VisionImageAnalysis?,
         highlightsSubjects: Binding<Bool>,
         imageOrientation: RenderedImageAnalysis.Orientation?,
         imageViewpoint: RenderedImageAnalysis.Viewpoint?,
@@ -491,6 +494,7 @@ extension InspectorView {
         self.viewModel = singleViewModel
         self._tab = tab
         self.classifications = classifications
+        self.visionImageAnalysis = visionImageAnalysis
         self._highlightsSubjects = highlightsSubjects
         self.imageOrientation = imageOrientation
         self.imageViewpoint = imageViewpoint
@@ -520,6 +524,7 @@ extension InspectorView {
         self.viewModel = multiViewModel
         self._tab = tab
         self.classifications = []
+        self.visionImageAnalysis = nil
         self._highlightsSubjects = .constant(false)
         self.imageOrientation = nil
         self.imageViewpoint = nil

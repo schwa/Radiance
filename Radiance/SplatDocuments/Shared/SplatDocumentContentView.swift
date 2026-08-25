@@ -71,6 +71,7 @@ struct SplatDocumentContentView: View {
     @State private var showScreenshotSheet = false
     @State private var showExportDialog = false
     @State private var classifications: [ImageClassification] = []
+    @State private var visionImageAnalysis: VisionImageAnalysis?
     @State private var classificationError: String?
     @State private var imageOrientation: RenderedImageAnalysis.Orientation?
     @State private var imageViewpoint: RenderedImageAnalysis.Viewpoint?
@@ -218,23 +219,33 @@ struct SplatDocumentContentView: View {
                         verticalAngleOfView: verticalAngleOfView,
                         backgroundColor: backgroundColor
                     )
-                    let observations = try await ClassifyImageRequest().perform(on: image)
-                    let classifications = observations.prefix(5).map {
+                    async let observations = ClassifyImageRequest().perform(on: image)
+                    async let horizon = DetectHorizonRequest().perform(on: image)
+                    async let aesthetics = CalculateImageAestheticsScoresRequest().perform(on: image)
+                    let (classificationObservations, horizonObservation, aestheticsObservation) = try await (observations, horizon, aesthetics)
+                    let classifications = classificationObservations.prefix(5).map {
                         ImageClassification(label: $0.identifier, confidence: $0.confidence)
                     }
+                    let visionAnalysis = VisionImageAnalysis(
+                        horizonAngleDegrees: horizonObservation?.angle.converted(to: .degrees).value,
+                        horizonConfidence: horizonObservation?.confidence,
+                        aestheticsScore: aestheticsObservation.overallScore,
+                        isUtility: aestheticsObservation.isUtility
+                    )
                     let subjectMask: CGImage?
                     if shouldGenerateSubjectMask {
                         subjectMask = try await Self.generateSubjectMask(for: image)
                     } else {
                         subjectMask = nil
                     }
-                    return (classifications, subjectMask)
+                    return (classifications, subjectMask, visionAnalysis)
                 }.value
                 try Task.checkCancellation()
                 let renderingChanged = viewModel.cameraMatrix != cameraMatrix || viewModel.sceneTransform != sceneTransform || viewModel.viewSize != viewSize || viewModel.verticalAngleOfView != verticalAngleOfView || highlightsSubjects != shouldGenerateSubjectMask
                 if !renderingChanged {
                     classifications = newClassifications.0
                     subjectMask = newClassifications.1
+                    visionImageAnalysis = newClassifications.2
                 }
             } catch {
                 if !Task.isCancelled {
@@ -315,22 +326,26 @@ struct SplatDocumentContentView: View {
                         """
                         Analyze this Gaussian-splat rendering strictly.
                         Set content to recognizable only when the image clearly depicts a coherent room, place, or subject. Set it to unrecognizable for blank images, giant blobs, abstract colors, close-up splats, or images where no real content can be identified.
-                        Classify viewpoint as insideScene only when the image clearly looks like a view from within a room or environment. Do not infer insideScene merely because geometry surrounds the camera.
-                        Set splatArtifacts to high when floating, oversized, disconnected, blurry, or close-up splats obscure the scene; moderate when a few are visible; otherwise low.
+                        Classify sceneKind as indoor for views within buildings or enclosed spaces, outdoor for landscapes, streets, gardens, or open environments, object for an isolated subject viewed from outside, and uncertain only when evidence is insufficient. Geometry surrounding the camera does not by itself prove indoor or outdoor.
+                        Set splatArtifacts to high only when many unmistakable floating, oversized, disconnected, or blurry splats dominate or substantially block recognizable content. Ordinary Gaussian-splat softness, small edge artifacts, a few stray splats, holes, or reconstruction noise are moderate and must not be marked high. Use low when artifacts are negligible.
                         Classify orientation as image-plane rotation, not camera direction. Use architectural cues: floors belong below ceilings, walls and cabinets should be vertical, and counters should be horizontal. A recognizable room rotated 90 degrees is sideways even when its contents remain clear. Use uncertain only when there are no reliable gravity cues.
                         """
                         Attachment(image)
                     }.content
                     try Task.checkCancellation()
                     bestViewAttemptedCount += 1
-                    let isGoodScene = assessment.content == .recognizable && assessment.viewpoint == .insideScene && assessment.splatArtifacts == .low
+                    let isScene = [BestViewAssessment.SceneKind.indoor, .outdoor].contains(assessment.sceneKind)
+                    let isGoodScene = assessment.content == .recognizable && isScene && assessment.splatArtifacts != .high
                     let orientation: RenderedImageAnalysis.Orientation
                     if isGoodScene {
                         orientation = try await LanguageModelSession(model: model).respond(generating: BestViewOrientationAssessment.self) {
                             """
-                            Determine only the image-plane orientation of this room.
-                            Upright means floors are below ceilings, walls and cabinets are vertical, and counters are horizontal.
-                            Use sidewaysLeft or sidewaysRight for a 90-degree rotation and upsideDown for a 180-degree rotation.
+                            Determine only the image-plane orientation by first inferring the direction of gravity from multiple independent cues.
+                            For indoor scenes, ceiling fixtures belong in the upper part of an upright image; furniture rests toward the lower part; wall cabinets sit above counters; base cabinets and appliances stand on the floor.
+                            For outdoor scenes, sky is generally above ground, vegetation grows upward, and people, vehicles, buildings, and street furniture rest on the ground.
+                            A large visible ceiling, wide-angle distortion, tilted camera, sloped surface, or strong perspective does not make an image upside down. Do not rely on any single light, line, reflection, or isolated object.
+                            Return upsideDown only when the overall scene is inverted, such as overhead fixtures predominantly appearing below the room while furniture or floor-supported objects appear above them.
+                            Return upright when ceiling features are generally above counters, furniture, and floor-supported objects. Use sidewaysLeft or sidewaysRight only when the inferred gravity direction points sideways.
                             """
                             Attachment(image)
                         }.content.orientation
@@ -347,7 +362,7 @@ struct SplatDocumentContentView: View {
                             image: image,
                             cameraMatrix: matrix,
                             orientation: orientation,
-                            viewpoint: assessment.viewpoint,
+                            sceneKind: assessment.sceneKind,
                             splatArtifacts: assessment.splatArtifacts
                         ))
                         acceptedImages.append(image)
@@ -377,7 +392,7 @@ struct SplatDocumentContentView: View {
                 }
                 let response = try await LanguageModelSession(model: model).respond(generating: BestViewSelection.self) {
                     """
-                    Choose the best of these six interior Gaussian-splat views.
+                    Choose the best of these six indoor or outdoor Gaussian-splat scene views.
                     Prefer an upright, coherent scene with useful framing and the fewest visible floating-splat artifacts.
                     Return its zero-based candidate number in attachment order.
                     """
@@ -412,10 +427,13 @@ struct SplatDocumentContentView: View {
         if assessment.content != .recognizable {
             return .noContent
         }
-        if assessment.viewpoint != .insideScene {
-            return .outside
+        if assessment.sceneKind == .object {
+            return .object
         }
-        if assessment.splatArtifacts != .low {
+        if assessment.sceneKind == .uncertain {
+            return .noContent
+        }
+        if assessment.splatArtifacts == .high {
             return .tooSplatty
         }
         switch orientation {
@@ -1110,6 +1128,7 @@ struct SplatDocumentContentView: View {
                 singleViewModel: viewModel,
                 tab: $inspectorTab,
                 classifications: classifications,
+                visionImageAnalysis: visionImageAnalysis,
                 highlightsSubjects: $highlightsSubjects,
                 imageOrientation: imageOrientation,
                 imageViewpoint: imageViewpoint,

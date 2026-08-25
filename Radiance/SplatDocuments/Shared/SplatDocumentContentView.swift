@@ -775,15 +775,13 @@ struct SplatDocumentContentView: View {
             ) { _ in
                 // Export completion handled by system
             }
-            .onChange(of: fileURL, initial: true) { _, newURL in
+            .task(id: fileURL) {
                 classificationTask?.cancel()
                 classificationTask = nil
                 classifications = []
                 subjectMask = nil
                 classificationError = nil
-                Task {
-                    await viewModel.load(url: newURL, contentType: singleDocument?.contentType)
-                }
+                await viewModel.load(url: fileURL, contentType: singleDocument?.contentType)
             }
             .environment(viewModel)
     }

@@ -296,15 +296,19 @@ ScopedResourceAccess marks its mutable accessingURLs collection nonisolated(unsa
 ## 16: An older document load can overwrite a newer selection
 
 +++
-status: open
+status: closed
 priority: high
 kind: bug
 labels: swift, concurrency, documents, effort:m
 created: 2026-08-25T02:12:55Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-08-25T02:22:41Z
+closed: 2026-08-25T02:22:41Z
 +++
 
 Single-document loading starts an unstructured task whenever fileURL changes. A load suspends while computing bounds and no task handle or generation check distinguishes it from a later load. If the user changes documents quickly, an older operation can resume last and replace the newer cloud, bounds, and loading state.
+
+- `2026-08-25T02:22:41Z`: Regression test exempt: reproducing rapid FileDocument identity changes requires SwiftUI document lifecycle integration that the current unit target does not expose. Verified cancellation guards and macOS build.
+- `2026-08-25T02:22:41Z`: Made document loading lifecycle-bound with task(id:) and prevented cancelled loads from publishing bounds, clouds, or errors.
 
 ---
 

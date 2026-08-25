@@ -330,13 +330,17 @@ final class SplatViewModel {
             do {
                 let descriptor = try SplatCloudDescriptor(url: url)
 
-                // Compute bounds
-                if let computedBounds = try? await descriptor.computeBounds() {
-                    boundsCenter = computedBounds.center
-                    boundsSize = computedBounds.size
+                let computedBounds = try? await descriptor.computeBounds()
+                guard !Task.isCancelled else {
+                    return
                 }
+                let center = computedBounds?.center ?? .zero
+                let size = computedBounds?.size ?? .zero
 
                 let gpuCloud = try descriptor.loadGPUSplatCloud()
+                guard !Task.isCancelled else {
+                    return
+                }
                 #if os(visionOS)
                 ImmersiveState.shared.splatCloud = gpuCloud
                 #endif
@@ -345,13 +349,17 @@ final class SplatViewModel {
                     displayName: url.deletingPathExtension().lastPathComponent,
                     cloud: gpuCloud,
                     descriptor: descriptor,
-                    bounds: BoundingBox(min: boundsCenter - boundsSize / 2, max: boundsCenter + boundsSize / 2)
+                    bounds: BoundingBox(min: center - size / 2, max: center + size / 2)
                 )
+                boundsCenter = center
+                boundsSize = size
                 loadedClouds = [loadedCloud]
                 updateSceneTransform()
                 loadingState = .ready
             } catch {
-                loadingState = .error("Failed to load splat file: \(error.localizedDescription)")
+                if !Task.isCancelled {
+                    loadingState = .error("Failed to load splat file: \(error.localizedDescription)")
+                }
             }
         }
     }

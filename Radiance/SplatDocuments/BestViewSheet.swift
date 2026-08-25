@@ -92,48 +92,6 @@ struct BestViewSheet: View {
         }
     }
 
-    @ViewBuilder
-    private var attemptRibbon: some View {
-        if !attempts.isEmpty {
-            ScrollViewReader { proxy in
-                ScrollView(.horizontal) {
-                    LazyHStack {
-                        ForEach(attempts) { attempt in
-                            Image(decorative: attempt.image, scale: 1)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 96, height: 72)
-                                .clipShape(.rect(cornerRadius: 8))
-                                .overlay(alignment: .bottom) {
-                                    if case .rejected(let reason) = attempt.status {
-                                        Label(reason.title, systemImage: "xmark")
-                                            .font(.caption)
-                                            .bold()
-                                            .foregroundStyle(.white)
-                                            .padding(.horizontal, 6)
-                                            .padding(.vertical, 4)
-                                            .background(.red, in: .capsule)
-                                    }
-                                }
-                                .contextMenu {
-                                    copyContextMenu(image: attempt.image, cameraMatrix: attempt.cameraMatrix)
-                                }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                .scrollIndicators(.hidden)
-                .onChange(of: attempts.count) {
-                    if let id = attempts.last?.id {
-                        withAnimation {
-                            proxy.scrollTo(id, anchor: .trailing)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private func copyCameraTransform(_ matrix: simd_float4x4) {
         let columns = [matrix.columns.0, matrix.columns.1, matrix.columns.2, matrix.columns.3]
         let string = columns
@@ -198,7 +156,11 @@ struct BestViewSheet: View {
                 VStack {
                     Text(statusText)
                         .foregroundStyle(.secondary)
-                    attemptRibbon
+                    BestViewAttemptRibbonView(
+                        attempts: attempts,
+                        onCopyCamera: copyCameraTransform,
+                        onCopyImage: copyImageFile
+                    )
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())]) {
                         ForEach(candidates) { candidate in
                             Button {
@@ -279,6 +241,58 @@ struct BestViewSheet: View {
     }
 }
 
+private struct BestViewAttemptRibbonView: View {
+    let attempts: [BestViewAttempt]
+    let onCopyCamera: (simd_float4x4) -> Void
+    let onCopyImage: (CGImage) -> Void
+
+    var body: some View {
+        if !attempts.isEmpty {
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal) {
+                    LazyHStack {
+                        ForEach(attempts) { attempt in
+                            Image(decorative: attempt.image, scale: 1)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 96, height: 72)
+                                .clipShape(.rect(cornerRadius: 8))
+                                .overlay(alignment: .bottom) {
+                                    if case .rejected(let reason) = attempt.status {
+                                        Label(reason.title, systemImage: "xmark")
+                                            .font(.caption)
+                                            .bold()
+                                            .foregroundStyle(.white)
+                                            .padding(.horizontal, 6)
+                                            .padding(.vertical, 4)
+                                            .background(.red, in: .capsule)
+                                    }
+                                }
+                                .contextMenu {
+                                    Button("Copy Camera Transform", systemImage: "camera") {
+                                        onCopyCamera(attempt.cameraMatrix)
+                                    }
+                                    Button("Copy Image File", systemImage: "photo") {
+                                        onCopyImage(attempt.image)
+                                    }
+                                }
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .scrollIndicators(.hidden)
+                .onChange(of: attempts.count) {
+                    if let id = attempts.last?.id {
+                        withAnimation {
+                            proxy.scrollTo(id, anchor: .trailing)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 private extension BestViewAssessment.SceneKind {
     var title: String {
         switch self {
@@ -324,6 +338,14 @@ private extension BestViewAssessment.SplatArtifacts {
         selectedCandidate: .constant(nil),
         onConfirm: { _ = () },
         onCancel: { _ = () }
+    )
+}
+
+#Preview("Empty Attempt Ribbon") {
+    BestViewAttemptRibbonView(
+        attempts: [],
+        onCopyCamera: { _ = $0 },
+        onCopyImage: { _ = $0 }
     )
 }
 #endif

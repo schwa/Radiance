@@ -204,15 +204,19 @@ SplatRenderView organizes substantial camera, rendering, overlay, and inspector 
 ## 10: Best View attempt ribbon shares sheet invalidation
 
 +++
-status: open
+status: closed
 priority: medium
 kind: task
 labels: swiftui, performance, best-view, effort:s
 created: 2026-08-25T02:10:46Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-08-25T02:35:33Z
+closed: 2026-08-25T02:35:33Z
 +++
 
 The Best View attempt ribbon contains collection rendering, scroll coordination, animation, rejection overlays, and context menus inside BestViewSheet's invalidation boundary. Updates elsewhere in the sheet reevaluate this independent region.
+
+- `2026-08-25T02:35:33Z`: Regression test exempt: this is a pure SwiftUI view-boundary refactor with no behavior change. Verified with a macOS build and retained a dedicated preview.
+- `2026-08-25T02:35:33Z`: Extracted the attempt ribbon into a narrowly scoped view with its own invalidation boundary.
 
 ---
 

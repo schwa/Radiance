@@ -5,22 +5,29 @@ struct MobileLaunchView: View {
     @State private var showSettings = false
 
     @State private var openImport = false
+    @State private var isShowingWelcome = !UserDefaults.standard.bool(forKey: "doNotShowWelcomeAgain")
 
     var body: some View {
         NavigationStack {
-            documentLaunchView
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button("Settings", systemImage: "gear") {
-                            showSettings = true
+            if isShowingWelcome {
+                WelcomeView {
+                    isShowingWelcome = false
+                }
+            } else {
+                documentLaunchView
+                    .toolbar {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Settings", systemImage: "gear") {
+                                showSettings = true
+                            }
                         }
                     }
-                }
-                .sheet(isPresented: $showSettings) {
-                    NavigationStack {
-                        SettingsView()
+                    .sheet(isPresented: $showSettings) {
+                        NavigationStack {
+                            SettingsView()
+                        }
                     }
-                }
+            }
         }
     }
 

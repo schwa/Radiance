@@ -5,6 +5,7 @@ import AppKit
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("doNotShowWelcomeAgain") private var doNotShowWelcomeAgain = false
 
     var body: some View {
         form
@@ -38,6 +39,12 @@ struct SettingsView: View {
                 }
             }
             #endif
+            Section("Welcome") {
+                Button("Show Welcome Again") {
+                    doNotShowWelcomeAgain = false
+                }
+                .disabled(!doNotShowWelcomeAgain)
+            }
             Section("Image to Gaussian Splat Conversion") {
                 Text("Sharp is an Apple ML model that converts images to Gaussian Splats.")
                 Link("apple/ml-sharp on GitHub", destination: URL(string: "https://github.com/apple/ml-sharp")!)

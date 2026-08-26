@@ -24,12 +24,21 @@ struct SplashView: View {
     @State
     private var isFileImporterPresented = false
 
+    @State
+    private var isShowingWelcome = !UserDefaults.standard.bool(forKey: "doNotShowWelcomeAgain")
+
     private var recentDocumentURLs: [URL] {
         NSDocumentController.shared.recentDocumentURLs
     }
 
     var body: some View {
-        HStack(spacing: 0) {
+        if isShowingWelcome {
+            WelcomeView {
+                isShowingWelcome = false
+            }
+            .frame(width: 600, height: 400)
+        } else {
+            HStack(spacing: 0) {
             // Left panel - branding and actions
             VStack(spacing: 0) {
                 Spacer()
@@ -123,8 +132,9 @@ struct SplashView: View {
             }
             .frame(width: 360)
             .background(.background)
+            }
+            .frame(width: 600, height: 400)
         }
-        .frame(width: 600, height: 400)
     }
 
     private func openFile(at url: URL) {

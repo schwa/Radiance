@@ -45,6 +45,17 @@ struct SplatRenderView: View {
 
     @Environment(SplatViewModel.self) private var viewModel
 
+    private var clearColor: MTLClearColor {
+        guard backgroundColor.count == 4 else {
+            return MTLClearColor(red: 0, green: 0, blue: 0, alpha: 1)
+        }
+        return MTLClearColor(
+            red: Double(backgroundColor[0]),
+            green: Double(backgroundColor[1]),
+            blue: Double(backgroundColor[2]),
+            alpha: Double(backgroundColor[3])
+        )
+    }
     var body: some View {
         ZStack {
             // Main render view
@@ -82,6 +93,7 @@ struct SplatRenderView: View {
                 projection: projection
             )
             .splatRenderer(viewModel.renderer)
+            .metalClearColor(clearColor)
             .onGeometryChange(for: CGSize.self, of: \.size) { size in
                 if viewModel.viewSize != size {
                     viewModel.viewSize = size
@@ -439,11 +451,38 @@ struct InspectorView: View {
 
     // MARK: - Render Content
 
+    private var backgroundColorBinding: Binding<Color> {
+        guard mode == .multi else {
+            return $viewModel.backgroundColor
+        }
+        return Binding(
+            get: {
+                guard let color = document?.scene.renderSettings.backgroundColor, color.count == 4 else {
+                    return .black
+                }
+                return Color(red: Double(color[0]), green: Double(color[1]), blue: Double(color[2]), opacity: Double(color[3]))
+            },
+            set: { color in
+                let resolved = color.resolve(in: EnvironmentValues())
+                document?.scene.renderSettings.backgroundColor = [Float(resolved.red), Float(resolved.green), Float(resolved.blue), Float(resolved.opacity)]
+            }
+        )
+    }
+
+    private var useSphericalHarmonicsBinding: Binding<Bool> {
+        guard mode == .multi else {
+            return $viewModel.useSphericalHarmonics
+        }
+        return Binding(
+            get: { document?.scene.renderSettings.useSphericalHarmonics ?? true },
+            set: { document?.scene.renderSettings.useSphericalHarmonics = $0 }
+        )
+    }
     @ViewBuilder
     private var renderContent: some View {
         RenderInspector(
-            backgroundColor: $viewModel.backgroundColor,
-            useSphericalHarmonics: $viewModel.useSphericalHarmonics,
+            backgroundColor: backgroundColorBinding,
+            useSphericalHarmonics: useSphericalHarmonicsBinding,
             rendererSelectionDisabled: mode == .multi,
             supportsBoundsCulling: mode == .multi,
             sphericalHarmonicsDisabled: !viewModel.hasSphericalHarmonicsData,

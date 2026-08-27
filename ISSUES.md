@@ -816,3 +816,20 @@ updated: 2026-08-27T05:44:49Z
 Add a window or view that visualizes the colors of all splats as an image for inspecting the cloud’s color distribution and data.
 
 ---
+
+## 44: Spherical Harmonics control has no effect
+
++++
+status: new
+priority: medium
+kind: none
+created: 2026-08-27T06:51:53Z
++++
+
+The Spherical Harmonics control does not change the rendered splat appearance.
+
+Expected: Toggling the control enables or disables spherical-harmonic rendering.
+
+Actual: The rendered output does not change.
+
+---

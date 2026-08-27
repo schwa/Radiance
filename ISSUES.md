@@ -886,10 +886,12 @@ Actual: No bounding-box lines appear.
 ## 48: Replace SplatView with a unified RenderView for every renderer
 
 +++
-status: new
+status: closed
 priority: medium
 kind: none
 created: 2026-08-27T07:09:59Z
+updated: 2026-08-27T13:38:22Z
+closed: 2026-08-27T13:38:22Z
 +++
 
 Remove all Radiance rendering paths that use SplatView.

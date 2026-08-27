@@ -148,7 +148,7 @@ private struct SplatRenderingView: View {
             )
             .metalColorPixelFormat(.bgra8Unorm_srgb)
             .metalClearColor(clearColor))
-        } else if mode == .single, let cloud = clouds.first, viewModel.renderer == .sparkGPU {
+        } else if mode == .single, let cloud = clouds.first {
             cameraController(for: SingleCloudGuidedRenderView(
                 splatCloud: cloud,
                 cameraMatrix: cameraMatrix,
@@ -157,32 +157,16 @@ private struct SplatRenderingView: View {
                 nearClip: nearClip,
                 farClip: farClip,
                 useSphericalHarmonics: useSphericalHarmonics,
+                renderer: viewModel.renderer,
                 gridColor: gridColor,
                 showGrid: showReferenceGrid,
                 showAxes: showAxisLines,
                 boundingBoxes: [],
+                onFrame: viewModel.recordFrame,
             )
             .metalColorPixelFormat(.bgra8Unorm_srgb)
             .metalClearColor(clearColor)
             .metalDepthStencilPixelFormat(.depth32Float))
-        } else if mode == .single, viewModel.renderer != .sparkCPU, let cloud = clouds.first {
-            let projection = PerspectiveProjection(
-                verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
-                depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
-            )
-            cameraController(for: SplatView(
-                splatCloud: cloud,
-                cameraMatrix: cameraMatrix,
-                modelMatrix: sceneTransform,
-                projection: projection
-            )
-            .splatRenderer(viewModel.renderer)
-            .metalClearColor(clearColor)
-            .onGeometryChange(for: CGSize.self, of: \.size) { size in
-                if viewModel.viewSize != size {
-                    viewModel.viewSize = size
-                }
-            })
         } else if let sortManager {
             cameraController(for: MultiCloudRenderView(
                 clouds: clouds,
@@ -192,6 +176,9 @@ private struct SplatRenderingView: View {
                 nearClip: nearClip,
                 farClip: farClip,
                 useSphericalHarmonics: useSphericalHarmonics,
+                gridColor: gridColor,
+                showGrid: showReferenceGrid,
+                showAxes: showAxisLines,
                 backgroundColor: backgroundColor,
                 cullBoundingBox: cullBoundingBox,
                 sortManager: sortManager,
@@ -230,14 +217,20 @@ private struct SingleCloudGuidedRenderView: View {
     let nearClip: Double
     let farClip: Double
     let useSphericalHarmonics: Bool
+    let renderer: SplatRenderer
     let gridColor: Color
     let showGrid: Bool
     let showAxes: Bool
     let boundingBoxes: [BoundingBoxInfo]
+    let onFrame: () -> Void
 
+    @State private var sortedIndices: SplatIndices?
+    @State private var sortManager: AsyncSortManager<SparkSplat>
+    @State private var stochasticSeed: UInt32 = 0
+    @State private var pointSplatStatistics = PointSplatStatistics()
     @State private var resources: GPUSortResources
 
-    init(splatCloud: GPUSplatCloud<SparkSplat>, cameraMatrix: simd_float4x4, modelMatrix: simd_float4x4, verticalAngleOfView: Double, nearClip: Double, farClip: Double, useSphericalHarmonics: Bool, gridColor: Color, showGrid: Bool, showAxes: Bool, boundingBoxes: [BoundingBoxInfo]) {
+    init(splatCloud: GPUSplatCloud<SparkSplat>, cameraMatrix: simd_float4x4, modelMatrix: simd_float4x4, verticalAngleOfView: Double, nearClip: Double, farClip: Double, useSphericalHarmonics: Bool, renderer: SplatRenderer, gridColor: Color, showGrid: Bool, showAxes: Bool, boundingBoxes: [BoundingBoxInfo], onFrame: @escaping () -> Void) {
         self.splatCloud = splatCloud
         self.cameraMatrix = cameraMatrix
         self.modelMatrix = modelMatrix
@@ -245,13 +238,16 @@ private struct SingleCloudGuidedRenderView: View {
         self.nearClip = nearClip
         self.farClip = farClip
         self.useSphericalHarmonics = useSphericalHarmonics
+        self.renderer = renderer
         self.gridColor = gridColor
         self.showGrid = showGrid
         self.showAxes = showAxes
         self.boundingBoxes = boundingBoxes
+        self.onFrame = onFrame
 
         do {
             let device = splatCloud.splats.unsafeMTLBuffer.device
+            _sortManager = State(initialValue: try AsyncSortManager(device: device, splatCloud: splatCloud, capacity: splatCloud.count, preallocatedBufferCount: 6))
             _resources = State(initialValue: try GPUSortResources(device: device, capacity: splatCloud.count))
         } catch {
             fatalError("Failed to create GPU sort resources: \(error)")
@@ -267,18 +263,71 @@ private struct SingleCloudGuidedRenderView: View {
             let projectionMatrix = projection.projectionMatrix(for: drawableSize)
             let drawableSize = SIMD2<Float>(Float(drawableSize.width), Float(drawableSize.height))
 
-            try GuidedSplatRenderPass(
-                splatCloud: splatCloud,
-                projectionMatrix: projectionMatrix,
-                modelMatrix: modelMatrix,
-                cameraMatrix: cameraMatrix,
-                drawableSize: drawableSize,
-                useSphericalHarmonics: useSphericalHarmonics,
-                gridColor: showGrid ? color : nil,
-                showAxes: showAxes,
-                boxes: boxInstances,
-                resources: resources
-            )
+            switch renderer {
+            case .sparkCPU:
+                if let sortedIndices {
+                    try RenderPass {
+                        if showGrid {
+                            GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: color, backgroundColor: .zero, backfaceColor: .zero)
+                        }
+                        try SparkSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, configuration: .init(useSphericalHarmonics: useSphericalHarmonics), sortedIndices: sortedIndices)
+                        if showAxes {
+                            try AxisLinesRenderPipeline(mvpMatrix: projectionMatrix * cameraMatrix.inverse, viewMatrix: cameraMatrix.inverse, projectionMatrix: projectionMatrix, viewportSize: drawableSize)
+                        }
+                    }
+                }
+
+            case .sparkGPU:
+                try GuidedSplatRenderPass(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, useSphericalHarmonics: useSphericalHarmonics, gridColor: showGrid ? color : nil, showAxes: showAxes, boxes: boxInstances, resources: resources)
+
+            case .tileBased:
+                try TileBasedSplatPass(splatCloud: splatCloud, projection: projection, drawableSize: drawableSize, cameraMatrix: cameraMatrix, modelMatrix: modelMatrix)
+                SceneGuidesRenderPass(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, gridColor: showGrid ? color : nil, showAxes: showAxes)
+
+            case .stochastic:
+                try RenderPass {
+                    if showGrid {
+                        GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: color, backgroundColor: .zero, backfaceColor: .zero)
+                    }
+                    try StochasticSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, frameTime: stochasticSeed, useSphericalHarmonics: useSphericalHarmonics)
+                        .depthCompare(function: .less, enabled: true)
+                    if showAxes {
+                        try AxisLinesRenderPipeline(mvpMatrix: projectionMatrix * cameraMatrix.inverse, viewMatrix: cameraMatrix.inverse, projectionMatrix: projectionMatrix, viewportSize: drawableSize)
+                    }
+                }
+
+            case .pointSplat:
+                try PointSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, frameIndex: 0, configuration: .init(depthRange: Float(nearClip) ... Float(farClip), statistics: pointSplatStatistics))
+                SceneGuidesRenderPass(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, gridColor: showGrid ? color : nil, showAxes: showAxes)
+            }
+        }
+        .onFrameTimingChange { _ in
+            onFrame()
+        }
+        .task {
+            if renderer == .sparkCPU {
+                sortManager.requestSort(SortParameters(camera: cameraMatrix, model: modelMatrix))
+            }
+            for await indices in sortManager.managedSortedIndicesStream(pendingReleaseDepth: 3) {
+                sortedIndices = indices
+            }
+        }
+        .onChange(of: cameraMatrix) {
+            stochasticSeed &+= 1
+            if renderer == .sparkCPU {
+                sortManager.requestSort(SortParameters(camera: cameraMatrix, model: modelMatrix))
+            }
+        }
+        .onChange(of: modelMatrix) {
+            stochasticSeed &+= 1
+            if renderer == .sparkCPU {
+                sortManager.requestSort(SortParameters(camera: cameraMatrix, model: modelMatrix))
+            }
+        }
+        .onChange(of: renderer) {
+            if renderer == .sparkCPU {
+                sortManager.requestSort(SortParameters(camera: cameraMatrix, model: modelMatrix))
+            }
         }
     }
 
@@ -344,6 +393,27 @@ private struct GuidedSplatRenderPass: Element {
                 }
                 if !boxes.isEmpty {
                     AxisAlignedWireframeBoxesRenderPipeline(mvpMatrix: projectionMatrix * cameraMatrix.inverse, boxes: boxes)
+                }
+            }
+        }
+    }
+}
+
+private struct SceneGuidesRenderPass: Element {
+    let projectionMatrix: simd_float4x4
+    let cameraMatrix: simd_float4x4
+    let drawableSize: SIMD2<Float>
+    let gridColor: SIMD4<Float>?
+    let showAxes: Bool
+
+    var body: some Element {
+        get throws {
+            try RenderPass {
+                if let gridColor {
+                    GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: gridColor, backgroundColor: .zero, backfaceColor: .zero)
+                }
+                if showAxes {
+                    try AxisLinesRenderPipeline(mvpMatrix: projectionMatrix * cameraMatrix.inverse, viewMatrix: cameraMatrix.inverse, projectionMatrix: projectionMatrix, viewportSize: drawableSize)
                 }
             }
         }

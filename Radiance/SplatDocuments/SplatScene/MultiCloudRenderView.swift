@@ -2,6 +2,7 @@
 import GeometryLite3D
 import Interaction3D
 import MetalSprockets
+import MetalSprocketsAddOns
 import MetalSprocketsGaussianSplats
 import MetalSprocketsGaussianSplatsDebug
 import MetalSprocketsGaussianSplatShaders
@@ -20,6 +21,9 @@ struct MultiCloudRenderView: View {
     let nearClip: Double
     let farClip: Double
     let useSphericalHarmonics: Bool
+    let gridColor: Color
+    let showGrid: Bool
+    let showAxes: Bool
     let backgroundColor: [Float]
     var cullBoundingBox: BoundingBox3D?
     var sortManager: AsyncSortManager<SparkSplat>
@@ -50,6 +54,9 @@ struct MultiCloudRenderView: View {
     }
 
     var body: some View {
+        let resolvedGridColor = gridColor.resolve(in: .init())
+        let gridColor = SIMD4<Float>(Float(resolvedGridColor.red), Float(resolvedGridColor.green), Float(resolvedGridColor.blue), Float(resolvedGridColor.opacity))
+
         RenderView { _, drawableSize in
             onFrame?()
             onDrawableSizeChange?(drawableSize)
@@ -60,6 +67,8 @@ struct MultiCloudRenderView: View {
                 projection: projection,
                 drawableSize: drawableSize,
                 useSphericalHarmonics: useSphericalHarmonics,
+                gridColor: showGrid ? gridColor : nil,
+                showAxes: showAxes,
                 cullBoundingBox: cullBoundingBox,
                 sortedIndices: sortedIndices,
                 debugParams: debugParams
@@ -113,6 +122,8 @@ struct MultiCloudRenderPass: Element {
     let projection: any ProjectionProtocol
     let drawableSize: CGSize
     let useSphericalHarmonics: Bool
+    let gridColor: SIMD4<Float>?
+    let showAxes: Bool
     var cullBoundingBox: BoundingBox3D?
     var sortedIndices: SplatIndices?
 
@@ -124,6 +135,9 @@ struct MultiCloudRenderPass: Element {
             if !clouds.isEmpty, let sortedIndices {
                 let projectionMatrix = projection.projectionMatrix(for: drawableSize)
                 try RenderPass {
+                    if let gridColor {
+                        GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: gridColor, backgroundColor: .zero, backfaceColor: .zero)
+                    }
                     if let debugParams {
                         try SparkSplatDebugRenderPipeline(
                             splatClouds: clouds,
@@ -148,6 +162,10 @@ struct MultiCloudRenderPass: Element {
                             ),
                             sortedIndices: sortedIndices
                         )
+                    }
+                    if showAxes {
+                        let viewMatrix = cameraMatrix.inverse
+                        try AxisLinesRenderPipeline(mvpMatrix: projectionMatrix * viewMatrix, viewMatrix: viewMatrix, projectionMatrix: projectionMatrix, viewportSize: SIMD2<Float>(drawableSize))
                     }
                 }
             } else {

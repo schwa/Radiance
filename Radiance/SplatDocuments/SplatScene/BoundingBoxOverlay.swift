@@ -12,6 +12,8 @@ struct BoundingBoxInfo: Identifiable {
 }
 
 struct ReferenceGrid: View {
+    let showGrid: Bool
+    let showAxes: Bool
     let modelMatrix: simd_float4x4
     let viewMatrix: simd_float4x4
     let projectionMatrix: simd_float4x4
@@ -20,22 +22,29 @@ struct ReferenceGrid: View {
     var body: some View {
         Canvas { context, _ in
             let matrix = projectionMatrix * viewMatrix * modelMatrix
-            for coordinate in -10 ... 10 {
-                drawLine(from: SIMD3(Float(coordinate), 0, -10), to: SIMD3(Float(coordinate), 0, 10), matrix: matrix, context: context)
-                drawLine(from: SIMD3(-10, 0, Float(coordinate)), to: SIMD3(10, 0, Float(coordinate)), matrix: matrix, context: context)
+            if showGrid {
+                for coordinate in -10 ... 10 {
+                    drawLine(from: SIMD3(Float(coordinate), 0, -10), to: SIMD3(Float(coordinate), 0, 10), matrix: matrix, color: .secondary.opacity(0.5), context: context)
+                    drawLine(from: SIMD3(-10, 0, Float(coordinate)), to: SIMD3(10, 0, Float(coordinate)), matrix: matrix, color: .secondary.opacity(0.5), context: context)
+                }
+            }
+            if showAxes {
+                drawLine(from: .zero, to: SIMD3(10, 0, 0), matrix: matrix, color: .red, context: context)
+                drawLine(from: .zero, to: SIMD3(0, 10, 0), matrix: matrix, color: .green, context: context)
+                drawLine(from: .zero, to: SIMD3(0, 0, 10), matrix: matrix, color: .blue, context: context)
             }
         }
         .allowsHitTesting(false)
     }
 
-    private func drawLine(from start: SIMD3<Float>, to end: SIMD3<Float>, matrix: simd_float4x4, context: GraphicsContext) {
+    private func drawLine(from start: SIMD3<Float>, to end: SIMD3<Float>, matrix: simd_float4x4, color: Color, context: GraphicsContext) {
         guard let start = project(start, matrix: matrix), let end = project(end, matrix: matrix) else {
             return
         }
         var path = Path()
         path.move(to: start)
         path.addLine(to: end)
-        context.stroke(path, with: .color(.secondary.opacity(0.5)), lineWidth: 1)
+        context.stroke(path, with: .color(color), lineWidth: 1)
     }
 
     private func project(_ point: SIMD3<Float>, matrix: simd_float4x4) -> CGPoint? {

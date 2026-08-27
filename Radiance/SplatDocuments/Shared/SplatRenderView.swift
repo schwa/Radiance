@@ -29,6 +29,7 @@ struct SplatRenderView: View {
     var cullBoundingBox: BoundingBox3D?
     var showBoundingBoxes: Bool = false
     var showReferenceGrid: Bool = false
+    var showAxisLines: Bool = false
     var boundingBoxInfos: [BoundingBoxInfo] = []
 
     // Debug rendering (nil = normal rendering, non-nil = debug mode)
@@ -61,13 +62,15 @@ struct SplatRenderView: View {
                 cameraMode: cameraMode
             )
 
-            if showReferenceGrid {
+            if showReferenceGrid || showAxisLines {
                 GeometryReader { proxy in
                     let projection = PerspectiveProjection(
                         verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
                         depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
                     )
                     ReferenceGrid(
+                        showGrid: showReferenceGrid,
+                        showAxes: showAxisLines,
                         modelMatrix: sceneTransform,
                         viewMatrix: cameraMatrix.inverse,
                         projectionMatrix: projection.projectionMatrix(for: proxy.size),
@@ -588,6 +591,7 @@ struct InspectorView: View {
             sphericalHarmonicsWarning: sphericalHarmonicsWarning,
             showBoundingBoxes: $viewModel.showBoundingBoxes,
             showReferenceGrid: $viewModel.showReferenceGrid,
+            showAxisLines: $viewModel.showAxisLines,
             debugModeEnabled: $viewModel.debugModeEnabled,
             debugMode: $viewModel.debugMode,
             lastSortEvent: viewModel.lastSortEvent,

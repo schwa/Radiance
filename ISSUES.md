@@ -499,17 +499,19 @@ Add skybox support to the 3D viewer. MetalSprocketsAddOns may already provide th
 ## 26: Add axis lines to the 3D viewer
 
 +++
-status: open
+status: closed
 priority: medium
 kind: enhancement
 labels: effort:s
 created: 2026-08-27T03:38:12Z
-updated: 2026-08-27T05:44:59Z
+updated: 2026-08-27T06:29:00Z
+closed: 2026-08-27T06:29:00Z
 +++
 
 Add optional axis lines to the 3D viewer. MetalSprocketsAddOns may already provide the required axis component.
 
 - `2026-08-27T05:44:59Z`: Related viewer-environment enhancements: #24, #25, and #26.
+- `2026-08-27T06:29:00Z`: Added optional red, green, and blue model-space axis lines with a Renderer inspector toggle. swiftlint, xcb build, and xcb test pass.
 
 ---
 

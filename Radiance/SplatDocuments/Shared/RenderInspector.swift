@@ -12,6 +12,7 @@ struct RenderInspector<CullingContent: View>: View {
     var sphericalHarmonicsWarning: String?
     @Binding var showBoundingBoxes: Bool
     @Binding var showReferenceGrid: Bool
+    @Binding var showAxisLines: Bool
     @Binding var debugModeEnabled: Bool
     @Binding var debugMode: SplatDebugMode
     var lastSortEvent: SortEvent?
@@ -48,6 +49,7 @@ struct RenderInspector<CullingContent: View>: View {
 
             Toggle("Show Bounding Boxes", isOn: $showBoundingBoxes)
             Toggle("Show Reference Grid", isOn: $showReferenceGrid)
+            Toggle("Show Axis Lines", isOn: $showAxisLines)
         }
 
         Section("Sorting") {

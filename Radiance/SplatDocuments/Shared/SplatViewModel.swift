@@ -218,6 +218,7 @@ final class SplatViewModel {
     var showBoundingBoxes: Bool = false
     var showReferenceGrid: Bool = false
     var showAxisLines: Bool = false
+    var gridColor: Color = .white
 
     // MARK: - Debug Rendering
 

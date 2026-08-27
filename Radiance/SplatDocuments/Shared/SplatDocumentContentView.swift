@@ -1057,6 +1057,7 @@ struct SplatDocumentContentView: View {
             showBoundingBoxes: viewModel.showBoundingBoxes,
             showReferenceGrid: viewModel.showReferenceGrid,
             showAxisLines: viewModel.showAxisLines,
+            gridColor: viewModel.gridColor,
             boundingBoxInfos: singleModeBoundingBoxInfos,
             debugParams: viewModel.debugModeEnabled ? computeDebugParams(
                 mode: viewModel.debugMode,
@@ -1163,6 +1164,7 @@ struct SplatDocumentContentView: View {
                 showBoundingBoxes: viewModel.showBoundingBoxes,
                 showReferenceGrid: viewModel.showReferenceGrid,
                 showAxisLines: viewModel.showAxisLines,
+                gridColor: viewModel.gridColor,
                 boundingBoxInfos: buildBoundingBoxInfos(),
                 debugParams: viewModel.debugModeEnabled ? computeDebugParams(
                     mode: viewModel.debugMode,

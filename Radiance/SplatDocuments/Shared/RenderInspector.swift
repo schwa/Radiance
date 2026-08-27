@@ -5,6 +5,7 @@ import SwiftUI
 
 struct RenderInspector<CullingContent: View>: View {
     @Binding var backgroundColor: Color
+    @Binding var gridColor: Color
     @Binding var useSphericalHarmonics: Bool
     var rendererSelectionDisabled = false
     var supportsBoundsCulling = false
@@ -49,6 +50,9 @@ struct RenderInspector<CullingContent: View>: View {
 
             Toggle("Show Bounding Boxes", isOn: $showBoundingBoxes)
             Toggle("Show Reference Grid", isOn: $showReferenceGrid)
+            if showReferenceGrid {
+                ColorPicker("Grid Color", selection: $gridColor)
+            }
             Toggle("Show Axis Lines", isOn: $showAxisLines)
         }
 

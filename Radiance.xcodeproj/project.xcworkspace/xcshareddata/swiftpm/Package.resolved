@@ -1,6 +1,15 @@
 {
-  "originHash" : "e4c9d184d5c9563951cb301625d0ae280f67119cf3f57ee9d633fd61864a368e",
+  "originHash" : "777aef738242be6d75466d2ecb6d9b8b9fe53d30318237aba6e699d88fbd1666",
   "pins" : [
+    {
+      "identity" : "geometrylite2d",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/schwa/GeometryLite2D",
+      "state" : {
+        "revision" : "938d2bf1276508f51b1e028153c7cc3c25648e40",
+        "version" : "0.0.3"
+      }
+    },
     {
       "identity" : "geometrylite3d",
       "kind" : "remoteSourceControl",
@@ -35,6 +44,15 @@
       "state" : {
         "revision" : "7bacba139278a979c54aced6ba7c0f113bf74ba4",
         "version" : "0.1.12"
+      }
+    },
+    {
+      "identity" : "metalsprocketsaddons",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/schwa/MetalSprocketsAddOns",
+      "state" : {
+        "revision" : "96e0f2f4b18706efff8fc596053c486e71be3c06",
+        "version" : "0.1.13"
       }
     },
     {
@@ -128,12 +146,30 @@
       }
     },
     {
+      "identity" : "swiftearcut",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/schwa/SwiftEarcut",
+      "state" : {
+        "revision" : "216a6dea8c9804dd6157b7dc25cb4ed0adb525dd",
+        "version" : "0.0.2"
+      }
+    },
+    {
       "identity" : "swiftformats",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/schwa/SwiftFormats",
       "state" : {
         "revision" : "0f0929852e7709fcd2a006efda19925ee773d752",
         "version" : "0.3.7"
+      }
+    },
+    {
+      "identity" : "swiftmesh",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/schwa/SwiftMesh",
+      "state" : {
+        "revision" : "e736446bb23a757ea91d79c9450488efef033468",
+        "version" : "0.0.4"
       }
     },
     {

@@ -188,17 +188,19 @@ SplatDocumentContentView owns rendering, Vision analysis, Best View search, imag
 ## 9: Render view sections share one invalidation boundary
 
 +++
-status: open
+status: closed
 priority: medium
 kind: task
 labels: swiftui, performance, effort:l
 created: 2026-08-25T02:10:46Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-08-27T06:16:35Z
+closed: 2026-08-27T06:16:35Z
 +++
 
 SplatRenderView organizes substantial camera, rendering, overlay, and inspector regions as computed view properties. These regions remain part of the parent view's invalidation boundary despite their visual separation.
 
 - `2026-08-25T02:18:13Z`: Related to #8: both reduce broad SwiftUI invalidation boundaries; #9 is scoped to SplatRenderView.
+- `2026-08-27T06:16:35Z`: Split rendering and bounding-box overlay regions into dedicated SwiftUI view invalidation boundaries. No regression test added because this is a structural performance refactor; validated by building the app and running the available package test suite.
 
 ---
 

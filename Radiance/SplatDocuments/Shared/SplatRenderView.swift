@@ -42,7 +42,70 @@ struct SplatRenderView: View {
     var onDragChange: ((UUID, Int, CGSize, simd_float4x4, simd_float4x4) -> Void)?
     var onDragEnd: ((UUID) -> Void)?
 
-    @State private var viewportSize: CGSize = .zero
+    var body: some View {
+        ZStack {
+            SplatRenderingView(
+                mode: mode,
+                clouds: clouds,
+                sceneTransform: sceneTransform,
+                useSphericalHarmonics: useSphericalHarmonics,
+                backgroundColor: backgroundColor,
+                cameraMatrix: $cameraMatrix,
+                verticalAngleOfView: $verticalAngleOfView,
+                nearClip: nearClip,
+                farClip: farClip,
+                cullBoundingBox: cullBoundingBox,
+                debugParams: debugParams,
+                sortManager: sortManager,
+                cameraMode: cameraMode
+            )
+
+            if showBoundingBoxes {
+                SplatBoundingBoxOverlayView(
+                    boundingBoxInfos: boundingBoxInfos,
+                    cameraMatrix: cameraMatrix,
+                    verticalAngleOfView: verticalAngleOfView,
+                    nearClip: nearClip,
+                    farClip: farClip,
+                    onDragChange: onDragChange,
+                    onDragEnd: onDragEnd
+                )
+            }
+        }
+        .overlay {
+            if clouds.isEmpty {
+                switch mode {
+                case .single:
+                    ContentUnavailableView("No splat cloud loaded", systemImage: "cube.transparent")
+                        .background(.ultraThinMaterial)
+
+                case .multi:
+                    ContentUnavailableView {
+                        Label("All Clouds Hidden", systemImage: "eye.slash")
+                    } description: {
+                        Text("Enable clouds in the sidebar to view")
+                    }
+                    .background(.ultraThinMaterial)
+                }
+            }
+        }
+    }
+}
+
+private struct SplatRenderingView: View {
+    let mode: SplatContentMode
+    let clouds: [GPUSplatCloud<SparkSplat>]
+    let sceneTransform: simd_float4x4
+    let useSphericalHarmonics: Bool
+    let backgroundColor: [Float]
+    @Binding var cameraMatrix: simd_float4x4
+    @Binding var verticalAngleOfView: Double
+    let nearClip: Double
+    let farClip: Double
+    var cullBoundingBox: BoundingBox3D?
+    var debugParams: DebugParams?
+    var sortManager: AsyncSortManager<SparkSplat>?
+    let cameraMode: CameraMode
 
     @Environment(SplatViewModel.self) private var viewModel
 
@@ -57,33 +120,11 @@ struct SplatRenderView: View {
             alpha: Double(backgroundColor[3])
         )
     }
-    var body: some View {
-        ZStack {
-            // Main render view
-            cameraControlledRenderView
 
-            // Bounding box overlay (multi-cloud mode only)
-            if showBoundingBoxes {
-                boundingBoxOverlay
-            }
-        }
-        .onGeometryChange(for: CGSize.self) { proxy in
-            proxy.size
-        } action: { newSize in
-            viewportSize = newSize
-        }
-        .overlay {
-            if clouds.isEmpty {
-                emptyStateOverlay
-            }
-        }
-    }
-
-    /// Render view with the appropriate camera controller applied based on camera mode
     @ViewBuilder
-    private var cameraControlledRenderView: some View {
+    var body: some View {
         if mode == .single, let cloud = clouds.first, let debugParams {
-            let renderView = SingleCloudDebugRenderView(
+            cameraController(for: SingleCloudDebugRenderView(
                 splatCloud: cloud,
                 cameraMatrix: cameraMatrix,
                 modelMatrix: sceneTransform,
@@ -93,24 +134,13 @@ struct SplatRenderView: View {
                 debugParams: debugParams
             )
             .metalColorPixelFormat(.bgra8Unorm_srgb)
-            .metalClearColor(clearColor)
-
-            switch cameraMode {
-            case .object:
-                renderView.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
-
-            case .room:
-                renderView.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
-
-            case .spatialScene:
-                renderView.modifier(SpatialSceneCameraController(transform: $cameraMatrix))
-            }
+            .metalClearColor(clearColor))
         } else if mode == .single, viewModel.renderer != .sparkCPU, let cloud = clouds.first {
             let projection = PerspectiveProjection(
                 verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
                 depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
             )
-            let renderView = SplatView(
+            cameraController(for: SplatView(
                 splatCloud: cloud,
                 cameraMatrix: cameraMatrix,
                 modelMatrix: sceneTransform,
@@ -122,20 +152,9 @@ struct SplatRenderView: View {
                 if viewModel.viewSize != size {
                     viewModel.viewSize = size
                 }
-            }
-
-            switch cameraMode {
-            case .object:
-                renderView.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
-
-            case .room:
-                renderView.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
-
-            case .spatialScene:
-                renderView.modifier(SpatialSceneCameraController(transform: $cameraMatrix))
-            }
+            })
         } else if let sortManager {
-            let renderView = MultiCloudRenderView(
+            cameraController(for: MultiCloudRenderView(
                 clouds: clouds,
                 cameraMatrix: cameraMatrix,
                 sceneTransform: sceneTransform,
@@ -154,40 +173,37 @@ struct SplatRenderView: View {
                     }
                 },
                 sortingEnabled: viewModel.sortingEnabled
-            )
-
-            switch cameraMode {
-            case .object:
-                renderView.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
-
-            case .room:
-                renderView.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
-
-            case .spatialScene:
-                renderView.modifier(SpatialSceneCameraController(transform: $cameraMatrix))
-            }
+            ))
         }
     }
 
     @ViewBuilder
-    private var emptyStateOverlay: some View {
-        switch mode {
-        case .single:
-            ContentUnavailableView("No splat cloud loaded", systemImage: "cube.transparent")
-                .background(.ultraThinMaterial)
+    private func cameraController<Content: View>(for content: Content) -> some View {
+        switch cameraMode {
+        case .object:
+            content.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
 
-        case .multi:
-            ContentUnavailableView {
-                Label("All Clouds Hidden", systemImage: "eye.slash")
-            } description: {
-                Text("Enable clouds in the sidebar to view")
-            }
-            .background(.ultraThinMaterial)
+        case .room:
+            content.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
+
+        case .spatialScene:
+            content.modifier(SpatialSceneCameraController(transform: $cameraMatrix))
         }
     }
+}
 
-    @ViewBuilder
-    private var boundingBoxOverlay: some View {
+private struct SplatBoundingBoxOverlayView: View {
+    let boundingBoxInfos: [BoundingBoxInfo]
+    let cameraMatrix: simd_float4x4
+    let verticalAngleOfView: Double
+    let nearClip: Double
+    let farClip: Double
+    var onDragChange: ((UUID, Int, CGSize, simd_float4x4, simd_float4x4) -> Void)?
+    var onDragEnd: ((UUID) -> Void)?
+
+    @State private var viewportSize: CGSize = .zero
+
+    var body: some View {
         let projection = PerspectiveProjection(
             verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
             depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
@@ -205,9 +221,7 @@ struct SplatRenderView: View {
                     onDragChange: { cloudID, axis, screenDelta in
                         onDragChange(cloudID, axis, screenDelta, viewMatrix, projectionMatrix)
                     },
-                    onDragEnd: { cloudID in
-                        onDragEnd(cloudID)
-                    }
+                    onDragEnd: onDragEnd
                 )
             }
 
@@ -217,6 +231,11 @@ struct SplatRenderView: View {
                 projectionMatrix: projectionMatrix,
                 viewportSize: viewportSize
             )
+        }
+        .onGeometryChange(for: CGSize.self) { proxy in
+            proxy.size
+        } action: { newSize in
+            viewportSize = newSize
         }
     }
 }

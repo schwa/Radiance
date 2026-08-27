@@ -268,7 +268,7 @@ private struct SingleCloudGuidedRenderView: View {
                 if let sortedIndices {
                     try RenderPass {
                         if showGrid {
-                            GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: color, backgroundColor: .zero, backfaceColor: .zero)
+                            GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: color, backgroundColor: [0, 0, 0, 1], backfaceColor: [0, 0, 0, 1])
                         }
                         try SparkSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, configuration: .init(useSphericalHarmonics: useSphericalHarmonics), sortedIndices: sortedIndices)
                         if showAxes {
@@ -287,7 +287,7 @@ private struct SingleCloudGuidedRenderView: View {
             case .stochastic:
                 try RenderPass {
                     if showGrid {
-                        GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: color, backgroundColor: .zero, backfaceColor: .zero)
+                        GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: color, backgroundColor: [0, 0, 0, 1], backfaceColor: [0, 0, 0, 1])
                     }
                     try StochasticSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, frameTime: stochasticSeed, useSphericalHarmonics: useSphericalHarmonics)
                         .depthCompare(function: .less, enabled: true)
@@ -377,7 +377,7 @@ private struct GuidedSplatRenderPass: Element {
             try GPUSplatSortComputePass(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, resources: resources, slotIndex: slotIndex)
             try RenderPass {
                 if let gridColor {
-                    GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: gridColor, backgroundColor: .zero, backfaceColor: .zero)
+                    GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: gridColor, backgroundColor: [0, 0, 0, 1], backfaceColor: [0, 0, 0, 1])
                 }
                 try SparkSplatRenderPipeline(
                     splatCloud: splatCloud,
@@ -410,7 +410,7 @@ private struct SceneGuidesRenderPass: Element {
         get throws {
             try RenderPass {
                 if let gridColor {
-                    GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: gridColor, backgroundColor: .zero, backfaceColor: .zero)
+                    GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: gridColor, backgroundColor: [0, 0, 0, 1], backfaceColor: [0, 0, 0, 1])
                 }
                 if showAxes {
                     try AxisLinesRenderPipeline(mvpMatrix: projectionMatrix * cameraMatrix.inverse, viewMatrix: cameraMatrix.inverse, projectionMatrix: projectionMatrix, viewportSize: drawableSize)

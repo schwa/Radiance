@@ -136,7 +136,7 @@ struct MultiCloudRenderPass: Element {
                 let projectionMatrix = projection.projectionMatrix(for: drawableSize)
                 try RenderPass {
                     if let gridColor {
-                        GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: gridColor, backgroundColor: .zero, backfaceColor: .zero)
+                        GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: gridColor, backgroundColor: [0, 0, 0, 1], backfaceColor: [0, 0, 0, 1])
                     }
                     if let debugParams {
                         try SparkSplatDebugRenderPipeline(

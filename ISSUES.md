@@ -850,3 +850,16 @@ Expected: The readout reports the current measured frame rate.
 Actual: It always displays 0.
 
 ---
+
+## 46: Remove manual sorting controls
+
++++
+status: new
+priority: medium
+kind: none
+created: 2026-08-27T06:51:53Z
++++
+
+The Enable Sorting toggle and Sort Now button are obsolete and should no longer appear in the renderer inspector.
+
+---

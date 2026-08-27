@@ -131,7 +131,7 @@ struct RoomCameraController: ViewModifier {
         let duration: Double = 0.2
         let startTime = Date()
 
-        pitchAnimationTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { timer in
+        pitchAnimationTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 60.0, repeats: true) { _ in
             MainActor.assumeIsolated {
                 let elapsed = Date().timeIntervalSince(startTime)
                 let progress = min(elapsed / duration, 1.0)
@@ -142,7 +142,7 @@ struct RoomCameraController: ViewModifier {
                 updateCameraMatrix()
 
                 if progress >= 1.0 {
-                    timer.invalidate()
+                    pitchAnimationTimer?.invalidate()
                     pitchAnimationTimer = nil
                     dragStartPitch = 0
                 }

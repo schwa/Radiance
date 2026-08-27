@@ -6,7 +6,7 @@ import UniformTypeIdentifiers
 // MARK: - Transform
 
 /// A transform stored as separate translation and rotation components
-struct Transform: Codable, Sendable, Equatable {
+nonisolated struct Transform: Codable, Sendable, Equatable {
     var translation: SIMD3<Float> = .zero
     var rotation: SIMD3<Float> = .zero  // Euler angles in radians (x, y, z)
 
@@ -237,6 +237,10 @@ struct SplatScene: nonisolated Codable, Sendable {
 
     nonisolated init() {
         version = 1
+        clouds = []
+        sceneTransform = Transform(rotation: [.pi, 0, 0])
+        camera = nil
+        renderSettings = RenderSettings()
     }
 }
 

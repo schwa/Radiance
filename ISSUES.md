@@ -271,12 +271,13 @@ TileDebugViews uses the legacy cornerRadius modifier rather than the current sha
 ## 14: App target is not checked under Swift 6 strict concurrency
 
 +++
-status: open
+status: closed
 priority: high
 kind: task
 labels: swift, concurrency, build-settings, effort:l
 created: 2026-08-25T02:12:55Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-08-27T06:16:00Z
+closed: 2026-08-27T06:16:00Z
 +++
 
 The shared Xcode configuration enables approachable concurrency and MainActor default isolation but sets SWIFT_VERSION to 5.0 and leaves complete strict-concurrency checking disabled. Data-race diagnostics that the project intends to satisfy under Swift 6.2 are therefore not enforced consistently with the RadianceSupport package, which already uses Swift 6.

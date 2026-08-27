@@ -327,7 +327,7 @@ struct DraggableFace: View {
 
 // MARK: - Quad Shape
 
-struct QuadShape: Shape {
+nonisolated struct QuadShape: Shape {
     let points: [CGPoint]
 
     func path(in _: CGRect) -> Path {

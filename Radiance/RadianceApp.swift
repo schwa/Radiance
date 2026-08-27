@@ -96,19 +96,16 @@ struct RadianceApp: App {
 
 #if os(macOS)
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var windowObserver: Any?
-
     func applicationDidFinishLaunching(_: Notification) {
-        windowObserver = NotificationCenter.default.addObserver(
-            forName: NSWindow.willCloseNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] notification in
-            self?.handleWindowClose(notification)
-        }
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleWindowClose),
+            name: NSWindow.willCloseNotification,
+            object: nil
+        )
     }
 
-    private func handleWindowClose(_ notification: Notification) {
+    @objc private func handleWindowClose(_ notification: Notification) {
         guard let closingWindow = notification.object as? NSWindow else {
             return
         }

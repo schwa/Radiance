@@ -11,6 +11,47 @@ struct BoundingBoxInfo: Identifiable {
     let color: Color
 }
 
+struct ReferenceGrid: View {
+    let modelMatrix: simd_float4x4
+    let viewMatrix: simd_float4x4
+    let projectionMatrix: simd_float4x4
+    let viewportSize: CGSize
+
+    var body: some View {
+        Canvas { context, _ in
+            let matrix = projectionMatrix * viewMatrix * modelMatrix
+            for coordinate in -10 ... 10 {
+                drawLine(from: SIMD3(Float(coordinate), 0, -10), to: SIMD3(Float(coordinate), 0, 10), matrix: matrix, context: context)
+                drawLine(from: SIMD3(-10, 0, Float(coordinate)), to: SIMD3(10, 0, Float(coordinate)), matrix: matrix, context: context)
+            }
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func drawLine(from start: SIMD3<Float>, to end: SIMD3<Float>, matrix: simd_float4x4, context: GraphicsContext) {
+        guard let start = project(start, matrix: matrix), let end = project(end, matrix: matrix) else {
+            return
+        }
+        var path = Path()
+        path.move(to: start)
+        path.addLine(to: end)
+        context.stroke(path, with: .color(.secondary.opacity(0.5)), lineWidth: 1)
+    }
+
+    private func project(_ point: SIMD3<Float>, matrix: simd_float4x4) -> CGPoint? {
+        let clip = matrix * SIMD4<Float>(point, 1)
+        guard clip.w > 0 else {
+            return nil
+        }
+        let normalized = SIMD3<Float>(clip.x, clip.y, clip.z) / clip.w
+        let x = (normalized.x + 1) * 0.5 * Float(viewportSize.width)
+        let y = (1 - normalized.y) * 0.5 * Float(viewportSize.height)
+        guard x.isFinite, y.isFinite else {
+            return nil
+        }
+        return CGPoint(x: CGFloat(x), y: CGFloat(y))
+    }
+}
 // MARK: - Bounding Box Wireframe
 
 /// Draws wireframe edges for bounding boxes

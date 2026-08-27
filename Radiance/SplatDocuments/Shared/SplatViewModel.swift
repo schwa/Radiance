@@ -216,6 +216,7 @@ final class SplatViewModel {
     var backgroundColor: Color = .black
     var useSphericalHarmonics: Bool = true
     var showBoundingBoxes: Bool = false
+    var showReferenceGrid: Bool = false
 
     // MARK: - Debug Rendering
 

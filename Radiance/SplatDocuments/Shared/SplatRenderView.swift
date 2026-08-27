@@ -28,6 +28,7 @@ struct SplatRenderView: View {
 
     var cullBoundingBox: BoundingBox3D?
     var showBoundingBoxes: Bool = false
+    var showReferenceGrid: Bool = false
     var boundingBoxInfos: [BoundingBoxInfo] = []
 
     // Debug rendering (nil = normal rendering, non-nil = debug mode)
@@ -60,6 +61,20 @@ struct SplatRenderView: View {
                 cameraMode: cameraMode
             )
 
+            if showReferenceGrid {
+                GeometryReader { proxy in
+                    let projection = PerspectiveProjection(
+                        verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
+                        depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
+                    )
+                    ReferenceGrid(
+                        modelMatrix: sceneTransform,
+                        viewMatrix: cameraMatrix.inverse,
+                        projectionMatrix: projection.projectionMatrix(for: proxy.size),
+                        viewportSize: proxy.size
+                    )
+                }
+            }
             if showBoundingBoxes {
                 SplatBoundingBoxOverlayView(
                     boundingBoxInfos: boundingBoxInfos,
@@ -202,34 +217,34 @@ private struct SplatBoundingBoxOverlayView: View {
     var body: some View {
         GeometryReader { proxy in
             let viewportSize = proxy.size
-        let projection = PerspectiveProjection(
-            verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
-            depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
-        )
-        let projectionMatrix = projection.projectionMatrix(for: viewportSize)
-        let viewMatrix = cameraMatrix.inverse
+            let projection = PerspectiveProjection(
+                verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
+                depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
+            )
+            let projectionMatrix = projection.projectionMatrix(for: viewportSize)
+            let viewMatrix = cameraMatrix.inverse
 
-        ZStack {
-            if let onDragChange, let onDragEnd {
-                BoundingBoxFaceInteraction(
+            ZStack {
+                if let onDragChange, let onDragEnd {
+                    BoundingBoxFaceInteraction(
+                        boundingBoxes: boundingBoxInfos,
+                        viewMatrix: viewMatrix,
+                        projectionMatrix: projectionMatrix,
+                        viewportSize: viewportSize,
+                        onDragChange: { cloudID, axis, screenDelta in
+                            onDragChange(cloudID, axis, screenDelta, viewMatrix, projectionMatrix)
+                        },
+                        onDragEnd: onDragEnd
+                    )
+                }
+
+                BoundingBoxWireframe(
                     boundingBoxes: boundingBoxInfos,
                     viewMatrix: viewMatrix,
                     projectionMatrix: projectionMatrix,
-                    viewportSize: viewportSize,
-                    onDragChange: { cloudID, axis, screenDelta in
-                        onDragChange(cloudID, axis, screenDelta, viewMatrix, projectionMatrix)
-                    },
-                    onDragEnd: onDragEnd
+                    viewportSize: viewportSize
                 )
             }
-
-            BoundingBoxWireframe(
-                boundingBoxes: boundingBoxInfos,
-                viewMatrix: viewMatrix,
-                projectionMatrix: projectionMatrix,
-                viewportSize: viewportSize
-            )
-        }
         }
     }
 }
@@ -572,6 +587,7 @@ struct InspectorView: View {
             sphericalHarmonicsDisabled: !viewModel.hasSphericalHarmonicsData,
             sphericalHarmonicsWarning: sphericalHarmonicsWarning,
             showBoundingBoxes: $viewModel.showBoundingBoxes,
+            showReferenceGrid: $viewModel.showReferenceGrid,
             debugModeEnabled: $viewModel.debugModeEnabled,
             debugMode: $viewModel.debugMode,
             lastSortEvent: viewModel.lastSortEvent,

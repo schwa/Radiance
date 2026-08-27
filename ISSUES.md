@@ -463,17 +463,19 @@ The window lists all downloads and their current status. All downloads in the ap
 ## 24: Add a reference grid to the 3D viewer
 
 +++
-status: open
+status: closed
 priority: medium
 kind: enhancement
 labels: effort:s
 created: 2026-08-27T03:38:12Z
-updated: 2026-08-27T05:44:59Z
+updated: 2026-08-27T06:26:35Z
+closed: 2026-08-27T06:26:35Z
 +++
 
 Add an optional reference grid to the 3D viewer. MetalSprocketsAddOns may already provide the required grid component.
 
 - `2026-08-27T05:44:59Z`: Related viewer-environment enhancements: #24, #25, and #26.
+- `2026-08-27T06:26:35Z`: Added an optional model-space reference grid with a Renderer inspector toggle. xcb build and xcb test pass.
 
 ---
 

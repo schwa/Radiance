@@ -528,12 +528,13 @@ Display the COLMAP markers directly in the main 3D view so they are visible alon
 ## 28: Load screen shows the wrong app name
 
 +++
-status: open
+status: closed
 priority: medium
 kind: bug
 labels: effort:xs
 created: 2026-08-27T03:39:53Z
-updated: 2026-08-27T05:44:48Z
+updated: 2026-08-27T06:14:18Z
+closed: 2026-08-27T06:14:18Z
 +++
 
 The load/splash screen identifies the app as “Gaussian Splats” instead of “Radiance.”

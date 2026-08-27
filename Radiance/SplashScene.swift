@@ -56,7 +56,7 @@ struct SplashView: View {
                         )
                         .accessibilityHidden(true)
 
-                    Text("Gaussian Splats")
+                    Text("Radiance")
                         .font(.title)
                         .fontWeight(.semibold)
 

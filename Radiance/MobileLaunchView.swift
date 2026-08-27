@@ -35,7 +35,7 @@ struct MobileLaunchView: View {
     var documentLaunchView: some View {
         #if !os(visionOS)
         DocumentLaunchView(
-            "Gaussian Splats",
+            "Radiance",
             for: SplatDocument.readableContentTypes
         ) {
             // No new document button - viewer only
@@ -56,7 +56,7 @@ struct MobileLaunchView: View {
                 .glimmer(sweepDuration: 1.5, pauseDuration: 5, gradientWidth: 0.3, maxLightness: 0.3, angle: 35)
                 .accessibilityHidden(true)
 
-            Text("Gaussian Splats")
+            Text("Radiance")
                 .font(.largeTitle)
                 .fontWeight(.bold)
 

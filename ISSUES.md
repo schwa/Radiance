@@ -767,12 +767,13 @@ Actual: No Quick Look preview is available.
 ## 41: .sog files use a ZIP icon and are not associated with Radiance
 
 +++
-status: open
+status: closed
 priority: medium
 kind: bug
 labels: effort:m
 created: 2026-08-27T03:54:16Z
-updated: 2026-08-27T05:45:00Z
+updated: 2026-08-27T06:23:49Z
+closed: 2026-08-27T06:23:49Z
 +++
 
 .sog files appear with a ZIP archive icon, do not preview in Quick Look, and do not open in Radiance by default.

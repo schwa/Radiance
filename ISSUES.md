@@ -549,12 +549,13 @@ Actual: The screen displays the old app name.
 ## 29: Show Bounding Boxes is broken
 
 +++
-status: open
+status: closed
 priority: medium
 kind: bug
 labels: effort:s
 created: 2026-08-27T03:44:02Z
-updated: 2026-08-27T05:44:59Z
+updated: 2026-08-27T06:24:21Z
+closed: 2026-08-27T06:24:21Z
 +++
 
 The Show Bounding Boxes control no longer displays bounding boxes in the 3D view. This appears to be a regression.
@@ -564,6 +565,7 @@ Expected: Enabling the control shows bounding boxes.
 Actual: Enabling the control has no visible effect.
 
 - `2026-08-27T05:44:59Z`: Related to #21: both are regressions in debug/visualization controls.
+- `2026-08-27T06:24:21Z`: Use the overlay's current geometry directly so projection never uses a stale zero viewport. No UI regression target exists; xcb build and xcb test pass.
 
 ---
 

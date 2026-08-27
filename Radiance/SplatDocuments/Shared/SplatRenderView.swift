@@ -106,7 +106,6 @@ private struct SplatRenderingView: View {
     var debugParams: DebugParams?
     var sortManager: AsyncSortManager<SparkSplat>?
     let cameraMode: CameraMode
-
     @Environment(SplatViewModel.self) private var viewModel
 
     private var clearColor: MTLClearColor {
@@ -120,7 +119,6 @@ private struct SplatRenderingView: View {
             alpha: Double(backgroundColor[3])
         )
     }
-
     @ViewBuilder
     var body: some View {
         if mode == .single, let cloud = clouds.first, let debugParams {
@@ -201,9 +199,9 @@ private struct SplatBoundingBoxOverlayView: View {
     var onDragChange: ((UUID, Int, CGSize, simd_float4x4, simd_float4x4) -> Void)?
     var onDragEnd: ((UUID) -> Void)?
 
-    @State private var viewportSize: CGSize = .zero
-
     var body: some View {
+        GeometryReader { proxy in
+            let viewportSize = proxy.size
         let projection = PerspectiveProjection(
             verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
             depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
@@ -232,10 +230,6 @@ private struct SplatBoundingBoxOverlayView: View {
                 viewportSize: viewportSize
             )
         }
-        .onGeometryChange(for: CGSize.self) { proxy in
-            proxy.size
-        } action: { newSize in
-            viewportSize = newSize
         }
     }
 }

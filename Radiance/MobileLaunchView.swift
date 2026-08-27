@@ -53,6 +53,7 @@ struct MobileLaunchView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 180, height: 180)
+                .glimmer(sweepDuration: 1.5, pauseDuration: 5, gradientWidth: 0.3, maxLightness: 0.3, angle: 35)
                 .accessibilityHidden(true)
 
             Text("Gaussian Splats")

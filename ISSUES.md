@@ -568,12 +568,13 @@ Actual: Enabling the control has no visible effect.
 ## 30: Use the animated app icon consistently
 
 +++
-status: open
+status: closed
 priority: medium
 kind: enhancement
 labels: effort:xs
 created: 2026-08-27T03:45:18Z
-updated: 2026-08-27T05:44:48Z
+updated: 2026-08-27T06:16:30Z
+closed: 2026-08-27T06:16:30Z
 +++
 
 Use the animated Radiance icon consistently across branded screens, including About, Welcome, and other app-name or launch surfaces.

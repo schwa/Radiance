@@ -399,3 +399,404 @@ Image description starts an unstructured task without retaining its handle. The 
 - `2026-08-25T02:30:06Z`: Tracked and cancelled image-description work on replacement/document changes, suppressed cancellation errors, and checked cancellation before publishing results.
 
 ---
+
+## 21: Debug checkbox no longer works
+
++++
+status: open
+priority: medium
+kind: bug
+labels: effort:s
+created: 2026-08-27T03:27:34Z
+updated: 2026-08-27T05:44:59Z
++++
+
+The debug checkbox is broken again.
+
+Expected: Toggling the checkbox enables or disables the debug display.
+
+Actual: The checkbox does not change the debug state.
+
+- `2026-08-27T05:44:59Z`: Related to #29: both are regressions in debug/visualization controls.
+
+---
+
+## 22: Add Interaction3D rotation cube
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:s
+created: 2026-08-27T03:36:07Z
+updated: 2026-08-27T05:44:48Z
++++
+
+Add the rotation cube provided by Interaction3D to the 3D viewer so users can inspect and change the current view orientation.
+
+---
+
+## 23: Add downloads window
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:l
+created: 2026-08-27T03:36:55Z
+updated: 2026-08-27T05:44:48Z
++++
+
+Add a compact Safari-style downloads window that opens near the top-right corner of the screen.
+
+The window lists all downloads and their current status. All downloads in the app use this shared downloads UI. It is also accessible from a matching Downloads item in the Window menu.
+
+---
+
+## 24: Add a reference grid to the 3D viewer
+
++++
+status: open
+priority: medium
+kind: enhancement
+labels: effort:s
+created: 2026-08-27T03:38:12Z
+updated: 2026-08-27T05:44:59Z
++++
+
+Add an optional reference grid to the 3D viewer. MetalSprocketsAddOns may already provide the required grid component.
+
+- `2026-08-27T05:44:59Z`: Related viewer-environment enhancements: #24, #25, and #26.
+
+---
+
+## 25: Add a skybox to the 3D viewer
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:m
+created: 2026-08-27T03:38:12Z
+updated: 2026-08-27T05:44:59Z
++++
+
+Add skybox support to the 3D viewer. MetalSprocketsAddOns may already provide the required skybox component.
+
+- `2026-08-27T05:44:59Z`: Related viewer-environment enhancements: #24, #25, and #26.
+
+---
+
+## 26: Add axis lines to the 3D viewer
+
++++
+status: open
+priority: medium
+kind: enhancement
+labels: effort:s
+created: 2026-08-27T03:38:12Z
+updated: 2026-08-27T05:44:59Z
++++
+
+Add optional axis lines to the 3D viewer. MetalSprocketsAddOns may already provide the required axis component.
+
+- `2026-08-27T05:44:59Z`: Related viewer-environment enhancements: #24, #25, and #26.
+
+---
+
+## 27: Show COLMAP markers in the main view
+
++++
+status: open
+priority: medium
+kind: enhancement
+labels: effort:m
+created: 2026-08-27T03:39:07Z
+updated: 2026-08-27T05:44:48Z
++++
+
+Display the COLMAP markers directly in the main 3D view so they are visible alongside the loaded scene.
+
+---
+
+## 28: Load screen shows the wrong app name
+
++++
+status: open
+priority: medium
+kind: bug
+labels: effort:xs
+created: 2026-08-27T03:39:53Z
+updated: 2026-08-27T05:44:48Z
++++
+
+The load/splash screen identifies the app as “Gaussian Splats” instead of “Radiance.”
+
+Expected: The screen displays “Radiance.”
+
+Actual: The screen displays the old app name.
+
+---
+
+## 29: Show Bounding Boxes is broken
+
++++
+status: open
+priority: medium
+kind: bug
+labels: effort:s
+created: 2026-08-27T03:44:02Z
+updated: 2026-08-27T05:44:59Z
++++
+
+The Show Bounding Boxes control no longer displays bounding boxes in the 3D view. This appears to be a regression.
+
+Expected: Enabling the control shows bounding boxes.
+
+Actual: Enabling the control has no visible effect.
+
+- `2026-08-27T05:44:59Z`: Related to #21: both are regressions in debug/visualization controls.
+
+---
+
+## 30: Use the animated app icon consistently
+
++++
+status: open
+priority: medium
+kind: enhancement
+labels: effort:xs
+created: 2026-08-27T03:45:18Z
+updated: 2026-08-27T05:44:48Z
++++
+
+Use the animated Radiance icon consistently across branded screens, including About, Welcome, and other app-name or launch surfaces.
+
+---
+
+## 31: Tighten the sidebar and inspector UI
+
++++
+status: new
+priority: medium
+kind: enhancement
+labels: needs-info, effort:m
+created: 2026-08-27T03:45:53Z
+updated: 2026-08-27T05:44:48Z
++++
+
+Improve the sidebar and inspector layout so controls use space more efficiently and the visual hierarchy, alignment, and spacing are consistent.
+
+---
+
+## 32: Add procedural splat generation window
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:l
+created: 2026-08-27T03:47:41Z
+updated: 2026-08-27T05:44:48Z
++++
+
+Add a splat generation window for creating procedural Gaussian splat assets. Include spheres, toruses, realistic clouds, and multiple color options.
+
+---
+
+## 33: Add a COLMAP structure-from-motion tool
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:xl
+created: 2026-08-27T03:47:41Z
+updated: 2026-08-27T05:44:59Z
++++
+
+Add a COLMAP tool that accepts a batch of photos via drag and drop and runs structure-from-motion to produce COLMAP reconstruction data.
+
+- `2026-08-27T05:44:59Z`: Related to #34: this produces the COLMAP data consumed by the web-service generation workflow.
+
+---
+
+## 34: Generate splats from COLMAP data using the web service
+
++++
+status: new
+priority: medium
+kind: feature
+labels: needs-info, effort:l
+created: 2026-08-27T03:47:41Z
+updated: 2026-08-27T05:44:59Z
++++
+
+Add a workflow that takes COLMAP reconstruction data and its source photos, uploads them to the web service, and returns a generated Gaussian splat.
+
+- `2026-08-27T05:44:59Z`: Related to #33: this consumes the COLMAP reconstruction produced by that tool.
+
+---
+
+## 35: Save splat camera metadata in an extended attribute
+
++++
+status: open
+priority: medium
+kind: enhancement
+labels: effort:s
+created: 2026-08-27T03:50:07Z
+updated: 2026-08-27T05:44:59Z
++++
+
+When the user saves a splat, serialize the current camera information as JSON and store it in a file extended attribute.
+
+- `2026-08-27T05:44:59Z`: Related to #36: both persist additional metadata when saving a splat.
+
+---
+
+## 36: Save a splat preview in an extended attribute
+
++++
+status: open
+priority: medium
+kind: enhancement
+labels: effort:m
+created: 2026-08-27T03:50:07Z
+updated: 2026-08-27T05:44:59Z
++++
+
+Store a preview image in an extended attribute when saving a splat so the file can expose a representative thumbnail without rendering it again.
+
+- `2026-08-27T05:44:59Z`: Related to #35: both persist additional metadata when saving a splat.
+
+---
+
+## 37: Export splats in another format
+
++++
+status: new
+priority: medium
+kind: feature
+labels: needs-info, effort:l
+created: 2026-08-27T03:50:07Z
+updated: 2026-08-27T05:44:59Z
++++
+
+Add an export workflow that lets users save the current splat in a different supported file format.
+
+- `2026-08-27T05:44:59Z`: Related to #39: alternate-format export depends on writable splat formats.
+
+---
+
+## 38: Add splat selection and editing
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:xl
+created: 2026-08-27T03:51:54Z
+updated: 2026-08-27T05:44:59Z
++++
+
+Add bounding-box and marquee selection for individual splats. Selected splats can be deleted or assigned custom attributes.
+
+This requires supporting work in the MetalSprocketsGaussianSplats library.
+
+- `2026-08-27T05:44:59Z`: Related to #42: spreadsheet inspection may expose selection and editable attributes.
+
+---
+
+## 39: Make splat documents read-write
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:xl
+created: 2026-08-27T03:53:26Z
+updated: 2026-08-27T05:44:59Z
++++
+
+Allow the document view to modify and save splat documents instead of treating them as read-only. Writing must support every splat format that the app can read.
+
+This requires format-writing support in the MetalSprocketsGaussianSplats library.
+
+- `2026-08-27T05:44:59Z`: Related to #37: read-write document support enables alternate-format export.
+
+---
+
+## 40: .ply files do not preview in Quick Look
+
++++
+status: open
+priority: medium
+kind: bug
+labels: effort:m
+created: 2026-08-27T03:54:16Z
+updated: 2026-08-27T05:44:59Z
++++
+
+Quick Look does not render previews for .ply splat files.
+
+Expected: Selecting a supported .ply file in Finder shows a Radiance preview.
+
+Actual: No Quick Look preview is available.
+
+- `2026-08-27T05:45:00Z`: Related to #41: both concern Quick Look support and document type registration.
+
+---
+
+## 41: .sog files use a ZIP icon and are not associated with Radiance
+
++++
+status: open
+priority: medium
+kind: bug
+labels: effort:m
+created: 2026-08-27T03:54:16Z
+updated: 2026-08-27T05:45:00Z
++++
+
+.sog files appear with a ZIP archive icon, do not preview in Quick Look, and do not open in Radiance by default.
+
+Expected: .sog files use the app’s document icon, provide a Quick Look preview, and open in Radiance by default.
+
+Actual: Finder treats them as ZIP archives.
+
+- `2026-08-27T05:45:00Z`: Related to #40: both concern Quick Look support and document type registration.
+
+---
+
+## 42: Add spreadsheet mode for splat inspection
+
++++
+status: open
+priority: medium
+kind: feature
+labels: effort:l
+created: 2026-08-27T04:03:21Z
+updated: 2026-08-27T05:44:59Z
++++
+
+Add a spreadsheet-style inspection mode that displays individual splats and their attributes in rows and columns for browsing, sorting, and inspection.
+
+- `2026-08-27T05:44:59Z`: Related to #38: spreadsheet inspection may expose selection and editable attributes.
+
+---
+
+## 43: Add a splat color image view
+
++++
+status: new
+priority: medium
+kind: feature
+labels: needs-info, effort:m
+created: 2026-08-27T04:03:21Z
+updated: 2026-08-27T05:44:49Z
++++
+
+Add a window or view that visualizes the colors of all splats as an image for inspecting the cloud’s color distribution and data.
+
+---

@@ -905,3 +905,34 @@ Acceptance criteria:
 - Single-cloud and multi-cloud rendering use the unified composition architecture.
 
 ---
+
+## 49: Single- and multi-cloud documents use divergent rendering paths
+
++++
+status: new
+priority: high
+kind: task
+labels: rendering,architecture,effort:l
+created: 2026-08-27T13:39:30Z
++++
+
+Single-cloud documents and multi-cloud scenes enter different renderer implementations even though both already provide an array of GPU splat clouds to SplatRenderView. This duplicates render-pass composition, sorting ownership, debug rendering, scene-guide handling, and frame lifecycle behavior. Features can consequently work differently depending on document type; renderer selection currently applies only to single-cloud rendering, while bounds culling applies only to multi-cloud rendering.
+
+The divergence remains after #48: both paths now use Radiance-owned RenderView composition, but SingleCloudGuidedRenderView and MultiCloudRenderView still independently implement that composition.
+
+Expected: one-cloud and many-cloud documents use the same rendering implementation and differ only in document/UI preparation and capabilities that are inherently scene-specific. A one-cloud document should pass a one-element cloud collection through the same render path used by a scene.
+
+Actual: SplatRenderingView branches on SplatContentMode. Single mode owns renderer-specific resources and dispatches among five pipelines; multi mode requires an externally owned AsyncSortManager and always uses the multi-cloud Spark pipeline. Debug rendering is also split into separate single- and multi-cloud paths.
+
+## Proposed fix (per user)
+Make the shared renderer collection-based: route single-cloud documents through the multi-cloud implementation with one cloud, consolidate render-pass composition and sorting/resource ownership, and keep document-specific UI and scene preparation outside the renderer. Preserve correct global transparency ordering across all clouds.
+
+Acceptance criteria:
+- Single-cloud rendering passes a one-element cloud collection through the same core render implementation as multi-cloud rendering.
+- Normal, debug, grid, axes, bounding boxes, FPS tracking, spherical harmonics, clear color, projection updates, and drawable-size handling have one shared composition path.
+- Renderer capabilities are explicit and behave consistently for one or many clouds; unsupported combinations are disabled or clearly represented in the UI.
+- Sorting has one ownership/lifecycle model and maintains one global index order across the collection.
+- Document-mode branching remains only for UI, document data preparation, interaction, and scene-specific controls.
+- Tests or focused checks cover equivalent output/configuration for a one-cloud document and a one-cloud scene.
+
+---

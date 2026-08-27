@@ -53,6 +53,7 @@ Expected: interactive multi-cloud rendering keeps splat sorting on the GPU.
 Actual: every relevant view change schedules CPU sorting before rendering.
 
 - `2026-08-25T02:26:36Z`: Inspected MetalSprocketsGaussianSplats GPU sorting APIs and the current multi-cloud render pass. Punting: GPUSortedSplatRenderPipeline accepts one GPUSplatCloud, while correct alpha compositing requires one global ordering across clouds; independently sorting each cloud would render incorrectly. Unblocker: add/identify a GPU sort API for multiple clouds or a supported way to combine their GPU buffers before sorting.
+- `2026-08-27T06:16:46Z`: Rechecked the resolved MetalSprocketsGaussianSplats API. GPUSortedSplatRenderPipeline still accepts a single GPUSplatCloud, while this view needs one globally sorted index stream across multiple clouds for correct alpha compositing. Concrete unblocker remains a dependency API that GPU-sorts multiple clouds as one logical stream (or exposes a combined GPU cloud/buffer view).
 
 ---
 
@@ -748,6 +749,7 @@ Expected: Selecting a supported .ply file in Finder shows a Radiance preview.
 Actual: No Quick Look preview is available.
 
 - `2026-08-27T05:45:00Z`: Related to #41: both concern Quick Look support and document type registration.
+- `2026-08-27T06:22:05Z`: Reproduced with qlmanage against a valid test-grid.ply after building and registering the extension: Quick Look reported that the file did not produce a preview. Verified mdls resolves .ply as public.polygon-file-format and the built extension advertises that exact UTI. Also tested an app-owned exported PLY UTI; Launch Services continued resolving .ply to the system UTI, so the change was reverted. Unblocker: capture QuickLookUI/ExtensionKit logs from Finder on a machine with the installed app to determine whether the extension is not selected or is failing during launch.
 
 ---
 

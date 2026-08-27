@@ -833,3 +833,20 @@ Expected: Toggling the control enables or disables spherical-harmonic rendering.
 Actual: The rendered output does not change.
 
 ---
+
+## 45: FPS display is always zero
+
++++
+status: new
+priority: medium
+kind: none
+created: 2026-08-27T06:51:53Z
++++
+
+The renderer FPS readout remains at 0 while the scene is actively rendering.
+
+Expected: The readout reports the current measured frame rate.
+
+Actual: It always displays 0.
+
+---

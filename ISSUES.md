@@ -863,3 +863,22 @@ created: 2026-08-27T06:51:53Z
 The Enable Sorting toggle and Sort Now button are obsolete and should no longer appear in the renderer inspector.
 
 ---
+
+## 47: Bounding-box overlay renders no visible wireframe
+
++++
+status: new
+priority: medium
+kind: none
+created: 2026-08-27T07:09:36Z
++++
+
+Enabling bounding boxes produces no visible wireframe in the scene. The SwiftUI Canvas overlay is present, but the failure stage is not yet confirmed.
+
+Investigate with focused diagnostics for bounding-box count and values, viewport size, clip-space W values, and projected-corner count before changing layout or rendering code.
+
+Expected: Enabling bounding boxes draws the cloud bounds over the rendered scene.
+
+Actual: No bounding-box lines appear.
+
+---

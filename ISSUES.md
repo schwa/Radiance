@@ -882,3 +882,24 @@ Expected: Enabling bounding boxes draws the cloud bounds over the rendered scene
 Actual: No bounding-box lines appear.
 
 ---
+
+## 48: Replace SplatView with a unified RenderView for every renderer
+
++++
+status: new
+priority: medium
+kind: none
+created: 2026-08-27T07:09:59Z
++++
+
+Remove all Radiance rendering paths that use SplatView.
+
+Implement every renderer mode through Radiance-owned RenderView composition so splats, the reference grid, axis lines, frame timing, and other scene elements share the same rendering surface. Multi-cloud rendering must follow the same architecture.
+
+Acceptance criteria:
+- No SplatView usage remains in Radiance.
+- Every renderer mode uses a Radiance-owned RenderView.
+- Grid and axis controls work in every renderer mode.
+- Single-cloud and multi-cloud rendering use the unified composition architecture.
+
+---

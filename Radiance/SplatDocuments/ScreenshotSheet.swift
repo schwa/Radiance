@@ -9,16 +9,28 @@ import simd
 import SwiftUI
 import UniformTypeIdentifiers
 
+#if canImport(AppKit)
+import AppKit
+#elseif canImport(UIKit)
+import UIKit
+#endif
+
 struct TransferableImage: Transferable {
     let cgImage: CGImage
 
     static var transferRepresentation: some TransferRepresentation {
         DataRepresentation(exportedContentType: .png) { image in
+            try image.pngData
+        }
+    }
+
+    var pngData: Data {
+        get throws {
             let data = NSMutableData()
             guard let destination = CGImageDestinationCreateWithData(data, UTType.png.identifier as CFString, 1, nil) else {
                 throw NSError(domain: "TransferableImage", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to create image destination"])
             }
-            CGImageDestinationAddImage(destination, image.cgImage, nil)
+            CGImageDestinationAddImage(destination, cgImage, nil)
             guard CGImageDestinationFinalize(destination) else {
                 throw NSError(domain: "TransferableImage", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to finalize image"])
             }
@@ -111,6 +123,10 @@ struct ScreenshotSheet: View {
                 }
                 .keyboardShortcut(.cancelAction)
 
+                Button("Copy", systemImage: "doc.on.doc") {
+                    copyScreenshot()
+                }
+                .disabled(isRendering || cloudInfos.isEmpty)
                 Button("Save…") {
                     renderForExport()
                 }
@@ -181,31 +197,62 @@ struct ScreenshotSheet: View {
     }
 
     private func renderForExport() {
-        guard !cloudInfos.isEmpty else {
-            errorMessage = "No splat clouds loaded"
-            return
-        }
-
         isRendering = true
         errorMessage = nil
 
         do {
-            let cgImage = try Self.renderToImage(
-                width: width,
-                height: height,
-                cloudInfos: cloudInfos,
-                sceneTransform: sceneTransform,
-                cameraMatrix: viewModel.renderCameraMatrix,
-                verticalAngleOfView: viewModel.verticalAngleOfView,
-                backgroundColor: viewModel.backgroundColor.resolve(in: .init())
-            )
-            exportImage = TransferableImage(cgImage: cgImage)
+            exportImage = TransferableImage(cgImage: try renderScreenshot())
             isExporting = true
         } catch {
             errorMessage = error.localizedDescription
         }
 
         isRendering = false
+    }
+
+    private func copyScreenshot() {
+        isRendering = true
+        errorMessage = nil
+
+        do {
+            let image = TransferableImage(cgImage: try renderScreenshot())
+            let url = FileManager.default.temporaryDirectory.appending(path: "Radiance Screenshot \(UUID().uuidString).png")
+            try image.pngData.write(to: url)
+
+            #if canImport(AppKit)
+            let pasteboard = NSPasteboard.general
+            pasteboard.clearContents()
+            pasteboard.setData(try image.pngData, forType: .png)
+            pasteboard.setString(url.absoluteString, forType: .fileURL)
+            #elseif canImport(UIKit)
+            UIPasteboard.general.items = [
+                [
+                    UTType.png.identifier: try image.pngData,
+                    UTType.fileURL.identifier: url.absoluteString
+                ]
+            ]
+            #endif
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+
+        isRendering = false
+    }
+
+    private func renderScreenshot() throws -> CGImage {
+        guard !cloudInfos.isEmpty else {
+            throw NSError(domain: "ScreenshotSheet", code: 1, userInfo: [NSLocalizedDescriptionKey: "No splat clouds loaded"])
+        }
+
+        return try Self.renderToImage(
+            width: width,
+            height: height,
+            cloudInfos: cloudInfos,
+            sceneTransform: sceneTransform,
+            cameraMatrix: viewModel.renderCameraMatrix,
+            verticalAngleOfView: viewModel.verticalAngleOfView,
+            backgroundColor: viewModel.backgroundColor.resolve(in: .init())
+        )
     }
 
     // swiftlint:disable:next function_parameter_count

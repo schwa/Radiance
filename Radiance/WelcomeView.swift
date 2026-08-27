@@ -38,8 +38,7 @@ struct WelcomeView: View {
                     .foregroundStyle(.secondary)
             }
 
-            Divider()
-                .frame(maxWidth: 420)
+            Spacer()
 
             VStack(alignment: .leading) {
                 ForEach(features, id: \.1) { symbol, title in
@@ -53,15 +52,13 @@ struct WelcomeView: View {
                 }
             }
 
-            Divider()
-                .frame(maxWidth: 420)
+            Spacer()
 
-            GroupBox("Need something to explore?") {
+            VStack {
+                Text("Need something to explore?")
+                    .foregroundStyle(.secondary)
                 SampleAssetsDownloadView()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top)
             }
-            .frame(maxWidth: 420)
 
             Spacer()
 

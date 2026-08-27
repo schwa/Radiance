@@ -403,12 +403,13 @@ Image description starts an unstructured task without retaining its handle. The 
 ## 21: Debug checkbox no longer works
 
 +++
-status: open
+status: closed
 priority: medium
 kind: bug
 labels: effort:s
 created: 2026-08-27T03:27:34Z
-updated: 2026-08-27T05:44:59Z
+updated: 2026-08-27T05:46:51Z
+closed: 2026-08-27T05:46:51Z
 +++
 
 The debug checkbox is broken again.
@@ -418,6 +419,8 @@ Expected: Toggling the checkbox enables or disables the debug display.
 Actual: The checkbox does not change the debug state.
 
 - `2026-08-27T05:44:59Z`: Related to #29: both are regressions in debug/visualization controls.
+- `2026-08-27T05:46:51Z`: Fixed by creating the single-document sort manager and routing debug rendering through it. macOS build passes.
+- `2026-08-27T06:03:36Z`: Correction: debug mode now uses GPUSortedSplatDebugRenderPipeline with GPUSortResources. It does not create or depend on AsyncSortManager.
 
 ---
 

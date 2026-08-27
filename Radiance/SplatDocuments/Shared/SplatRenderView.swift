@@ -8,6 +8,7 @@ import MetalSprocketsGaussianSplatShaders
 import MetalSprocketsSupport
 import MetalSprocketsUI
 import simd
+import Splats
 import SwiftUI
 
 // MARK: - Splat Render View
@@ -81,7 +82,30 @@ struct SplatRenderView: View {
     /// Render view with the appropriate camera controller applied based on camera mode
     @ViewBuilder
     private var cameraControlledRenderView: some View {
-        if mode == .single, debugParams == nil, viewModel.renderer != .sparkCPU, let cloud = clouds.first {
+        if mode == .single, let cloud = clouds.first, let debugParams {
+            let renderView = SingleCloudDebugRenderView(
+                splatCloud: cloud,
+                cameraMatrix: cameraMatrix,
+                modelMatrix: sceneTransform,
+                verticalAngleOfView: verticalAngleOfView,
+                nearClip: nearClip,
+                farClip: farClip,
+                debugParams: debugParams
+            )
+            .metalColorPixelFormat(.bgra8Unorm_srgb)
+            .metalClearColor(clearColor)
+
+            switch cameraMode {
+            case .object:
+                renderView.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
+
+            case .room:
+                renderView.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
+
+            case .spatialScene:
+                renderView.modifier(SpatialSceneCameraController(transform: $cameraMatrix))
+            }
+        } else if mode == .single, viewModel.renderer != .sparkCPU, let cloud = clouds.first {
             let projection = PerspectiveProjection(
                 verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
                 depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
@@ -192,6 +216,53 @@ struct SplatRenderView: View {
                 viewMatrix: viewMatrix,
                 projectionMatrix: projectionMatrix,
                 viewportSize: viewportSize
+            )
+        }
+    }
+}
+
+private struct SingleCloudDebugRenderView: View {
+    let splatCloud: GPUSplatCloud<SparkSplat>
+    let cameraMatrix: simd_float4x4
+    let modelMatrix: simd_float4x4
+    let verticalAngleOfView: Double
+    let nearClip: Double
+    let farClip: Double
+    let debugParams: DebugParams
+
+    @State private var resources: GPUSortResources
+
+    init(splatCloud: GPUSplatCloud<SparkSplat>, cameraMatrix: simd_float4x4, modelMatrix: simd_float4x4, verticalAngleOfView: Double, nearClip: Double, farClip: Double, debugParams: DebugParams) {
+        self.splatCloud = splatCloud
+        self.cameraMatrix = cameraMatrix
+        self.modelMatrix = modelMatrix
+        self.verticalAngleOfView = verticalAngleOfView
+        self.nearClip = nearClip
+        self.farClip = farClip
+        self.debugParams = debugParams
+
+        do {
+            let device = splatCloud.splats.unsafeMTLBuffer.device
+            _resources = State(initialValue: try GPUSortResources(device: device, capacity: splatCloud.count))
+        } catch {
+            fatalError("Failed to create GPU debug sort resources: \(error)")
+        }
+    }
+
+    var body: some View {
+        RenderView { _, drawableSize in
+            let projection = PerspectiveProjection(
+                verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
+                depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
+            )
+            return try GPUSortedSplatDebugRenderPipeline(
+                splatCloud: splatCloud,
+                projectionMatrix: projection.projectionMatrix(for: drawableSize),
+                modelMatrix: modelMatrix,
+                cameraMatrix: cameraMatrix,
+                drawableSize: SIMD2(Float(drawableSize.width), Float(drawableSize.height)),
+                debugParams: debugParams,
+                resources: resources
             )
         }
     }

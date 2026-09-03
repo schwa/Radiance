@@ -1,5 +1,6 @@
 #if os(iOS) || os(macOS)
 import CoreImage
+import CoreML
 import FoundationModels
 import GeometryLite3D
 import Interaction3D
@@ -10,6 +11,7 @@ import MetalSprocketsGaussianSplatsDebugShaders
 import MetalSprocketsGaussianSplatShaders
 import MetalSprocketsSupport
 import MetalSprocketsUI
+import os
 import simd
 import Splats
 import SwiftUI
@@ -247,7 +249,8 @@ struct SplatDocumentContentView: View {
                     horizonAngleDegrees: horizonObservation?.angle.converted(to: .degrees).value,
                     horizonConfidence: horizonObservation?.confidence,
                     aestheticsScore: aestheticsObservation.overallScore,
-                    isUtility: aestheticsObservation.isUtility
+                    isUtility: aestheticsObservation.isUtility,
+                    splatAngleGoodProbability: Self.splatAngleGoodProbability(for: image)
                 )
                 let generatedSubjectMask: CGImage?
                 if shouldGenerateSubjectMask {
@@ -701,6 +704,33 @@ struct SplatDocumentContentView: View {
 
         var errorDescription: String? {
             "The Foundation Model is unavailable on this Mac."
+        }
+    }
+
+    private static func splatAngleGoodProbability(for image: CGImage) -> Float? {
+        let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Radiance", category: "SplatAngleClassifier")
+        guard let modelURL = Bundle.main.url(forResource: "SplatAngleClassifier", withExtension: "mlmodelc") else {
+            logger.error("Model resource SplatAngleClassifier.mlmodelc was not found in the app bundle")
+            return nil
+        }
+        do {
+            let model = try MLModel(contentsOf: modelURL)
+            guard let constraint = model.modelDescription.inputDescriptionsByName["image"]?.imageConstraint else {
+                logger.error("Model has no image input constraint")
+                return nil
+            }
+            let input = try MLFeatureValue(cgImage: image, constraint: constraint)
+            let provider = try MLDictionaryFeatureProvider(dictionary: ["image": input])
+            let output = try model.prediction(from: provider)
+            guard let probabilities = output.featureValue(for: "classLabel_probs")?.dictionaryValue,
+                  let value = probabilities["good"] as? NSNumber else {
+                logger.error("Model output did not contain classLabel_probs[good]; outputs: \(output.featureNames)")
+                return nil
+            }
+            return value.floatValue
+        } catch {
+            logger.error("Model prediction failed: \(error.localizedDescription)")
+            return nil
         }
     }
 

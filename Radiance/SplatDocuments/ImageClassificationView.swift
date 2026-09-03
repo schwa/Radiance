@@ -1,5 +1,6 @@
 #if os(iOS) || os(macOS)
 import FoundationModels
+import CoreML
 import SwiftUI
 
 struct ImageClassification: Identifiable, Equatable, Sendable {
@@ -14,6 +15,7 @@ struct VisionImageAnalysis: Equatable, Sendable {
     let horizonConfidence: Float?
     let aestheticsScore: Float
     let isUtility: Bool
+    let splatAngleGoodProbability: Float?
 }
 
 @Generable
@@ -235,6 +237,9 @@ struct AnalysisInspectorView: View {
                     LabeledContent("Horizon", value: "Not Detected")
                 }
                 LabeledContent("Aesthetics Score", value: visionImageAnalysis.aestheticsScore.formatted(.number.precision(.fractionLength(2))))
+                if let splatAngleGoodProbability = visionImageAnalysis.splatAngleGoodProbability {
+                    LabeledContent("Camera Coherence", value: splatAngleGoodProbability.formatted(.percent.precision(.fractionLength(0))))
+                }
                 LabeledContent("Image Type", value: visionImageAnalysis.isUtility ? "Utility" : "Aesthetic")
             }
         }
@@ -256,7 +261,7 @@ struct AnalysisInspectorView: View {
                 ImageClassification(label: "train", confidence: 0.82),
                 ImageClassification(label: "railroad", confidence: 0.11)
             ],
-            visionImageAnalysis: VisionImageAnalysis(horizonAngleDegrees: 1.2, horizonConfidence: 0.91, aestheticsScore: 0.72, isUtility: false),
+            visionImageAnalysis: VisionImageAnalysis(horizonAngleDegrees: 1.2, horizonConfidence: 0.91, aestheticsScore: 0.72, isUtility: false, splatAngleGoodProbability: 0.82),
             highlightsSubjects: .constant(true),
             imageOrientation: .upright,
             imageViewpoint: .outsideLookingAtSubject,

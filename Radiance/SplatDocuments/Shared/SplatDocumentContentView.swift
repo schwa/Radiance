@@ -103,6 +103,8 @@ struct SplatDocumentContentView: View {
     @State private var showSettings = false
     #endif
 
+    @AppStorage("showFPSOverlay") private var showFPSOverlay = false
+
     @Environment(\.displayScale) private var displayScale
 
     // MARK: - Initialization
@@ -1037,13 +1039,28 @@ struct SplatDocumentContentView: View {
 
     @ViewBuilder
     private var mainContent: some View {
-        switch mode {
-        case .single:
-            singleModeMainContent
+        Group {
+            switch mode {
+            case .single:
+                singleModeMainContent
 
-        case .multi:
-            multiModeMainContent
+            case .multi:
+                multiModeMainContent
+            }
         }
+        #if os(macOS)
+        .overlay(alignment: .top) {
+            if showFPSOverlay {
+                Text(viewModel.currentFPS.formatted(.number.precision(.fractionLength(1))) + " FPS")
+                    .monospacedDigit()
+                    .font(.caption)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(.ultraThinMaterial, in: Capsule())
+                    .padding(.top, 8)
+            }
+        }
+        #endif
     }
 
     @ViewBuilder
@@ -1305,6 +1322,16 @@ struct SplatDocumentContentView: View {
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        #if os(iOS)
+        if showFPSOverlay {
+            ToolbarItem(placement: .principal) {
+                Text(viewModel.currentFPS.formatted(.number.precision(.fractionLength(1))) + " FPS")
+                    .monospacedDigit()
+                    .font(.caption)
+            }
+        }
+        #endif
+
         // Export PLY (single mode, image conversion only - specific workflow)
         if mode == .single, viewModel.isImageConversion, viewModel.convertedURL != nil {
             ToolbarItem(placement: .primaryAction) {

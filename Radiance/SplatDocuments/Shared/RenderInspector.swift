@@ -21,6 +21,7 @@ struct RenderInspector<CullingContent: View>: View {
     @ViewBuilder var cullingContent: () -> CullingContent
 
     @Environment(SplatViewModel.self) private var viewModel
+    @AppStorage("showFPSOverlay") private var showFPSOverlay = false
 
     var body: some View {
         Section("Renderer") {
@@ -34,10 +35,7 @@ struct RenderInspector<CullingContent: View>: View {
                     }
                 }
             }
-            LabeledContent("FPS") {
-                Text(viewModel.currentFPS.formatted(.number.precision(.fractionLength(1))))
-                    .monospacedDigit()
-            }
+            Toggle("Show FPS", isOn: $showFPSOverlay)
             ColorPicker("Background", selection: $backgroundColor)
             Toggle("Spherical Harmonics", isOn: $useSphericalHarmonics)
                 .disabled(sphericalHarmonicsDisabled || debugModeEnabled)

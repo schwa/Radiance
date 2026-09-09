@@ -1094,10 +1094,12 @@ With Enable Debug Mode on, the reference grid and axis lines are not rendered ev
 ## 59: Load a sidecar document with camera and model transform when opening a splat file
 
 +++
-status: new
+status: closed
 priority: medium
 kind: feature
 created: 2026-09-09T20:49:06Z
+updated: 2026-09-09T20:54:28Z
+closed: 2026-09-09T20:54:28Z
 +++
 
 Opening a splat file always starts with default camera and model transform. There is no way to keep viewing state alongside a splat file.
@@ -1105,5 +1107,6 @@ Opening a splat file always starts with default camera and model transform. Ther
 Desired: when loading a file, look for a sidecar document next to it containing camera and model transform info, and use it to populate the viewer state. Define a new UTType for the sidecar file. Related: #53 (per-document settings persistence) and the new camera share JSON (SplatScene.CameraState Transferable), which could share the same format.
 
 - `2026-09-09T20:50:07Z`: Strongly related to #53: use the same JSON format for the sidecar as for per-document settings persistence, based on SplatScene.CameraState plus model transform.
+- `2026-09-09T20:54:28Z`: Implemented: com.schwa.splatcamera UTType (.splatcamera, JSON), sidecar loaded next to splat files populating camera mode, clips, FOV, matrix, and optional model rotation. Share Camera exports the same format. Not covered: xattr/central-db persistence (#53), model translation/scale, sandboxed sibling reads for user-picked files.
 
 ---

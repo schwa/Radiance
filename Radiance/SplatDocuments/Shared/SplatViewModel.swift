@@ -362,12 +362,40 @@ final class SplatViewModel {
                 loadedClouds = [loadedCloud]
                 updateSceneTransform()
                 loadingState = .ready
+                applyCameraSidecar(for: url)
             } catch {
                 if !Task.isCancelled {
                     loadingState = .error("Failed to load splat file: \(error.localizedDescription)")
                 }
             }
         }
+    }
+
+    // Sidecar camera (#59): a .splatcamera JSON next to the splat file
+    // populates the camera on open. Same format as the Share Camera export.
+    private func applyCameraSidecar(for url: URL) {
+        let sidecarURL = url.deletingPathExtension().appendingPathExtension("splatcamera")
+        guard let data = try? Data(contentsOf: sidecarURL),
+              let camera = try? JSONDecoder().decode(SplatScene.CameraState.self, from: data) else {
+            return
+        }
+        if let mode = CameraMode(rawValue: camera.mode.capitalized) {
+            cameraMode = mode
+        }
+        if let nearClip = camera.nearClip {
+            self.nearClip = nearClip
+        }
+        if let farClip = camera.farClip {
+            self.farClip = farClip
+        }
+        if let modelRotation = camera.modelRotation {
+            modelRotationX = modelRotation.x
+            modelRotationY = modelRotation.y
+            modelRotationZ = modelRotation.z
+        }
+        verticalAngleOfView = camera.verticalAngleOfView
+        // Last: the cameraMode didSet resets the matrix.
+        cameraMatrix = camera.matrix
     }
 
     // MARK: - Loading (Multi-Cloud Scene)

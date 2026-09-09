@@ -153,7 +153,7 @@ struct CameraInspector: View {
 
 extension SplatScene.CameraState: nonisolated Transferable {
     nonisolated static var transferRepresentation: some TransferRepresentation {
-        CodableRepresentation(contentType: .json)
+        CodableRepresentation(contentType: .splatCamera)
     }
 }
 #endif

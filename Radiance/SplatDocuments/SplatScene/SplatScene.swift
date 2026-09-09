@@ -211,13 +211,16 @@ struct SplatScene: nonisolated Codable, Sendable {
         /// Clip plane distances in metres (absent in older documents)
         var nearClip: Double?
         var farClip: Double?
+        /// Model rotation in radians (X, Y, Z), absent in older documents
+        var modelRotation: SIMD3<Float>?
 
-        init(matrix: simd_float4x4 = .identity, verticalAngleOfView: Double = 60.0, mode: String = "object", nearClip: Double? = nil, farClip: Double? = nil) {
+        init(matrix: simd_float4x4 = .identity, verticalAngleOfView: Double = 60.0, mode: String = "object", nearClip: Double? = nil, farClip: Double? = nil, modelRotation: SIMD3<Float>? = nil) {
             self.matrix = matrix
             self.verticalAngleOfView = verticalAngleOfView
             self.mode = mode
             self.nearClip = nearClip
             self.farClip = farClip
+            self.modelRotation = modelRotation
         }
 
         // Custom decoder for backward compatibility
@@ -228,10 +231,11 @@ struct SplatScene: nonisolated Codable, Sendable {
             mode = try container.decodeIfPresent(String.self, forKey: .mode) ?? "object"
             nearClip = try container.decodeIfPresent(Double.self, forKey: .nearClip)
             farClip = try container.decodeIfPresent(Double.self, forKey: .farClip)
+            modelRotation = try container.decodeIfPresent(SIMD3<Float>.self, forKey: .modelRotation)
         }
 
         private enum CodingKeys: String, CodingKey {
-            case matrix, verticalAngleOfView, mode, nearClip, farClip
+            case matrix, verticalAngleOfView, mode, nearClip, farClip, modelRotation
         }
     }
 
@@ -287,4 +291,5 @@ extension simd_float4x4: @retroactive Codable {
 
 extension UTType {
     nonisolated static let splatScene = UTType(exportedAs: "com.schwa.splatscene", conformingTo: .json)
+    nonisolated static let splatCamera = UTType(exportedAs: "com.schwa.splatcamera", conformingTo: .json)
 }

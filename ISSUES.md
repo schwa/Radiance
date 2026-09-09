@@ -1145,12 +1145,13 @@ Desired: when loading a file, look for a sidecar document next to it containing 
 ## 60: Export Screenshot sheet defaults width and height to 0
 
 +++
-status: open
+status: closed
 priority: medium
 kind: bug
 labels: effort:s, area:ui
 created: 2026-09-09T21:08:23Z
-updated: 2026-09-09T23:03:59Z
+updated: 2026-09-09T23:53:47Z
+closed: 2026-09-09T23:53:47Z
 +++
 
 Opening the Export Screenshot sheet shows Width 0 and Height 0 instead of the current viewport size (times display scale), and there is no preview ('No Preview'). Observed on iPad with the tomatoes sample loaded.

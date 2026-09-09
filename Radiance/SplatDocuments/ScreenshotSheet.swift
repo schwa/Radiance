@@ -42,6 +42,7 @@ struct TransferableImage: Transferable {
 struct ScreenshotSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(SplatViewModel.self) private var viewModel
+    @Environment(\.displayScale) private var displayScale
 
     let sceneTransform: simd_float4x4
     /// Cloud descriptors and their model transforms for loading fresh clouds
@@ -138,6 +139,7 @@ struct ScreenshotSheet: View {
         .padding()
         .frame(width: 360)
         .onAppear {
+            resolveDefaultSizeIfNeeded()
             renderPreview()
         }
         .onChange(of: width) {
@@ -160,6 +162,23 @@ struct ScreenshotSheet: View {
             case .failure(let error):
                 errorMessage = error.localizedDescription
             }
+        }
+    }
+
+    /// The sheet's defaults can be captured before the render view has laid
+    /// out (viewSize still .zero), yielding 0×0. Re-resolve from the live
+    /// view model at presentation time.
+    private func resolveDefaultSizeIfNeeded() {
+        guard width <= 0 || height <= 0 else {
+            return
+        }
+        let viewSize = viewModel.viewSize
+        if viewSize.width > 0, viewSize.height > 0 {
+            width = Int(viewSize.width * displayScale)
+            height = Int(viewSize.height * displayScale)
+        } else {
+            width = 1_920
+            height = 1_080
         }
     }
 

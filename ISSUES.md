@@ -1027,3 +1027,79 @@ Expected: axis lines end at the horizon, at least when the grid is on (they may 
 Screenshot: iPad, Point renderer, dark background, grid + axes on.
 
 ---
+
+## 55: Grid and axis lines are aliased
+
++++
+status: new
+priority: low
+kind: enhancement
+labels: ui, rendering
+created: 2026-09-09T20:37:30Z
++++
+
+The reference grid and axis lines render with visible aliasing (jagged/shimmering lines), especially at grazing angles where grid lines converge toward the horizon.
+
+## Proposed fix (per schwa)
+Render the guides pass with MSAA if possible.
+
+---
+
+## 56: Bundle display name shows Radiance-Viewer instead of Radiance
+
++++
+status: new
+priority: low
+kind: task
+created: 2026-09-09T20:39:40Z
++++
+
+The status bar and app switcher show 'Radiance-Viewer' as the app name.
+
+## Proposed fix (per schwa)
+Set the bundle display name to just 'Radiance'.
+
+---
+
+## 57: About box shows the wrong title
+
++++
+status: new
+priority: low
+kind: bug
+labels: ui
+created: 2026-09-09T20:43:43Z
++++
+
+The About window's title is wrong (shows the bundle/product name rather than the app name Radiance).
+
+---
+
+## 58: Grid and axis lines missing in debug mode
+
++++
+status: new
+priority: low
+kind: bug
+labels: rendering
+created: 2026-09-09T20:48:25Z
++++
+
+With Enable Debug Mode on, the reference grid and axis lines are not rendered even when Show Reference Grid / Show Axis Lines are enabled. The debug render path (SingleCloudDebugRenderView) does not draw the scene guides pass.
+
+---
+
+## 59: Load a sidecar document with camera and model transform when opening a splat file
+
++++
+status: new
+priority: medium
+kind: feature
+created: 2026-09-09T20:49:06Z
++++
+
+Opening a splat file always starts with default camera and model transform. There is no way to keep viewing state alongside a splat file.
+
+Desired: when loading a file, look for a sidecar document next to it containing camera and model transform info, and use it to populate the viewer state. Define a new UTType for the sidecar file. Related: #53 (per-document settings persistence) and the new camera share JSON (SplatScene.CameraState Transferable), which could share the same format.
+
+---

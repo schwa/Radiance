@@ -137,7 +137,7 @@ struct SplatDocumentContentView: View {
         }
         .toolbar { toolbarContent }
         #if os(iOS)
-        .toolbarColorScheme(backgroundIsDark ? .dark : .light, for: .navigationBar)
+        .preferredColorScheme(backgroundIsDark ? .dark : .light)
         #endif
         #if os(iOS)
         .sheet(isPresented: $showSettings) {

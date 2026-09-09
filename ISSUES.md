@@ -913,7 +913,7 @@ Acceptance criteria:
 status: new
 priority: high
 kind: task
-labels: rendering,architecture,effort:l
+labels: rendering, architecture, effort:l
 created: 2026-08-27T13:39:30Z
 +++
 
@@ -935,5 +935,91 @@ Acceptance criteria:
 - Sorting has one ownership/lifecycle model and maintains one global index order across the collection.
 - Document-mode branching remains only for UI, document data preparation, interaction, and scene-specific controls.
 - Tests or focused checks cover equivalent output/configuration for a one-cloud document and a one-cloud scene.
+
+---
+
+## 50: Inspector content is cramped and clipped at narrow widths on iPad
+
++++
+status: new
+priority: medium
+kind: none
+labels: bug, ui
+created: 2026-09-09T19:51:15Z
++++
+
+The inspector column (min width 200) is too narrow for its content on iPad. Observed in the simulator (iPad Pro 13-inch, iOS 27):
+
+- Tab picker truncates labels: 'Cam…', 'Rend…', 'Analy…'
+- Camera Position row clips the last field; axis labels overflow
+- 'Keep cloud in frame' toggle label wraps awkwardly
+- Angle of view H/V segmented control plus value crammed onto one line
+
+Expected: inspector content remains readable and fully visible at the minimum column width.
+
+## Proposed fix (per schwa)
+Raise the inspector minimum column width to fit the content, and make the inspector controls adaptive so they reflow gracefully at narrow widths.
+
+---
+
+## 51: Guides overlay draws on top of splats
+
++++
+status: new
+priority: low
+kind: none
+labels: ui, rendering
+created: 2026-09-09T20:23:05Z
++++
+
+After standardizing scene guides into a single trailing SceneGuidesRenderPass shared by all renderers, the grid and axis lines composite over the splat output. Previously (Spark CPU/GPU, Stochastic) the grid was drawn before the splats, so splats alpha-blended over it. Guides-first ordering is currently impossible for tile and point because their passes clear the drawable internally (see MetalSprocketsGaussianSplats issue on load-action control).
+
+---
+
+## 52: Point splat renderer passes a constant frameIndex and omits reprojection/supersampling configuration
+
++++
+status: new
+priority: low
+kind: none
+labels: rendering
+created: 2026-09-09T20:23:05Z
++++
+
+SplatRenderView calls PointSplatRenderPipeline with frameIndex: 0 every frame and does not pass the supersampling, pointsPerThread, or reprojection options that the MetalSprocketsGaussianSplats demo (SplatView) wires up. Any temporal logic keyed off frameIndex never advances, and the renderer runs with defaults rather than the demo's tuned configuration.
+
+---
+
+## 53: Remember per-document settings across sessions
+
++++
+status: new
+priority: medium
+kind: feature
+created: 2026-09-09T20:30:04Z
++++
+
+Viewer settings (renderer, camera, background color, model orientation, inspector state, etc.) reset every time a document is reopened. Settings should persist per document.
+
+## Proposed fix (per schwa)
+Store settings either in an extended attribute (xattr) on the document file or in a central database keyed by document.
+
+---
+
+## 54: Axis lines extend past the horizon
+
++++
+status: new
+priority: low
+kind: bug
+labels: ui,rendering
+created: 2026-09-09T20:30:16Z
++++
+
+With the reference grid and axis lines both enabled, the X (red) and Z (blue) axis lines extend above the horizon into the sky, and the Y (green) axis runs the full viewport height. The grid stops at the horizon, so the axis lines look detached from the scene.
+
+Expected: axis lines end at the horizon, at least when the grid is on (they may just look odd combined with the grid).
+
+Screenshot: iPad, Point renderer, dark background, grid + axes on.
 
 ---

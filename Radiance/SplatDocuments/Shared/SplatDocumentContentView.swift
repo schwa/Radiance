@@ -115,6 +115,14 @@ struct SplatDocumentContentView: View {
         self._viewModel = State(initialValue: SplatViewModel(mode: mode == .single ? .single : .multi))
     }
 
+    #if os(iOS)
+    private var backgroundIsDark: Bool {
+        let color = viewModel.backgroundColor.resolve(in: .init())
+        let luminance = 0.2126 * color.red + 0.7152 * color.green + 0.0722 * color.blue
+        return luminance < 0.5
+    }
+    #endif
+
     // MARK: - Body
 
     var body: some View {
@@ -128,6 +136,9 @@ struct SplatDocumentContentView: View {
             }
         }
         .toolbar { toolbarContent }
+        #if os(iOS)
+        .toolbarColorScheme(backgroundIsDark ? .dark : .light, for: .navigationBar)
+        #endif
         #if os(iOS)
         .sheet(isPresented: $showSettings) {
             NavigationStack {
@@ -813,7 +824,7 @@ struct SplatDocumentContentView: View {
                     inspectorContent
                 }
                 #if !os(visionOS)
-                .inspectorColumnWidth(min: 200, ideal: 300, max: 400)
+                .inspectorColumnWidth(min: 320, ideal: 320, max: 400)
                 #endif
             }
             .focusedSceneValue(\.inspectorVisibility, $showInspector)
@@ -864,7 +875,7 @@ struct SplatDocumentContentView: View {
                         inspectorContent
                     }
                     #if !os(visionOS)
-                    .inspectorColumnWidth(min: 200, ideal: 300, max: 400)
+                    .inspectorColumnWidth(min: 320, ideal: 320, max: 400)
                     #endif
                 }
         }

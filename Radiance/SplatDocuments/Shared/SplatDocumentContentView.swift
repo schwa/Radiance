@@ -219,6 +219,11 @@ struct SplatDocumentContentView: View {
 
     private func setupInitialState() {
         inspectorTab = mode == .multi ? .scene : .cloud
+        #if os(iOS)
+        if mode == .single, let fileURL {
+            LastDocumentStore.save(fileURL)
+        }
+        #endif
     }
 
     private var renderCameraMatrix: Binding<simd_float4x4> {

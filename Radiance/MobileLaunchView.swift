@@ -2,9 +2,11 @@
 import SwiftUI
 
 struct MobileLaunchView: View {
-
     @State private var openImport = false
     @State private var isShowingWelcome = !UserDefaults.standard.bool(forKey: "doNotShowWelcomeAgain")
+    #if os(iOS)
+    @State private var restoredDocumentURL: URL?
+    #endif
 
     var body: some View {
         if isShowingWelcome {
@@ -12,7 +14,31 @@ struct MobileLaunchView: View {
                 isShowingWelcome = false
             }
         } else {
+            #if os(iOS)
+            if let url = restoredDocumentURL {
+                NavigationStack {
+                    SplatDocumentView(
+                        document: SplatDocument(),
+                        fileURL: url
+                    )
+                    .toolbar {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button("Back", systemImage: "chevron.left") {
+                                url.stopAccessingSecurityScopedResource()
+                                restoredDocumentURL = nil
+                            }
+                        }
+                    }
+                }
+            } else {
+                documentLaunchView
+                    .onAppear {
+                        restoredDocumentURL = LastDocumentStore.restoreOnce()
+                    }
+            }
+            #else
             documentLaunchView
+            #endif
         }
     }
 

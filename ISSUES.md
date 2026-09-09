@@ -41,9 +41,9 @@ This reduces memory allocations during rendering by reusing index buffers instea
 status: open
 priority: high
 kind: task
-labels: rendering, performance, effort:l
+labels: rendering, performance, effort:l, area:rendering, area:performance
 created: 2026-08-24T23:09:54Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-09-09T23:04:06Z
 +++
 
 Multi-cloud rendering requests AsyncSortManager sorts whenever the camera or scene transform changes.
@@ -54,6 +54,7 @@ Actual: every relevant view change schedules CPU sorting before rendering.
 
 - `2026-08-25T02:26:36Z`: Inspected MetalSprocketsGaussianSplats GPU sorting APIs and the current multi-cloud render pass. Punting: GPUSortedSplatRenderPipeline accepts one GPUSplatCloud, while correct alpha compositing requires one global ordering across clouds; independently sorting each cloud would render incorrectly. Unblocker: add/identify a GPU sort API for multiple clouds or a supported way to combine their GPU buffers before sorting.
 - `2026-08-27T06:16:46Z`: Rechecked the resolved MetalSprocketsGaussianSplats API. GPUSortedSplatRenderPipeline still accepts a single GPUSplatCloud, while this view needs one globally sorted index stream across multiple clouds for correct alpha compositing. Concrete unblocker remains a dependency API that GPU-sorts multiple clouds as one logical stream (or exposes a combined GPU cloud/buffer view).
+- `2026-09-09T23:50:47Z`: Re-checked MetalSprocketsGaussianSplats: GPUSplatSortComputePass/GPUSortedSplatRenderPipeline are still single-cloud (one cloud + one modelMatrix per sort slot); only CPU paths (SplatSorter/AsyncSortManager) accept [GPUSplatCloud]. Punting: still blocked on a dependency API that GPU-sorts multiple clouds as one globally ordered stream. Unblocker: add multi-cloud support to the GPU sort in MetalSprocketsGaussianSplats first.
 
 ---
 
@@ -174,9 +175,9 @@ Actual: moving the camera triggers background classification, which calls the of
 status: open
 priority: high
 kind: task
-labels: swiftui, architecture, performance, effort:xl
+labels: swiftui, architecture, performance, effort:xl, area:swiftui, area:architecture, area:performance
 created: 2026-08-25T02:10:46Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-09-09T23:04:06Z
 +++
 
 SplatDocumentContentView owns rendering, Vision analysis, Best View search, image generation, camera math, file coordination, and most screen composition. Changes to frequently updated state can reevaluate unrelated UI and the mixed responsibilities make behavior difficult to isolate and test.
@@ -229,9 +230,9 @@ The Best View attempt ribbon contains collection rendering, scroll coordination,
 status: open
 priority: low
 kind: task
-labels: swiftui, performance, effort:xs
+labels: swiftui, performance, effort:xs, area:swiftui, area:performance
 created: 2026-08-25T02:10:46Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-09-09T23:04:06Z
 +++
 
 SplashScene wraps recentDocumentURLs.enumerated() in Array inside the List body. Every body evaluation allocates and copies the collection even though the enumerated collection is directly usable by ForEach.
@@ -244,9 +245,9 @@ SplashScene wraps recentDocumentURLs.enumerated() in Array inside the List body.
 status: open
 priority: low
 kind: task
-labels: swiftui, accessibility, effort:xs
+labels: swiftui, accessibility, effort:xs, area:swiftui, area:accessibility
 created: 2026-08-25T02:10:46Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-09-09T23:04:06Z
 +++
 
 NormalizedBoundsSlider and AbsoluteBoundsSlider manually align labels and values with HStack and Spacer. This bypasses the standard form alignment, truncation, and Dynamic Type behavior provided by SwiftUI's semantic label-value container.
@@ -259,9 +260,9 @@ NormalizedBoundsSlider and AbsoluteBoundsSlider manually align labels and values
 status: open
 priority: low
 kind: task
-labels: swiftui, legacy, effort:xs
+labels: swiftui, legacy, effort:xs, area:swiftui, area:legacy
 created: 2026-08-25T02:10:46Z
-updated: 2026-08-25T02:18:27Z
+updated: 2026-09-09T23:04:06Z
 +++
 
 TileDebugViews uses the legacy cornerRadius modifier rather than the current shape clipping API preferred by the project's SwiftUI conventions.
@@ -667,6 +668,7 @@ updated: 2026-08-27T05:44:59Z
 When the user saves a splat, serialize the current camera information as JSON and store it in a file extended attribute.
 
 - `2026-08-27T05:44:59Z`: Related to #36: both persist additional metadata when saving a splat.
+- `2026-09-09T23:04:06Z`: Related: #53 covers remembering all per-document settings (xattr or central DB); this issue is the camera-specific xattr variant. The .splatcamera sidecar (#59, implemented) already defines the JSON format both should reuse.
 
 ---
 
@@ -821,10 +823,12 @@ Add a window or view that visualizes the colors of all splats as an image for in
 ## 44: Spherical Harmonics control has no effect
 
 +++
-status: new
+status: open
 priority: medium
-kind: none
+kind: bug
+labels: effort:m, area:rendering
 created: 2026-08-27T06:51:53Z
+updated: 2026-09-09T23:03:58Z
 +++
 
 The Spherical Harmonics control does not change the rendered splat appearance.
@@ -838,10 +842,12 @@ Actual: The rendered output does not change.
 ## 45: FPS display is always zero
 
 +++
-status: new
+status: closed
 priority: medium
 kind: none
 created: 2026-08-27T06:51:53Z
+updated: 2026-09-09T21:03:17Z
+closed: 2026-09-09T21:03:17Z
 +++
 
 The renderer FPS readout remains at 0 while the scene is actively rendering.
@@ -850,28 +856,36 @@ Expected: The readout reports the current measured frame rate.
 
 Actual: It always displays 0.
 
+- `2026-09-09T21:03:17Z`: Verified working; closing.
+
 ---
 
 ## 46: Remove manual sorting controls
 
 +++
-status: new
+status: closed
 priority: medium
 kind: none
 created: 2026-08-27T06:51:53Z
+updated: 2026-09-09T23:03:58Z
+closed: 2026-09-09T23:03:58Z
 +++
 
 The Enable Sorting toggle and Sort Now button are obsolete and should no longer appear in the renderer inspector.
+
+- `2026-09-09T23:03:58Z`: Already done: the Sorting section (Enable Sorting toggle, Sort Now button, sort stats) was removed from the Render inspector in commit 'Polish inspector panes'.
 
 ---
 
 ## 47: Bounding-box overlay renders no visible wireframe
 
 +++
-status: new
+status: open
 priority: medium
-kind: none
+kind: bug
+labels: effort:m, area:rendering
 created: 2026-08-27T07:09:36Z
+updated: 2026-09-09T23:03:58Z
 +++
 
 Enabling bounding boxes produces no visible wireframe in the scene. The SwiftUI Canvas overlay is present, but the failure stage is not yet confirmed.
@@ -910,11 +924,12 @@ Acceptance criteria:
 ## 49: Single- and multi-cloud documents use divergent rendering paths
 
 +++
-status: new
+status: open
 priority: high
 kind: task
-labels: rendering, architecture, effort:l
+labels: rendering, architecture, effort:l, area:rendering, area:architecture
 created: 2026-08-27T13:39:30Z
+updated: 2026-09-09T23:03:59Z
 +++
 
 Single-cloud documents and multi-cloud scenes enter different renderer implementations even though both already provide an array of GPU splat clouds to SplatRenderView. This duplicates render-pass composition, sorting ownership, debug rendering, scene-guide handling, and frame lifecycle behavior. Features can consequently work differently depending on document type; renderer selection currently applies only to single-cloud rendering, while bounds culling applies only to multi-cloud rendering.
@@ -936,16 +951,20 @@ Acceptance criteria:
 - Document-mode branching remains only for UI, document data preparation, interaction, and scene-specific controls.
 - Tests or focused checks cover equivalent output/configuration for a one-cloud document and a one-cloud scene.
 
+- `2026-09-09T23:51:06Z`: Assessed for the autonomous run: the unification spans SplatRenderView (919 lines, five single-cloud pipelines), MultiCloudRenderView, sorting ownership (AsyncSortManager lifecycle), debug paths, and capability-driven UI. Punting: effort:l redesign with wide blast radius, not the obvious/low-risk fix this run is scoped to. Unblocker: split into subtasks (e.g. 1. collection-based core renderer, 2. route single-cloud through it, 3. consolidate debug/guides, 4. capability surfacing) or green-light a dedicated session for the full refactor.
+
 ---
 
 ## 50: Inspector content is cramped and clipped at narrow widths on iPad
 
 +++
-status: new
+status: closed
 priority: medium
-kind: none
-labels: bug, ui
+kind: bug
+labels: bug, ui, effort:m, area:ui
 created: 2026-09-09T19:51:15Z
+updated: 2026-09-09T23:48:19Z
+closed: 2026-09-09T23:48:19Z
 +++
 
 The inspector column (min width 200) is too narrow for its content on iPad. Observed in the simulator (iPad Pro 13-inch, iOS 27):
@@ -959,6 +978,8 @@ Expected: inspector content remains readable and fully visible at the minimum co
 
 ## Proposed fix (per schwa)
 Raise the inspector minimum column width to fit the content, and make the inspector controls adaptive so they reflow gracefully at narrow widths.
+
+- `2026-09-09T23:48:19Z`: Camera controls reworked in Interaction3D: fields flex to divide the sidebar width, native rounded borders, AOV slider behind a popover, forced small control size removed.
 
 ---
 
@@ -983,11 +1004,12 @@ After standardizing scene guides into a single trailing SceneGuidesRenderPass sh
 ## 52: Point splat renderer passes a constant frameIndex and omits reprojection/supersampling configuration
 
 +++
-status: new
+status: open
 priority: low
-kind: none
-labels: rendering
+kind: bug
+labels: effort:s, area:rendering
 created: 2026-09-09T20:23:05Z
+updated: 2026-09-09T23:03:59Z
 +++
 
 SplatRenderView calls PointSplatRenderPipeline with frameIndex: 0 every frame and does not pass the supersampling, pointsPerThread, or reprojection options that the MetalSprocketsGaussianSplats demo (SplatView) wires up. Any temporal logic keyed off frameIndex never advances, and the renderer runs with defaults rather than the demo's tuned configuration.
@@ -997,10 +1019,12 @@ SplatRenderView calls PointSplatRenderPipeline with frameIndex: 0 every frame an
 ## 53: Remember per-document settings across sessions
 
 +++
-status: new
+status: open
 priority: medium
 kind: feature
+labels: effort:m
 created: 2026-09-09T20:30:04Z
+updated: 2026-09-09T23:03:59Z
 +++
 
 Viewer settings (renderer, camera, background color, model orientation, inspector state, etc.) reset every time a document is reopened. Settings should persist per document.
@@ -1009,17 +1033,19 @@ Viewer settings (renderer, camera, background color, model orientation, inspecto
 Store settings either in an extended attribute (xattr) on the document file or in a central database keyed by document.
 
 - `2026-09-09T20:50:07Z`: Strongly related to #59: whichever storage wins (xattr, database, or sidecar), use the same JSON format as #59's sidecar — based on SplatScene.CameraState (camera matrix, FOV, mode, clip planes) plus model transform.
+- `2026-09-09T23:04:06Z`: Related: #35 (camera xattr) is a narrower slice of this.
 
 ---
 
 ## 54: Axis lines extend past the horizon
 
 +++
-status: new
+status: open
 priority: low
 kind: bug
-labels: ui, rendering
+labels: ui, rendering, effort:s, area:ui, area:rendering
 created: 2026-09-09T20:30:16Z
+updated: 2026-09-09T23:03:59Z
 +++
 
 With the reference grid and axis lines both enabled, the X (red) and Z (blue) axis lines extend above the horizon into the sky, and the Y (green) axis runs the full viewport height. The grid stops at the horizon, so the axis lines look detached from the scene.
@@ -1033,11 +1059,12 @@ Screenshot: iPad, Point renderer, dark background, grid + axes on.
 ## 55: Grid and axis lines are aliased
 
 +++
-status: new
+status: open
 priority: low
 kind: enhancement
-labels: ui, rendering
+labels: ui, rendering, effort:m, area:rendering
 created: 2026-09-09T20:37:30Z
+updated: 2026-09-09T23:03:59Z
 +++
 
 The reference grid and axis lines render with visible aliasing (jagged/shimmering lines), especially at grazing angles where grid lines converge toward the horizon.
@@ -1050,10 +1077,12 @@ Render the guides pass with MSAA if possible.
 ## 56: Bundle display name shows Radiance-Viewer instead of Radiance
 
 +++
-status: new
+status: open
 priority: low
 kind: task
+labels: effort:xs, area:ui
 created: 2026-09-09T20:39:40Z
+updated: 2026-09-09T23:03:59Z
 +++
 
 The status bar and app switcher show 'Radiance-Viewer' as the app name.
@@ -1066,11 +1095,12 @@ Set the bundle display name to just 'Radiance'.
 ## 57: About box shows the wrong title
 
 +++
-status: new
+status: open
 priority: low
 kind: bug
-labels: ui
+labels: effort:xs, area:ui
 created: 2026-09-09T20:43:43Z
+updated: 2026-09-09T23:03:59Z
 +++
 
 The About window's title is wrong (shows the bundle/product name rather than the app name Radiance).
@@ -1080,11 +1110,12 @@ The About window's title is wrong (shows the bundle/product name rather than the
 ## 58: Grid and axis lines missing in debug mode
 
 +++
-status: new
+status: open
 priority: low
 kind: bug
-labels: rendering
+labels: effort:s, area:rendering
 created: 2026-09-09T20:48:25Z
+updated: 2026-09-09T23:03:59Z
 +++
 
 With Enable Debug Mode on, the reference grid and axis lines are not rendered even when Show Reference Grid / Show Axis Lines are enabled. The debug render path (SingleCloudDebugRenderView) does not draw the scene guides pass.
@@ -1108,5 +1139,52 @@ Desired: when loading a file, look for a sidecar document next to it containing 
 
 - `2026-09-09T20:50:07Z`: Strongly related to #53: use the same JSON format for the sidecar as for per-document settings persistence, based on SplatScene.CameraState plus model transform.
 - `2026-09-09T20:54:28Z`: Implemented: com.schwa.splatcamera UTType (.splatcamera, JSON), sidecar loaded next to splat files populating camera mode, clips, FOV, matrix, and optional model rotation. Share Camera exports the same format. Not covered: xattr/central-db persistence (#53), model translation/scale, sandboxed sibling reads for user-picked files.
+
+---
+
+## 60: Export Screenshot sheet defaults width and height to 0
+
++++
+status: open
+priority: medium
+kind: bug
+labels: effort:s, area:ui
+created: 2026-09-09T21:08:23Z
+updated: 2026-09-09T23:03:59Z
++++
+
+Opening the Export Screenshot sheet shows Width 0 and Height 0 instead of the current viewport size (times display scale), and there is no preview ('No Preview'). Observed on iPad with the tomatoes sample loaded.
+
+---
+
+## 61: Export Screenshot sheet action buttons are badly laid out
+
++++
+status: open
+priority: low
+kind: bug
+labels: effort:s, area:ui
+created: 2026-09-09T21:08:23Z
+updated: 2026-09-09T23:03:59Z
++++
+
+The Cancel / Copy / Save… controls at the bottom of the Export Screenshot sheet are cramped into one ad-hoc row with mixed styles: Cancel is a bare text button, Copy is icon+text, Save… is a small prominent capsule. They neither follow alert/sheet button conventions nor align with the Width/Height fields above. Observed on iPad.
+
+---
+
+## 62: Render continuously even when nothing changes; add on-demand rendering toggle
+
++++
+status: open
+priority: medium
+kind: feature
+labels: rendering, performance, effort:m, area:rendering, area:performance
+created: 2026-09-09T21:22:48Z
+updated: 2026-09-09T23:03:59Z
++++
+
+The MTKView runs in continuous mode, redrawing at 60 fps even when the scene is static, wasting power (notably on iPad).
+
+Desired: render on demand by default — only when the camera, model transform, or render parameters change — with a toggle (Render pane) to switch back to continuous rendering. Renderers that accumulate over time (stochastic, point splat reprojection) need continuous frames while converging, so the on-demand mode must account for them. Related: MetalSprocketsGaussianSplats has an issue about rendering a new frame only when render-affecting inputs change.
 
 ---

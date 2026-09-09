@@ -1048,6 +1048,7 @@ struct SplatDocumentContentView: View {
                 multiModeMainContent
             }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         #if os(macOS)
         .overlay(alignment: .top) {
             if showFPSOverlay {

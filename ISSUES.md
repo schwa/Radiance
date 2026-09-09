@@ -965,14 +965,18 @@ Raise the inspector minimum column width to fit the content, and make the inspec
 ## 51: Guides overlay draws on top of splats
 
 +++
-status: new
+status: closed
 priority: low
 kind: none
 labels: ui, rendering
 created: 2026-09-09T20:23:05Z
+updated: 2026-09-09T20:34:23Z
+closed: 2026-09-09T20:34:23Z
 +++
 
 After standardizing scene guides into a single trailing SceneGuidesRenderPass shared by all renderers, the grid and axis lines composite over the splat output. Previously (Spark CPU/GPU, Stochastic) the grid was drawn before the splats, so splats alpha-blended over it. Guides-first ordering is currently impossible for tile and point because their passes clear the drawable internally (see MetalSprocketsGaussianSplats issue on load-action control).
+
+- `2026-09-09T20:34:23Z`: Guides now draw first and all splat passes load instead of clearing (MSGS colorLoadAction), so splats composite over the grid/axes as before.
 
 ---
 
@@ -1012,7 +1016,7 @@ Store settings either in an extended attribute (xattr) on the document file or i
 status: new
 priority: low
 kind: bug
-labels: ui,rendering
+labels: ui, rendering
 created: 2026-09-09T20:30:16Z
 +++
 

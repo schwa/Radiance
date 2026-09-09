@@ -263,42 +263,46 @@ private struct SingleCloudGuidedRenderView: View {
             let projectionMatrix = projection.projectionMatrix(for: drawableSize)
             let drawableSize = SIMD2<Float>(Float(drawableSize.width), Float(drawableSize.height))
 
+            // Guides draw first; splat passes then load instead of clearing,
+            // so splats always composite over the grid and axes.
+            let showGuides = showGrid || showAxes
+            let splatLoadAction: MTLLoadAction? = showGuides ? .load : nil
+            if showGuides {
+                SceneGuidesRenderPass(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, gridColor: showGrid ? color : nil, showAxes: showAxes)
+            }
+
             switch renderer {
             case .sparkCPU:
                 if let sortedIndices {
                     try RenderPass {
-                        if showGrid {
-                            GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: color, backgroundColor: [0, 0, 0, 1], backfaceColor: [0, 0, 0, 1])
-                        }
                         try SparkSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, configuration: .init(useSphericalHarmonics: useSphericalHarmonics), sortedIndices: sortedIndices)
-                        if showAxes {
-                            try AxisLinesRenderPipeline(mvpMatrix: projectionMatrix * cameraMatrix.inverse, viewMatrix: cameraMatrix.inverse, projectionMatrix: projectionMatrix, viewportSize: drawableSize)
+                    }
+                    .renderPassDescriptorModifier { descriptor in
+                        if let splatLoadAction {
+                            descriptor.colorAttachments[0].loadAction = splatLoadAction
                         }
                     }
                 }
 
             case .sparkGPU:
-                try GuidedSplatRenderPass(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, useSphericalHarmonics: useSphericalHarmonics, gridColor: showGrid ? color : nil, showAxes: showAxes, boxes: boxInstances, resources: resources)
+                try GuidedSplatRenderPass(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, useSphericalHarmonics: useSphericalHarmonics, colorLoadAction: splatLoadAction, boxes: boxInstances, resources: resources)
 
             case .tileBased:
-                try TileBasedSplatPass(splatCloud: splatCloud, projection: projection, drawableSize: drawableSize, cameraMatrix: cameraMatrix, modelMatrix: modelMatrix)
-                SceneGuidesRenderPass(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, gridColor: showGrid ? color : nil, showAxes: showAxes)
+                try TileBasedSplatPass(splatCloud: splatCloud, projection: projection, drawableSize: drawableSize, cameraMatrix: cameraMatrix, modelMatrix: modelMatrix, colorLoadAction: splatLoadAction)
 
             case .stochastic:
                 try RenderPass {
-                    if showGrid {
-                        GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: color, backgroundColor: [0, 0, 0, 1], backfaceColor: [0, 0, 0, 1])
-                    }
                     try StochasticSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, frameTime: stochasticSeed, useSphericalHarmonics: useSphericalHarmonics)
                         .depthCompare(function: .less, enabled: true)
-                    if showAxes {
-                        try AxisLinesRenderPipeline(mvpMatrix: projectionMatrix * cameraMatrix.inverse, viewMatrix: cameraMatrix.inverse, projectionMatrix: projectionMatrix, viewportSize: drawableSize)
+                }
+                .renderPassDescriptorModifier { descriptor in
+                    if let splatLoadAction {
+                        descriptor.colorAttachments[0].loadAction = splatLoadAction
                     }
                 }
 
             case .pointSplat:
-                try PointSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, frameIndex: 0, configuration: .init(depthRange: Float(nearClip) ... Float(farClip), statistics: pointSplatStatistics))
-                SceneGuidesRenderPass(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, gridColor: showGrid ? color : nil, showAxes: showAxes)
+                try PointSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, frameIndex: 0, configuration: .init(depthRange: Float(nearClip) ... Float(farClip), statistics: pointSplatStatistics, colorLoadAction: splatLoadAction))
             }
         }
         .onFrameTimingChange { _ in
@@ -349,22 +353,20 @@ private struct GuidedSplatRenderPass: Element {
     let cameraMatrix: simd_float4x4
     let drawableSize: SIMD2<Float>
     let useSphericalHarmonics: Bool
-    let gridColor: SIMD4<Float>?
-    let showAxes: Bool
+    let colorLoadAction: MTLLoadAction?
     let boxes: [BoxInstance]
     let resources: GPUSortResources
     let slotIndex: Int
     let sortedIndices: SplatIndices
 
-    init(splatCloud: GPUSplatCloud<SparkSplat>, projectionMatrix: simd_float4x4, modelMatrix: simd_float4x4, cameraMatrix: simd_float4x4, drawableSize: SIMD2<Float>, useSphericalHarmonics: Bool, gridColor: SIMD4<Float>?, showAxes: Bool, boxes: [BoxInstance], resources: GPUSortResources) throws {
+    init(splatCloud: GPUSplatCloud<SparkSplat>, projectionMatrix: simd_float4x4, modelMatrix: simd_float4x4, cameraMatrix: simd_float4x4, drawableSize: SIMD2<Float>, useSphericalHarmonics: Bool, colorLoadAction: MTLLoadAction?, boxes: [BoxInstance], resources: GPUSortResources) throws {
         self.splatCloud = splatCloud
         self.projectionMatrix = projectionMatrix
         self.modelMatrix = modelMatrix
         self.cameraMatrix = cameraMatrix
         self.drawableSize = drawableSize
         self.useSphericalHarmonics = useSphericalHarmonics
-        self.gridColor = gridColor
-        self.showAxes = showAxes
+        self.colorLoadAction = colorLoadAction
         self.boxes = boxes
         self.resources = resources
         try resources.ensure(capacity: splatCloud.count)
@@ -376,9 +378,6 @@ private struct GuidedSplatRenderPass: Element {
         get throws {
             try GPUSplatSortComputePass(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, resources: resources, slotIndex: slotIndex)
             try RenderPass {
-                if let gridColor {
-                    GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: gridColor, backgroundColor: [0, 0, 0, 1], backfaceColor: [0, 0, 0, 1])
-                }
                 try SparkSplatRenderPipeline(
                     splatCloud: splatCloud,
                     projectionMatrix: projectionMatrix,
@@ -388,11 +387,13 @@ private struct GuidedSplatRenderPass: Element {
                     configuration: .init(useSphericalHarmonics: useSphericalHarmonics),
                     sortedIndices: sortedIndices
                 )
-                if showAxes {
-                    try AxisLinesRenderPipeline(mvpMatrix: projectionMatrix * cameraMatrix.inverse, viewMatrix: cameraMatrix.inverse, projectionMatrix: projectionMatrix, viewportSize: drawableSize)
-                }
                 if !boxes.isEmpty {
                     AxisAlignedWireframeBoxesRenderPipeline(mvpMatrix: projectionMatrix * cameraMatrix.inverse, boxes: boxes)
+                }
+            }
+            .renderPassDescriptorModifier { descriptor in
+                if let colorLoadAction {
+                    descriptor.colorAttachments[0].loadAction = colorLoadAction
                 }
             }
         }

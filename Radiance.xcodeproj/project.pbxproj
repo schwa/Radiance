@@ -470,8 +470,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/MetalSprocketsGaussianSplats";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.10;
+				kind = branch;
+				branch = main;
 			};
 		};
 		45AA00032F90000100AA0001 /* XCRemoteSwiftPackageReference "MetalSprocketsAddOns" */ = {

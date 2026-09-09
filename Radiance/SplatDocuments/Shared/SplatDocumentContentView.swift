@@ -1316,7 +1316,6 @@ struct SplatDocumentContentView: View {
             )
         }
         }
-        .controlSize(.small)
     }
 
     // MARK: - Toolbar (Shared)

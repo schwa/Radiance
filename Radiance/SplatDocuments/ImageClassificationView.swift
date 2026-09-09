@@ -175,7 +175,6 @@ struct AnalysisInspectorView: View {
             Button(action: describeImage) {
                 if isDescribingImage {
                     ProgressView()
-                        .controlSize(.small)
                 } else {
                     Text("Describe Image")
                 }
@@ -188,7 +187,6 @@ struct AnalysisInspectorView: View {
                         Text(imageOrientation.title)
                         if imageOrientation == .upsideDown {
                             Button("Flip", action: flipCamera)
-                                .controlSize(.small)
                         }
                     }
                 }
@@ -200,7 +198,6 @@ struct AnalysisInspectorView: View {
                         Text(imageViewpoint.title)
                         if imageViewpoint == .outsideLookingAtSubject {
                             Button("Fix", action: moveCameraInside)
-                                .controlSize(.small)
                         }
                     }
                 }
@@ -224,7 +221,6 @@ struct AnalysisInspectorView: View {
                             Text(horizonAngleDegrees.formatted(.number.precision(.fractionLength(1))) + "°")
                             if let horizonConfidence = visionImageAnalysis.horizonConfidence, horizonConfidence > 0.8 {
                                 Button("Snap", action: snapToHorizon)
-                                    .controlSize(.small)
                             }
                         }
                     }

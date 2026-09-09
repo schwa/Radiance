@@ -1238,6 +1238,7 @@ struct SplatDocumentContentView: View {
 
     @ViewBuilder
     private var inspectorContent: some View {
+        Group {
         switch mode {
         case .single:
             InspectorView(
@@ -1291,6 +1292,8 @@ struct SplatDocumentContentView: View {
                 onScreenshot: { showScreenshotSheet = true }
             )
         }
+        }
+        .controlSize(.small)
     }
 
     // MARK: - Toolbar (Shared)

@@ -2,32 +2,17 @@
 import SwiftUI
 
 struct MobileLaunchView: View {
-    @State private var showSettings = false
 
     @State private var openImport = false
     @State private var isShowingWelcome = !UserDefaults.standard.bool(forKey: "doNotShowWelcomeAgain")
 
     var body: some View {
-        NavigationStack {
-            if isShowingWelcome {
-                WelcomeView {
-                    isShowingWelcome = false
-                }
-            } else {
-                documentLaunchView
-                    .toolbar {
-                        ToolbarItem(placement: .topBarTrailing) {
-                            Button("Settings", systemImage: "gear") {
-                                showSettings = true
-                            }
-                        }
-                    }
-                    .sheet(isPresented: $showSettings) {
-                        NavigationStack {
-                            SettingsView()
-                        }
-                    }
+        if isShowingWelcome {
+            WelcomeView {
+                isShowingWelcome = false
             }
+        } else {
+            documentLaunchView
         }
     }
 
@@ -38,7 +23,7 @@ struct MobileLaunchView: View {
             "Radiance",
             for: SplatDocument.readableContentTypes
         ) {
-            // No new document button - viewer only
+            // no launch actions
         } onDocumentOpen: { url in
             SplatDocumentView(
                 document: SplatDocument(),

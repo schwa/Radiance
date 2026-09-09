@@ -99,6 +99,9 @@ struct SplatDocumentContentView: View {
     // Multi mode specific
     @State private var showAddCloudPicker = false
     @State private var dragOffsets: [UUID: SIMD3<Float>] = [:]
+    #if os(iOS)
+    @State private var showSettings = false
+    #endif
 
     @Environment(\.displayScale) private var displayScale
 
@@ -125,6 +128,13 @@ struct SplatDocumentContentView: View {
             }
         }
         .toolbar { toolbarContent }
+        #if os(iOS)
+        .sheet(isPresented: $showSettings) {
+            NavigationStack {
+                SettingsView()
+            }
+        }
+        #endif
         .onAppear { setupInitialState() }
         .onChange(of: viewModel.loadingState) {
             classifyCurrentRenderingIfNeeded()
@@ -1284,6 +1294,14 @@ struct SplatDocumentContentView: View {
                 }
             }
         }
+
+        #if os(iOS)
+        ToolbarItem(placement: .primaryAction) {
+            Button("Settings", systemImage: "gear") {
+                showSettings = true
+            }
+        }
+        #endif
 
         // Inspector toggle (both modes)
         ToolbarItem(placement: .primaryAction) {

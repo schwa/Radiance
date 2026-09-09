@@ -43,7 +43,7 @@ struct CameraInspector: View {
             sectionHeader("Orientation", actionTitle: "Level", action: levelCamera)
         }
 
-        Section("Lens") {
+        Section("Projection") {
             AngleOfViewControl(verticalDegrees: $verticalAngleOfView, aspectRatio: aspectRatio)
             ClippingRangeControl(near: $nearClip, far: $farClip)
         }

@@ -529,6 +529,8 @@ updated: 2026-08-27T05:44:48Z
 
 Display the COLMAP markers directly in the main 3D view so they are visible alongside the loaded scene.
 
+- `2026-09-10T00:03:16Z`: Assessed: COLMAP rendering exists standalone (ColmapViewerView window with its own orbit camera, point cloud + frustum line elements). Integrating markers into the main splat view needs decisions first: (1) how a document finds its COLMAP data (sidecar sparse/ folder next to the splat, explicit picker, or remembered association), (2) which markers to show (camera frustums, sparse points, both), (3) coordinate alignment with the splat sceneTransform (COLMAP convention is +Z forward/+Y down), (4) toggle placement in the inspector. Punting: implementation is mechanical once those are picked. Unblocker: answer 1-4 (or say 'sidecar folder, frustums only, reuse ColmapGeometry transform, Render inspector toggle' and I'll build exactly that).
+
 ---
 
 ## 28: Load screen shows the wrong app name
@@ -669,6 +671,7 @@ When the user saves a splat, serialize the current camera information as JSON an
 
 - `2026-08-27T05:44:59Z`: Related to #36: both persist additional metadata when saving a splat.
 - `2026-09-09T23:04:06Z`: Related: #53 covers remembering all per-document settings (xattr or central DB); this issue is the camera-specific xattr variant. The .splatcamera sidecar (#59, implemented) already defines the JSON format both should reuse.
+- `2026-09-10T00:02:52Z`: Assessed for implementation: the stated trigger ('when the user saves a splat') doesn't exist yet — splat documents are read-only (#39 open), and the only camera persistence paths today are the .splatcamera sidecar (#59) and Share Camera export. Punting: needs two decisions before coding: (1) what event writes the xattr (debounced camera change, document close, or an explicit menu action), and (2) whether to commit to xattr storage now given #53 leaves xattr-vs-central-DB open. Unblocker: pick the write trigger, or fold this into #53's storage decision.
 
 ---
 
@@ -686,6 +689,7 @@ updated: 2026-08-27T05:44:59Z
 Store a preview image in an extended attribute when saving a splat so the file can expose a representative thumbnail without rendering it again.
 
 - `2026-08-27T05:44:59Z`: Related to #35: both persist additional metadata when saving a splat.
+- `2026-09-10T00:03:33Z`: Same blocker as #35 (see today's comment there): splat documents are read-only (#39 open), so there is no save event to hook. Also needs a decision on the consumer: a preview xattr is only useful if something reads it (e.g. a QLThumbnail extension — note #40's finding that Apple claims .ply, though thumbnails for .spz/.splat/.sog would work). Punting. Unblocker: pick the write trigger (render-on-open, document close, explicit action) and confirm the intended consumer, or fold into #53's storage decision.
 
 ---
 
@@ -763,6 +767,7 @@ Actual: No Quick Look preview is available.
 
 - `2026-08-27T05:45:00Z`: Related to #41: both concern Quick Look support and document type registration.
 - `2026-08-27T06:22:05Z`: Reproduced with qlmanage against a valid test-grid.ply after building and registering the extension: Quick Look reported that the file did not produce a preview. Verified mdls resolves .ply as public.polygon-file-format and the built extension advertises that exact UTI. Also tested an app-owned exported PLY UTI; Launch Services continued resolving .ply to the system UTI, so the change was reverted. Unblocker: capture QuickLookUI/ExtensionKit logs from Finder on a machine with the installed app to determine whether the extension is not selected or is failing during launch.
+- `2026-09-09T23:58:24Z`: Root cause identified via on-machine logs (the unblocker from the last punt): Quick Look routes .ply previews to Apple's HydraQLPreviewExtension (/System/Library/PrivateFrameworks/Hydra.framework/Plugins/HydraQLPreviewExtension.appex), whose QLSupportedContentTypes includes public.polygon-file-format. Hydra runs, fails on gaussian-splat PLYs ('did not produce any preview'), and QL does not fall back to our registered extension (verified registered via pluginkit; .spz/.splat/.sog are unaffected because Apple claims only the mesh formats). No supported API overrides the system's preview-provider selection for a system UTI. Punting: OS-level extension selection, not fixable in this repo. Options: file Apple Feedback requesting fallback/override, or close as blocked-by-OS.
 
 ---
 
@@ -837,6 +842,8 @@ Expected: Toggling the control enables or disables spherical-harmonic rendering.
 
 Actual: The rendered output does not change.
 
+- `2026-09-09T23:59:53Z`: Root cause: in MetalSprocketsGaussianSplats' SparkSplatRenderPipeline, vertexShader/fragmentShader are @MSState-persisted and updatedShaders() recompiles only when lastUseBoundingBox changes. The use_sh function constant stays baked from the first frame, so per-frame changes to useSphericalHarmonics never rebuild the PSO (and the shDegree runtime binding is skipped by reflection when use_sh was baked false). Radiance's plumbing (toggle -> viewModel -> pipeline configuration) is correct. Punting: fix belongs in the dependency repo (track lastUseSH alongside lastUseBoundingBox in updatedShaders and recompile when it changes), then bump the package in Radiance. Unblocker: apply that change in MetalSprocketsGaussianSplats.
+
 ---
 
 ## 45: FPS display is always zero
@@ -895,6 +902,8 @@ Investigate with focused diagnostics for bounding-box count and values, viewport
 Expected: Enabling bounding boxes draws the cloud bounds over the rendered scene.
 
 Actual: No bounding-box lines appear.
+
+- `2026-09-10T00:02:10Z`: Investigated statically: simulated BoundingBoxWireframe's exact projection math (PerspectiveProjection standard depth, camera at +5Z, xRotation(pi) scene transform, unit box) — all 8 corners project on-screen, clip.w guard and screen-bounds guards pass. Data plumbing also checks out: single mode computes bounds via descriptor.computeBounds() and guards showBoundingBoxes/boundsSize; multi mode fills bounds async via computeBoundsForLoadedClouds. Punting: failure stage still unconfirmed without runtime inspection. Unblocker: with the app running and boxes enabled, log boundingBoxInfos.count and one projected corner in SplatBoundingBoxOverlayView (and confirm GeometryReader proxy.size is nonzero) to pin whether infos are empty, the overlay is zero-sized, or the Canvas is occluded by the Metal layer.
 
 ---
 

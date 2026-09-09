@@ -7,10 +7,10 @@ struct SplatCloudInfoSections: View {
     var body: some View {
         Section("File") {
             LabeledContent("Type", value: descriptor?.fileTypeDescription ?? "—")
-            LabeledContent("Size", value: descriptor.map { $0.fileSize.formatted(.byteCount(style: .file)) } ?? "—")
-            LabeledContent("Splats", value: descriptor.map { $0.splatCount.formatted() } ?? "—")
-            LabeledContent("Bytes/Splat", value: descriptor.map { $0.bytesPerSplat.formatted(.number.precision(.fractionLength(1))) } ?? "—")
-            LabeledContent("Spherical Harmonics", value: descriptor.map { $0.hasSphericalHarmonics ? "Yes (degree \($0.shDegree))" : "No" } ?? "—")
+            LabeledContent("File Size", value: descriptor.map { $0.fileSize.formatted(.byteCount(style: .file)) } ?? "—")
+            LabeledContent("Splat Count", value: descriptor.map { $0.splatCount.formatted() } ?? "—")
+            LabeledContent("Bytes/Splat", value: descriptor.map { $0.bytesPerSplat.formatted(.number.precision(.fractionLength(0...1))) } ?? "—")
+            LabeledContent("SH Degree", value: descriptor.map { $0.hasSphericalHarmonics ? "\($0.shDegree)" : "None" } ?? "—")
         }
         Section("Bounds") {
             if let descriptor {
@@ -27,6 +27,6 @@ struct SplatCloudInfoSections: View {
     }
 
     private func formatVector(_ v: SIMD3<Float>) -> String {
-        "(\(v.x.formatted(.number.precision(.fractionLength(2)))), \(v.y.formatted(.number.precision(.fractionLength(2)))), \(v.z.formatted(.number.precision(.fractionLength(2)))))"
+        "\(v.x.formatted(.number.precision(.fractionLength(2)))), \(v.y.formatted(.number.precision(.fractionLength(2)))), \(v.z.formatted(.number.precision(.fractionLength(2))))"
     }
 }

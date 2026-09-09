@@ -27,7 +27,12 @@ struct SplatCloudDescriptor: Sendable {
     }
 
     var fileTypeDescription: String {
-        contentType?.localizedDescription ?? "Unknown"
+        let description = contentType?.localizedDescription ?? "Unknown"
+        let fileExtension = url.pathExtension
+        guard !fileExtension.isEmpty else {
+            return description
+        }
+        return "\(description) (.\(fileExtension))"
     }
 
     init(url: URL) throws {

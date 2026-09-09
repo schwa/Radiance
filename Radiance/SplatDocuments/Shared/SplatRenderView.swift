@@ -184,11 +184,6 @@ private struct SplatRenderingView: View {
                 sortManager: sortManager,
                 debugParams: debugParams,
                 onFrame: viewModel.recordFrame,
-                onDrawableSizeChange: { size in
-                    if viewModel.viewSize != size {
-                        viewModel.viewSize = size
-                    }
-                },
                 sortingEnabled: viewModel.sortingEnabled
             ))
         }
@@ -196,15 +191,22 @@ private struct SplatRenderingView: View {
 
     @ViewBuilder
     private func cameraController<Content: View>(for content: Content) -> some View {
-        switch cameraMode {
-        case .object:
-            content.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
+        Group {
+            switch cameraMode {
+            case .object:
+                content.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
 
-        case .room:
-            content.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
+            case .room:
+                content.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
 
-        case .spatialScene:
-            content.modifier(SpatialSceneCameraController(transform: $cameraMatrix))
+            case .spatialScene:
+                content.modifier(SpatialSceneCameraController(transform: $cameraMatrix))
+            }
+        }
+        .onGeometryChange(for: CGSize.self, of: \.size) { size in
+            if viewModel.viewSize != size {
+                viewModel.viewSize = size
+            }
         }
     }
 }

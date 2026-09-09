@@ -59,14 +59,20 @@ struct CloudInspector: View {
 
         if showCenterModel {
             Section("Model Transform") {
-                Toggle("Center Model", isOn: $centerModel)
+                Picker("Alignment", selection: $centerModel) {
+                    Text("None").tag(false)
+                    Text("Centered").tag(true)
+                }
+                RotationPicker(label: "Rotate X", value: $rotationX)
+                RotationPicker(label: "Rotate Y", value: $rotationY)
+                RotationPicker(label: "Rotate Z", value: $rotationZ)
             }
-        }
-
-        Section(rotationSectionTitle) {
-            RotationPicker(label: "Rotate X", value: $rotationX)
-            RotationPicker(label: "Rotate Y", value: $rotationY)
-            RotationPicker(label: "Rotate Z", value: $rotationZ)
+        } else {
+            Section(rotationSectionTitle) {
+                RotationPicker(label: "Rotate X", value: $rotationX)
+                RotationPicker(label: "Rotate Y", value: $rotationY)
+                RotationPicker(label: "Rotate Z", value: $rotationZ)
+            }
         }
 
         SplatCloudInfoSections(descriptor: descriptor)

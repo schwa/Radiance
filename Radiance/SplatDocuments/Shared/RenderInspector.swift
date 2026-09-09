@@ -56,36 +56,6 @@ struct RenderInspector<CullingContent: View>: View {
             Toggle("Show Axis Lines", isOn: $showAxisLines)
         }
 
-        Section("Sorting") {
-            Toggle("Enable Sorting", isOn: Binding(
-                get: { viewModel.sortingEnabled },
-                set: { viewModel.sortingEnabled = $0 }
-            ))
-
-            Button("Sort Now") {
-                viewModel.triggerManualSort()
-            }
-            .disabled(viewModel.sortingEnabled)
-
-            if let sortEvent = lastSortEvent {
-                LabeledContent("Duration") {
-                    Text((sortEvent.duration * 1_000).formatted(.number.precision(.fractionLength(2))) + " ms")
-                        .monospacedDigit()
-                }
-                LabeledContent("Splats") {
-                    Text(sortEvent.splatCount.formatted())
-                        .monospacedDigit()
-                }
-                LabeledContent("Clouds") {
-                    Text("\(sortEvent.cloudCount)")
-                        .monospacedDigit()
-                }
-                LabeledContent("Time Since Sort") {
-                    TimeSinceSortView(sortTime: sortEvent.time)
-                }
-            }
-        }
-
         Section("Debug Visualization") {
             Toggle("Enable Debug Mode", isOn: $debugModeEnabled)
 

@@ -208,7 +208,7 @@ struct SplatScene: nonisolated Codable, Sendable {
         var verticalAngleOfView: Double
         /// Camera mode (object, room, spatialScene)
         var mode: String = "object"
-        /// Clip plane distances in metres (absent in older documents)
+        /// Clip plane distances in meters (absent in older documents)
         var nearClip: Double?
         var farClip: Double?
         /// Model rotation in radians (X, Y, Z), absent in older documents

@@ -37,7 +37,7 @@ struct CameraInspector: View {
         Section {
             CameraPositionEditor(matrix: $cameraMatrix)
                 .disabled(teleportDisabled)
-            Text("Metres from cloud origin. Drag a label to scrub.")
+            Text("Meters from cloud origin. Drag a label to scrub.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } header: {
@@ -61,19 +61,12 @@ struct CameraInspector: View {
         Section("Framing") {
             Toggle("Keep cloud in frame", isOn: $zoomToFit)
                 .disabled(cameraMode != .object || zoomToFitDisabled)
-            LabeledContent("Orbit target", value: "cloud centre")
-                .foregroundStyle(.secondary)
         }
 
-        Section {
-            DisclosureGroup("Viewport readout") {
-                LabeledContent("Size", value: "\(formattedDimension(viewSize.width)) × \(formattedDimension(viewSize.height))")
-                LabeledContent("Aspect ratio", value: aspectRatio.formatted(.number.precision(.fractionLength(2))) + ":1")
-                LabeledContent("Megapixels", value: megapixels.formatted(.number.precision(.fractionLength(2))) + " MP")
-                if displayScale != 1 {
-                    LabeledContent("Scale", value: "\(Int(displayScale))x")
-                }
-            }
+        Section("Viewport") {
+            LabeledContent("Size", value: viewportSizeDescription)
+            LabeledContent("Aspect Ratio", value: aspectRatio.formatted(.number.precision(.fractionLength(2))) + ":1")
+            LabeledContent("Megapixels", value: megapixels.formatted(.number.precision(.fractionLength(2))) + " MP")
         }
 
         Section {
@@ -96,7 +89,7 @@ struct CameraInspector: View {
     private var controlDescription: LocalizedStringKey {
         switch cameraMode {
         case .object:
-            "Orbit and zoom around the cloud centre."
+            "Orbit and zoom around the cloud center."
 
         case .room:
             "Move through the scene at a fixed height."
@@ -114,10 +107,18 @@ struct CameraInspector: View {
     }
 
     private var megapixels: Double {
+        Double(viewSize.width * displayScale * viewSize.height * displayScale / 1_000_000)
+    }
+
+    private var viewportSizeDescription: String {
         guard viewSize.width > 0, viewSize.height > 0 else {
-            return 0
+            return "—"
         }
-        return Double(viewSize.width * displayScale * viewSize.height * displayScale / 1_000_000)
+        var description = "\(Int(viewSize.width)) × \(Int(viewSize.height))"
+        if displayScale != 1 {
+            description += " @\(Int(displayScale))x"
+        }
+        return description
     }
 
     private func sectionHeader(_ title: LocalizedStringKey, actionTitle: LocalizedStringKey, action: @escaping () -> Void) -> some View {
@@ -140,14 +141,6 @@ struct CameraInspector: View {
         pose.rotationDegrees.x = 0
         pose.rotationDegrees.z = 0
         cameraMatrix = pose.matrix
-    }
-
-    private func formattedDimension(_ value: CGFloat) -> String {
-        let points = Int(value)
-        guard displayScale != 1 else {
-            return "\(points)"
-        }
-        return "\(points) (\(Int(value * displayScale)))"
     }
 }
 

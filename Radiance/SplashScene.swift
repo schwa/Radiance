@@ -41,7 +41,7 @@ struct SplashView: View {
                     try? await openDocument(at: url)
                 }
             }
-            .frame(width: 600, height: 400)
+            .frame(width: 600, height: 520)
         } else {
             HStack(spacing: 0) {
             // Left panel - branding and actions

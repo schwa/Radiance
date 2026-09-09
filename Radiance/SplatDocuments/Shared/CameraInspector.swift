@@ -28,18 +28,11 @@ struct CameraInspector: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
-
-            Text(controlDescription)
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
 
         Section {
             CameraPositionEditor(matrix: $cameraMatrix)
                 .disabled(teleportDisabled)
-            Text("Meters from cloud origin. Drag a label to scrub.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
         } header: {
             sectionHeader("Position", actionTitle: "Reset", action: resetPosition)
         }
@@ -53,9 +46,6 @@ struct CameraInspector: View {
         Section("Lens") {
             AngleOfViewControl(verticalDegrees: $verticalAngleOfView, aspectRatio: aspectRatio)
             ClippingRangeControl(near: $nearClip, far: $farClip)
-            Text("Vertical \(verticalAngleOfView.formatted(.number.precision(.fractionLength(0))))° at \(aspectRatio.formatted(.number.precision(.fractionLength(2)))):1.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
 
         Section("Framing") {
@@ -84,19 +74,6 @@ struct CameraInspector: View {
             nearClip: nearClip,
             farClip: farClip
         )
-    }
-
-    private var controlDescription: LocalizedStringKey {
-        switch cameraMode {
-        case .object:
-            "Orbit and zoom around the cloud center."
-
-        case .room:
-            "Move through the scene at a fixed height."
-
-        case .spatialScene:
-            "Move and rotate freely through the spatial scene."
-        }
     }
 
     private var aspectRatio: Double {

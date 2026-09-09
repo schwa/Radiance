@@ -1,8 +1,13 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    @AppStorage("doNotShowWelcomeAgain") private var doNotShowAgain = false
+    @AppStorage("doNotShowWelcomeAgain") private var doNotShowAgain = true
     let onDone: () -> Void
+    var onOpenSample: ((URL) -> Void)?
+
+    static var embeddedSampleURL: URL? {
+        Bundle.main.url(forResource: "tomatoes.v4", withExtension: "spz")
+    }
 
     private let features = [
         ("view.3d", "Explore Gaussian splats in 3D"),
@@ -58,21 +63,38 @@ struct WelcomeView: View {
                 Text("Need something to explore?")
                     .foregroundStyle(.secondary)
                 SampleAssetsDownloadView()
+                if let sampleURL = Self.embeddedSampleURL, let onOpenSample {
+                    Button("Open the Tomatoes Sample") {
+                        onOpenSample(sampleURL)
+                    }
+                    Text("Tomatoes scan by Grail (superspl.at), CC BY 4.0")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
             }
 
             Spacer()
 
-            HStack {
+            VStack(spacing: 16) {
+                Button {
+                    // Persist even when the toggle was left at its default.
+                    UserDefaults.standard.set(doNotShowAgain, forKey: "doNotShowWelcomeAgain")
+                    onDone()
+                } label: {
+                    Text("Done")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .keyboardShortcut(.defaultAction)
+                .frame(maxWidth: 320)
+
                 Toggle("Don’t show again", isOn: $doNotShowAgain)
-
-                Spacer()
-
-                Button("Done", action: onDone)
-                    .buttonStyle(.borderedProminent)
-                    .keyboardShortcut(.defaultAction)
+                    .fixedSize()
             }
         }
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
             LinearGradient(
                 colors: [.accentColor.opacity(0.12), .clear],

@@ -201,18 +201,23 @@ struct SplatScene: nonisolated Codable, Sendable {
         }
     }
 
-    struct CameraState: Codable, Sendable, Equatable {
+    nonisolated struct CameraState: Codable, Sendable, Equatable {
         /// Camera position and orientation as a 4x4 matrix
         var matrix: simd_float4x4
         /// Vertical field of view in degrees
         var verticalAngleOfView: Double
         /// Camera mode (object, room, spatialScene)
         var mode: String = "object"
+        /// Clip plane distances in metres (absent in older documents)
+        var nearClip: Double?
+        var farClip: Double?
 
-        init(matrix: simd_float4x4 = .identity, verticalAngleOfView: Double = 60.0, mode: String = "object") {
+        init(matrix: simd_float4x4 = .identity, verticalAngleOfView: Double = 60.0, mode: String = "object", nearClip: Double? = nil, farClip: Double? = nil) {
             self.matrix = matrix
             self.verticalAngleOfView = verticalAngleOfView
             self.mode = mode
+            self.nearClip = nearClip
+            self.farClip = farClip
         }
 
         // Custom decoder for backward compatibility
@@ -221,10 +226,12 @@ struct SplatScene: nonisolated Codable, Sendable {
             matrix = try container.decode(simd_float4x4.self, forKey: .matrix)
             verticalAngleOfView = try container.decode(Double.self, forKey: .verticalAngleOfView)
             mode = try container.decodeIfPresent(String.self, forKey: .mode) ?? "object"
+            nearClip = try container.decodeIfPresent(Double.self, forKey: .nearClip)
+            farClip = try container.decodeIfPresent(Double.self, forKey: .farClip)
         }
 
         private enum CodingKeys: String, CodingKey {
-            case matrix, verticalAngleOfView, mode
+            case matrix, verticalAngleOfView, mode, nearClip, farClip
         }
     }
 

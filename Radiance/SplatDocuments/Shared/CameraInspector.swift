@@ -3,6 +3,7 @@ import GeometryLite3D
 import Interaction3D
 import simd
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct CameraInspector: View {
     @Binding var cameraMode: CameraMode
@@ -74,6 +75,22 @@ struct CameraInspector: View {
                 }
             }
         }
+
+        Section {
+            ShareLink(item: cameraParameters, preview: SharePreview("Camera Parameters")) {
+                Label("Share Camera", systemImage: "square.and.arrow.up")
+            }
+        }
+    }
+
+    private var cameraParameters: SplatScene.CameraState {
+        SplatScene.CameraState(
+            matrix: cameraMatrix,
+            verticalAngleOfView: verticalAngleOfView,
+            mode: cameraMode.rawValue,
+            nearClip: nearClip,
+            farClip: farClip
+        )
     }
 
     private var controlDescription: LocalizedStringKey {
@@ -131,6 +148,12 @@ struct CameraInspector: View {
             return "\(points)"
         }
         return "\(points) (\(Int(value * displayScale)))"
+    }
+}
+
+extension SplatScene.CameraState: nonisolated Transferable {
+    nonisolated static var transferRepresentation: some TransferRepresentation {
+        CodableRepresentation(contentType: .json)
     }
 }
 #endif

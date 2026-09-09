@@ -32,7 +32,6 @@ struct SampleAssetsDownloadView: View {
                 Button("Download Sample Splats…") {
                     showFolderPicker = true
                 }
-                .buttonStyle(.borderedProminent)
 
             case .fetchingManifest:
                 HStack {

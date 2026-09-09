@@ -35,6 +35,11 @@ struct SplashView: View {
         if isShowingWelcome {
             WelcomeView {
                 isShowingWelcome = false
+            } onOpenSample: { url in
+                isShowingWelcome = false
+                Task {
+                    try? await openDocument(at: url)
+                }
             }
             .frame(width: 600, height: 400)
         } else {

@@ -12,6 +12,11 @@ struct MobileLaunchView: View {
         if isShowingWelcome {
             WelcomeView {
                 isShowingWelcome = false
+            } onOpenSample: { url in
+                #if os(iOS)
+                restoredDocumentURL = url
+                #endif
+                isShowingWelcome = false
             }
         } else {
             #if os(iOS)

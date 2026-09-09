@@ -1008,6 +1008,8 @@ Viewer settings (renderer, camera, background color, model orientation, inspecto
 ## Proposed fix (per schwa)
 Store settings either in an extended attribute (xattr) on the document file or in a central database keyed by document.
 
+- `2026-09-09T20:50:07Z`: Strongly related to #59: whichever storage wins (xattr, database, or sidecar), use the same JSON format as #59's sidecar — based on SplatScene.CameraState (camera matrix, FOV, mode, clip planes) plus model transform.
+
 ---
 
 ## 54: Axis lines extend past the horizon
@@ -1101,5 +1103,7 @@ created: 2026-09-09T20:49:06Z
 Opening a splat file always starts with default camera and model transform. There is no way to keep viewing state alongside a splat file.
 
 Desired: when loading a file, look for a sidecar document next to it containing camera and model transform info, and use it to populate the viewer state. Define a new UTType for the sidecar file. Related: #53 (per-document settings persistence) and the new camera share JSON (SplatScene.CameraState Transferable), which could share the same format.
+
+- `2026-09-09T20:50:07Z`: Strongly related to #53: use the same JSON format for the sidecar as for per-document settings persistence, based on SplatScene.CameraState plus model transform.
 
 ---

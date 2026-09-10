@@ -1210,3 +1210,52 @@ Desired: render on demand by default — only when the camera, model transform, 
 - `2026-09-10T00:06:26Z`: Assessed: MetalSprocketsUI's RenderView supports paused + setNeedsDisplay MTKView modes via .metalIsPaused/.metalEnableSetNeedsDisplay environment modifiers, but exposes no way for the host app to request a frame when render inputs change — the MTKView and its delegate are fully encapsulated, and the update closure never marks the view dirty. On-demand mode therefore needs dependency work first: an invalidation API on RenderView (e.g. an environment-injected draw-request token or auto-redraw when the content closure's captured inputs change), matching the related MetalSprocketsGaussianSplats issue this report mentions. Convergence-aware continuous frames for stochastic/point-splat accumulation layer on top of that. Punting: cross-repo design. Unblocker: add the RenderView invalidation API in MetalSprockets, then wiring the Radiance toggle + change detection is straightforward.
 
 ---
+
+## 63: SingleCloudGuidedRenderView allocates GPUSortResources on every body eval
+
++++
+status: new
+priority: high
+kind: bug
+labels: rendering, performance, area:rendering, area:performance
+created: 2026-09-10T02:42:56Z
++++
+
+SingleCloudGuidedRenderView.init creates GPUSortResources via _resources = State(initialValue: try GPUSortResources(device:capacity:)). SwiftUI evaluates the initialValue expression on every init (every parent body evaluation) and keeps only the first result, so the GPUSortResources allocation (scratch + output buffers x slotCount, sized to splat count) runs and is thrown away on each body eval.
+
+Expected: sort resources are allocated once per cloud and reused across body evaluations.
+
+Actual: under sustained high-frequency body evals (e.g. turntable momentum drags or the rotation cube), the per-eval allocation of GPU buffers stalls/hangs the UI.
+
+Location: Radiance/SplatDocuments/Shared/SplatRenderView.swift (SingleCloudGuidedRenderView.init around the '_resources = State(initialValue:)' line; SingleCloudDebugRenderView has the same pattern). SplatViewModel previously had the same issue with AsyncSortManager/CPUSplatRadixSorter (now removed).
+
+Fix: make resources lazy — hold @State private var resources: GPUSortResources? = nil, create it once in .task/onAppear (or .task(id:) keyed to the cloud), and guard rendering until it exists. Apply to both SingleCloudGuidedRenderView and SingleCloudDebugRenderView.
+
+---
+
+## 64: Audit and remove State(initialValue:) init pattern in views
+
++++
+status: new
+priority: medium
+kind: task
+labels: swiftui,performance,architecture,area:swiftui,area:performance
+depends: 63
+created: 2026-09-10T02:43:29Z
++++
+
+State(initialValue:) in a view's init is an anti-pattern: SwiftUI evaluates the expression on every init (every parent body evaluation) and discards all but the first result. When the initial value is expensive (allocating GPU buffers, creating model objects, doing IO), that cost is paid on every body eval, not once. It also hides the real initialization point and makes lifetimes hard to reason about.
+
+Expected: view state is created lazily and once — via @State default initializers, .task/.onAppear for expensive/failable resources (keyed with .task(id:) when it must rebuild), or an @Observable model owned higher up.
+
+Actual: several views build state eagerly in init with State(initialValue:), including expensive allocations.
+
+Current occurrences (rg 'State(initialValue:'):
+- SplatRenderView.swift:263 SingleCloudGuidedRenderView — GPUSortResources (see #63)
+- SplatRenderView.swift:473 SingleCloudDebugRenderView — GPUSortResources (see #63)
+- SplatDocumentContentView.swift:117 — SplatViewModel (cheap-ish, but recreated expression per eval)
+- ScreenshotSheet.swift:62-63 — width/height Ints (cheap; acceptable, but note the earlier #60 timing bug came from capturing these at init)
+
+Task: establish the house rule (prefer @State default init / .task over State(initialValue:) for anything non-trivial), fix the expensive cases (#63 covers the GPUSortResources ones), and review the cheap ones for the capture-timing hazard. Consider a lint note in AGENTS.md or a swiftlint custom rule.
+
+---

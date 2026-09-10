@@ -6,7 +6,7 @@ struct AboutCommand: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .appInfo) {
-            Button("About Gaussian Splats Demo") {
+            Button("About Radiance") {
                 openWindow(id: "about")
             }
         }
@@ -35,7 +35,7 @@ struct AboutView: View {
                         )
 
                     #if !os(iOS)
-                    Text("Gaussian Splats Demo")
+                    Text("Radiance")
                         .font(.title)
                         .fontWeight(.bold)
                     #endif
@@ -77,7 +77,7 @@ struct AboutView: View {
         .onAppear {
             licenses = loadLicenses()
         }
-        .navigationTitle("About Gaussian Splats Demo")
+        .navigationTitle("About Radiance")
     }
 
     private func loadLicenses() -> [(name: String, text: String)] {

@@ -49,7 +49,7 @@ struct RadianceApp: App {
             ColmapViewerView()
         }
 
-        Window("About Gaussian Splats Demo", id: "about") {
+        Window("About Radiance", id: "about") {
             AboutView()
         }
         .windowResizability(.contentSize)

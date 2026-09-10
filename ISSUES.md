@@ -1096,12 +1096,13 @@ Render the guides pass with MSAA if possible.
 ## 56: Bundle display name shows Radiance-Viewer instead of Radiance
 
 +++
-status: open
+status: closed
 priority: low
 kind: task
 labels: effort:xs, area:ui
 created: 2026-09-09T20:39:40Z
-updated: 2026-09-09T23:03:59Z
+updated: 2026-09-10T03:51:13Z
+closed: 2026-09-10T03:51:13Z
 +++
 
 The status bar and app switcher show 'Radiance-Viewer' as the app name.
@@ -1109,20 +1110,26 @@ The status bar and app switcher show 'Radiance-Viewer' as the app name.
 ## Proposed fix (per schwa)
 Set the bundle display name to just 'Radiance'.
 
+- `2026-09-10T03:51:13Z`: Set app product and bundle display names to Radiance. Built the Radiance scheme and verified CFBundleName and CFBundleDisplayName are both Radiance in Radiance.app. Support tests pass.
+- `2026-09-10T03:56:38Z`: Correction: product name remains Radiance-Viewer. Only CFBundleDisplayName is changed to Radiance; the product-name change was removed.
+
 ---
 
 ## 57: About box shows the wrong title
 
 +++
-status: open
+status: closed
 priority: low
 kind: bug
 labels: effort:xs, area:ui
 created: 2026-09-09T20:43:43Z
-updated: 2026-09-09T23:03:59Z
+updated: 2026-09-10T03:51:13Z
+closed: 2026-09-10T03:51:13Z
 +++
 
 The About window's title is wrong (shows the bundle/product name rather than the app name Radiance).
+
+- `2026-09-10T03:51:13Z`: Changed the About command, window title, and navigation title from About Gaussian Splats Demo to About Radiance. Radiance build, lint, and support tests pass; no automated UI title test added.
 
 ---
 

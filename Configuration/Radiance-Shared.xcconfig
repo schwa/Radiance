@@ -22,6 +22,7 @@ ENABLE_USER_SCRIPT_SANDBOXING = NO
 ENABLE_USER_SELECTED_FILES = readwrite
 EXCLUDED_ARCHS[sdk=macosx*] = x86_64 // float16 support only on Apple Silicon Macs
 INFOPLIST_FILE = Radiance/Info.plist
+INFOPLIST_KEY_CFBundleDisplayName = Radiance
 INFOPLIST_KEY_LSApplicationCategoryType = public.app-category.developer-tools
 INFOPLIST_KEY_NSHumanReadableCopyright = ©2016 Jonathan Wight
 INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*] = YES

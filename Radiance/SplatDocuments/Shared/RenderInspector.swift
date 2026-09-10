@@ -16,7 +16,6 @@ struct RenderInspector<CullingContent: View>: View {
     @Binding var showAxisLines: Bool
     @Binding var debugModeEnabled: Bool
     @Binding var debugMode: SplatDebugMode
-    var lastSortEvent: SortEvent?
     var onScreenshot: (() -> Void)?
     @ViewBuilder var cullingContent: () -> CullingContent
 

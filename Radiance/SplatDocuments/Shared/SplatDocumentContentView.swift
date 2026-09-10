@@ -1138,7 +1138,6 @@ struct SplatDocumentContentView: View {
                 boundsCenter: viewModel.boundsCenter,
                 boundsSize: viewModel.boundsSize
             ) : nil,
-            sortManager: nil,
             cameraMode: viewModel.cameraMode
         )
         .overlay {
@@ -1205,7 +1204,7 @@ struct SplatDocumentContentView: View {
 
     @ViewBuilder
     private var multiRenderView: some View {
-        if let doc = multiDocument, let sortManager = viewModel.sortManager {
+        if let doc = multiDocument {
             let enabledCloudIDs = Set(doc.scene.clouds.filter(\.enabled).map(\.id))
 
             // Build enabled clouds and collect their debug colors in the same order
@@ -1252,7 +1251,6 @@ struct SplatDocumentContentView: View {
                     cloudCount: UInt32(enabledClouds.count),
                     cloudColors: enabledCloudColors
                 ) : nil,
-                sortManager: sortManager,
                 cameraMode: viewModel.cameraMode,
                 onDragChange: handleAxisDrag,
                 onDragEnd: commitDrag

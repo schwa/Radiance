@@ -38,12 +38,13 @@ This reduces memory allocations during rendering by reusing index buffers instea
 ## 2: Multi-cloud rendering performs CPU sorting
 
 +++
-status: open
+status: closed
 priority: high
 kind: task
 labels: rendering, performance, effort:l, area:rendering, area:performance
 created: 2026-08-24T23:09:54Z
-updated: 2026-09-09T23:04:06Z
+updated: 2026-09-10T02:27:28Z
+closed: 2026-09-10T02:27:28Z
 +++
 
 Multi-cloud rendering requests AsyncSortManager sorts whenever the camera or scene transform changes.

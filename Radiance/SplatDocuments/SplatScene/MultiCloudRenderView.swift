@@ -8,10 +8,14 @@ import MetalSprocketsGaussianSplatsDebug
 import MetalSprocketsGaussianSplatShaders
 import MetalSprocketsUI
 import simd
+import Splats
 import SwiftUI
 
 // MARK: - Multi-Cloud Render View
 
+/// Renders each cloud through the shared GPU-sorted pipeline, in draw order.
+/// Clouds are sorted independently on the GPU; there is no global cross-cloud
+/// ordering.
 struct MultiCloudRenderView: View {
     let clouds: [GPUSplatCloud<SparkSplat>]
 
@@ -26,7 +30,6 @@ struct MultiCloudRenderView: View {
     let showAxes: Bool
     let backgroundColor: [Float]
     var cullBoundingBox: BoundingBox3D?
-    var sortManager: AsyncSortManager<SparkSplat>
 
     // Debug rendering
     var debugParams: DebugParams?
@@ -35,11 +38,7 @@ struct MultiCloudRenderView: View {
     var onFrame: (() -> Void)?
     var onDrawableSizeChange: ((CGSize) -> Void)?
 
-    // Sorting control
-    var sortingEnabled: Bool = true
-
-    @State private var sortedIndices: SplatIndices?
-    @State private var projection: (any ProjectionProtocol) = PerspectiveProjection(verticalAngleOfView: .degrees(90), depthMode: .standard(zClip: 0.01 ... 1_000))
+    @State private var resources: [GPUSortResources] = []
 
     private var clearColor: MTLClearColor {
         guard backgroundColor.count == 4 else {
@@ -55,124 +54,78 @@ struct MultiCloudRenderView: View {
 
     var body: some View {
         let resolvedGridColor = gridColor.resolve(in: .init())
-        let gridColor = SIMD4<Float>(Float(resolvedGridColor.red), Float(resolvedGridColor.green), Float(resolvedGridColor.blue), Float(resolvedGridColor.opacity))
+        let gridColorVector = SIMD4<Float>(Float(resolvedGridColor.red), Float(resolvedGridColor.green), Float(resolvedGridColor.blue), Float(resolvedGridColor.opacity))
 
         RenderView { _, drawableSize in
-            onFrame?()
-            onDrawableSizeChange?(drawableSize)
-            return MultiCloudRenderPass(
-                clouds: clouds,
-                cameraMatrix: cameraMatrix,
-                sceneTransform: sceneTransform,
-                projection: projection,
-                drawableSize: drawableSize,
-                useSphericalHarmonics: useSphericalHarmonics,
-                gridColor: showGrid ? gridColor : nil,
-                showAxes: showAxes,
-                cullBoundingBox: cullBoundingBox,
-                sortedIndices: sortedIndices,
-                debugParams: debugParams
-            )
+            let projection = PerspectiveProjection(verticalAngleOfView: .degrees(Float(verticalAngleOfView)), depthMode: .standard(zClip: Float(nearClip) ... Float(farClip)))
+            let projectionMatrix = projection.projectionMatrix(for: drawableSize)
+            let drawableSizeVector = SIMD2<Float>(Float(drawableSize.width), Float(drawableSize.height))
+
+            let showGuides = showGrid || showAxes
+            if showGuides {
+                SceneGuidesRenderPass(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSizeVector, gridColor: showGrid ? gridColorVector : nil, showAxes: showAxes)
+            }
+
+            if resources.count == clouds.count {
+                ForEach(Array(clouds.enumerated()), id: \.offset) { index, cloud in
+                    // The first cloud clears (or loads over the guides);
+                    // later clouds composite over earlier ones.
+                    let loadAction: MTLLoadAction? = index == 0 ? (showGuides ? .load : nil) : .load
+                    if let debugParams {
+                        try GPUSortedSplatDebugRenderPipeline(
+                            splatCloud: cloud,
+                            projectionMatrix: projectionMatrix,
+                            modelMatrix: sceneTransform,
+                            cameraMatrix: cameraMatrix,
+                            drawableSize: drawableSizeVector,
+                            debugParams: debugParams,
+                            resources: resources[index]
+                        )
+                        .renderPassDescriptorModifier { descriptor in
+                            if let loadAction {
+                                descriptor.colorAttachments[0].loadAction = loadAction
+                            }
+                        }
+                    } else {
+                        try GuidedSplatRenderPass(
+                            splatCloud: cloud,
+                            projectionMatrix: projectionMatrix,
+                            modelMatrix: sceneTransform,
+                            cameraMatrix: cameraMatrix,
+                            drawableSize: drawableSizeVector,
+                            useSphericalHarmonics: useSphericalHarmonics,
+                            colorLoadAction: loadAction,
+                            boxes: [],
+                            resources: resources[index],
+                            boundingBox: cullBoundingBox
+                        )
+                    }
+                }
+            }
         }
         .metalColorPixelFormat(.bgra8Unorm_srgb)
         .metalClearColor(clearColor)
-        .task {
-            for await indices in sortManager.sortedIndicesStream {
-                if let old = sortedIndices {
-                    sortManager.release(old)
-                }
-                sortedIndices = indices
-            }
+        .onFrameTimingChange { _ in
+            onFrame?()
         }
-        .onChange(of: cameraMatrix, initial: true) {
-            if sortingEnabled {
-                requestSort()
-            }
+        .onDrawableSizeChange { size in
+            onDrawableSizeChange?(size)
         }
-        .onChange(of: sceneTransform) {
-            if sortingEnabled {
-                requestSort()
-            }
-        }
-        .onChange(of: verticalAngleOfView, initial: true) {
-            updateProjection()
-        }
-        .onChange(of: nearClip) {
-            updateProjection()
-        }
-        .onChange(of: farClip) {
-            updateProjection()
+        .task(id: clouds.count) {
+            updateResources()
         }
     }
 
-    private func updateProjection() {
-        projection = PerspectiveProjection(verticalAngleOfView: .degrees(Float(verticalAngleOfView)), depthMode: .standard(zClip: Float(nearClip) ... Float(farClip)))
-    }
-
-    private func requestSort() {
-        let parameters = SortParameters(camera: cameraMatrix, model: sceneTransform)
-        sortManager.requestSort(parameters)
-    }
-}
-
-struct MultiCloudRenderPass: Element {
-    let clouds: [GPUSplatCloud<SparkSplat>]
-    let cameraMatrix: simd_float4x4
-    let sceneTransform: simd_float4x4
-    let projection: any ProjectionProtocol
-    let drawableSize: CGSize
-    let useSphericalHarmonics: Bool
-    let gridColor: SIMD4<Float>?
-    let showAxes: Bool
-    var cullBoundingBox: BoundingBox3D?
-    var sortedIndices: SplatIndices?
-
-    // Debug rendering
-    var debugParams: DebugParams?
-
-    var body: some Element {
-        get throws {
-            if !clouds.isEmpty, let sortedIndices {
-                let projectionMatrix = projection.projectionMatrix(for: drawableSize)
-                try RenderPass {
-                    if let gridColor {
-                        GridShader(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, gridColor: gridColor, backgroundColor: [0, 0, 0, 1], backfaceColor: [0, 0, 0, 1])
-                    }
-                    if let debugParams {
-                        try SparkSplatDebugRenderPipeline(
-                            splatClouds: clouds,
-                            projectionMatrices: [projectionMatrix],
-                            modelMatrix: sceneTransform,
-                            cameraMatrices: [cameraMatrix],
-                            drawableSize: SIMD2<Float>(drawableSize),
-                            debugParams: debugParams,
-                            boundingBox: cullBoundingBox,
-                            sortedIndices: sortedIndices
-                        )
-                    } else {
-                        try SparkSplatRenderPipeline(
-                            splatClouds: clouds,
-                            projectionMatrices: [projectionMatrix],
-                            modelMatrix: sceneTransform,
-                            cameraMatrices: [cameraMatrix],
-                            drawableSize: SIMD2<Float>(drawableSize),
-                            configuration: .init(
-                                useSphericalHarmonics: useSphericalHarmonics,
-                                boundingBox: cullBoundingBox
-                            ),
-                            sortedIndices: sortedIndices
-                        )
-                    }
-                    if showAxes {
-                        let viewMatrix = cameraMatrix.inverse
-                        try AxisLinesRenderPipeline(mvpMatrix: projectionMatrix * viewMatrix, viewMatrix: viewMatrix, projectionMatrix: projectionMatrix, viewportSize: SIMD2<Float>(drawableSize))
-                    }
-                }
-            } else {
-                try RenderPass {
-                    // Empty render pass - just to get the clear color.
-                }
-            }
+    private func updateResources() {
+        guard let device = clouds.first?.splats.unsafeMTLBuffer.device else {
+            resources = []
+            return
+        }
+        guard resources.count != clouds.count else {
+            return
+        }
+        resources = clouds.compactMap { cloud in
+            try? GPUSortResources(device: device, capacity: cloud.count)
         }
     }
 }

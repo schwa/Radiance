@@ -87,33 +87,4 @@ struct AbsoluteBoundsSlider: View {
         }
     }
 }
-
-// MARK: - Time Since Sort View
-
-struct TimeSinceSortView: View {
-    let sortTime: Date
-
-    @State private var timeSince: TimeInterval = 0
-
-    var body: some View {
-        Text(formatTimeSince(timeSince))
-            .monospacedDigit()
-            .task(id: sortTime) {
-                while !Task.isCancelled {
-                    timeSince = Date().timeIntervalSince(sortTime)
-                    try? await Task.sleep(for: .milliseconds(100))
-                }
-            }
-    }
-
-    private func formatTimeSince(_ interval: TimeInterval) -> String {
-        if interval < 1 {
-            return (interval * 1_000).formatted(.number.precision(.fractionLength(0))) + " ms"
-        }
-        if interval < 60 {
-            return interval.formatted(.number.precision(.fractionLength(1))) + " s"
-        }
-        return interval.formatted(.number.precision(.fractionLength(0))) + " s"
-    }
-}
 #endif

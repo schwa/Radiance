@@ -38,8 +38,6 @@ struct SplatRenderView: View {
     // Debug rendering (nil = normal rendering, non-nil = debug mode)
     var debugParams: DebugParams?
 
-    var sortManager: AsyncSortManager<SparkSplat>?
-
     // Camera mode for selecting the appropriate controller
     var cameraMode: CameraMode = .object
 
@@ -66,7 +64,6 @@ struct SplatRenderView: View {
                 gridColor: gridColor,
                 boundingBoxInfos: boundingBoxInfos,
                 debugParams: debugParams,
-                sortManager: sortManager,
                 cameraMode: cameraMode
             )
             if showBoundingBoxes {
@@ -119,7 +116,6 @@ private struct SplatRenderingView: View {
     let gridColor: Color
     let boundingBoxInfos: [BoundingBoxInfo]
     var debugParams: DebugParams?
-    var sortManager: AsyncSortManager<SparkSplat>?
     let cameraMode: CameraMode
     @Environment(SplatViewModel.self) private var viewModel
 
@@ -167,7 +163,7 @@ private struct SplatRenderingView: View {
             .metalColorPixelFormat(.bgra8Unorm_srgb)
             .metalClearColor(clearColor)
             .metalDepthStencilPixelFormat(.depth32Float))
-        } else if let sortManager {
+        } else {
             cameraController(for: MultiCloudRenderView(
                 clouds: clouds,
                 cameraMatrix: cameraMatrix,
@@ -181,10 +177,8 @@ private struct SplatRenderingView: View {
                 showAxes: showAxisLines,
                 backgroundColor: backgroundColor,
                 cullBoundingBox: cullBoundingBox,
-                sortManager: sortManager,
                 debugParams: debugParams,
-                onFrame: viewModel.recordFrame,
-                sortingEnabled: viewModel.sortingEnabled
+                onFrame: viewModel.recordFrame
             ))
         }
     }
@@ -270,8 +264,6 @@ private struct SingleCloudGuidedRenderView: View {
     let boundingBoxes: [BoundingBoxInfo]
     let onFrame: () -> Void
 
-    @State private var sortedIndices: SplatIndices?
-    @State private var sortManager: AsyncSortManager<SparkSplat>
     @State private var stochasticSeed: UInt32 = 0
     @State private var pointSplatStatistics = PointSplatStatistics()
     @State private var resources: GPUSortResources
@@ -293,7 +285,6 @@ private struct SingleCloudGuidedRenderView: View {
 
         do {
             let device = splatCloud.splats.unsafeMTLBuffer.device
-            _sortManager = State(initialValue: try AsyncSortManager(device: device, splatCloud: splatCloud, capacity: splatCloud.count, preallocatedBufferCount: 6))
             _resources = State(initialValue: try GPUSortResources(device: device, capacity: splatCloud.count))
         } catch {
             fatalError("Failed to create GPU sort resources: \(error)")
@@ -318,19 +309,7 @@ private struct SingleCloudGuidedRenderView: View {
             }
 
             switch renderer {
-            case .sparkCPU:
-                if let sortedIndices {
-                    try RenderPass {
-                        try SparkSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, configuration: .init(useSphericalHarmonics: useSphericalHarmonics), sortedIndices: sortedIndices)
-                    }
-                    .renderPassDescriptorModifier { descriptor in
-                        if let splatLoadAction {
-                            descriptor.colorAttachments[0].loadAction = splatLoadAction
-                        }
-                    }
-                }
-
-            case .sparkGPU:
+            case .sparkGPU, .sparkCPU:
                 try GuidedSplatRenderPass(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, useSphericalHarmonics: useSphericalHarmonics, colorLoadAction: splatLoadAction, boxes: boxInstances, resources: resources)
 
             case .tileBased:
@@ -354,30 +333,11 @@ private struct SingleCloudGuidedRenderView: View {
         .onFrameTimingChange { _ in
             onFrame()
         }
-        .task {
-            if renderer == .sparkCPU {
-                sortManager.requestSort(SortParameters(camera: cameraMatrix, model: modelMatrix))
-            }
-            for await indices in sortManager.managedSortedIndicesStream(pendingReleaseDepth: 3) {
-                sortedIndices = indices
-            }
-        }
         .onChange(of: cameraMatrix) {
             stochasticSeed &+= 1
-            if renderer == .sparkCPU {
-                sortManager.requestSort(SortParameters(camera: cameraMatrix, model: modelMatrix))
-            }
         }
         .onChange(of: modelMatrix) {
             stochasticSeed &+= 1
-            if renderer == .sparkCPU {
-                sortManager.requestSort(SortParameters(camera: cameraMatrix, model: modelMatrix))
-            }
-        }
-        .onChange(of: renderer) {
-            if renderer == .sparkCPU {
-                sortManager.requestSort(SortParameters(camera: cameraMatrix, model: modelMatrix))
-            }
         }
     }
 
@@ -392,7 +352,7 @@ private struct SingleCloudGuidedRenderView: View {
     }
 }
 
-private struct GuidedSplatRenderPass: Element {
+struct GuidedSplatRenderPass: Element {
     let splatCloud: GPUSplatCloud<SparkSplat>
     let projectionMatrix: simd_float4x4
     let modelMatrix: simd_float4x4
@@ -401,11 +361,13 @@ private struct GuidedSplatRenderPass: Element {
     let useSphericalHarmonics: Bool
     let colorLoadAction: MTLLoadAction?
     let boxes: [BoxInstance]
+    let boundingBox: BoundingBox3D?
     let resources: GPUSortResources
     let slotIndex: Int
     let sortedIndices: SplatIndices
 
-    init(splatCloud: GPUSplatCloud<SparkSplat>, projectionMatrix: simd_float4x4, modelMatrix: simd_float4x4, cameraMatrix: simd_float4x4, drawableSize: SIMD2<Float>, useSphericalHarmonics: Bool, colorLoadAction: MTLLoadAction?, boxes: [BoxInstance], resources: GPUSortResources) throws {
+    init(splatCloud: GPUSplatCloud<SparkSplat>, projectionMatrix: simd_float4x4, modelMatrix: simd_float4x4, cameraMatrix: simd_float4x4, drawableSize: SIMD2<Float>, useSphericalHarmonics: Bool, colorLoadAction: MTLLoadAction?, boxes: [BoxInstance], resources: GPUSortResources, boundingBox: BoundingBox3D? = nil) throws {
+        self.boundingBox = boundingBox
         self.splatCloud = splatCloud
         self.projectionMatrix = projectionMatrix
         self.modelMatrix = modelMatrix
@@ -430,7 +392,7 @@ private struct GuidedSplatRenderPass: Element {
                     modelMatrix: modelMatrix,
                     cameraMatrix: cameraMatrix,
                     drawableSize: drawableSize,
-                    configuration: .init(useSphericalHarmonics: useSphericalHarmonics),
+                    configuration: .init(useSphericalHarmonics: useSphericalHarmonics, boundingBox: boundingBox),
                     sortedIndices: sortedIndices
                 )
                 if !boxes.isEmpty {
@@ -446,7 +408,7 @@ private struct GuidedSplatRenderPass: Element {
     }
 }
 
-private struct SceneGuidesRenderPass: Element {
+struct SceneGuidesRenderPass: Element {
     let projectionMatrix: simd_float4x4
     let cameraMatrix: simd_float4x4
     let drawableSize: SIMD2<Float>
@@ -854,7 +816,6 @@ struct InspectorView: View {
             showAxisLines: $viewModel.showAxisLines,
             debugModeEnabled: $viewModel.debugModeEnabled,
             debugMode: $viewModel.debugMode,
-            lastSortEvent: viewModel.lastSortEvent,
             onScreenshot: onScreenshot
         ) {
             cullingSection

@@ -195,6 +195,12 @@ private struct SplatRenderingView: View {
             switch cameraMode {
             case .object:
                 content.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
+                    .overlay(alignment: .topTrailing) {
+                        RotationWidget(rotation: orbitRotationBinding)
+                            .frame(width: 80, height: 80)
+                            .background(.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
+                            .padding()
+                    }
 
             case .room:
                 content.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
@@ -208,6 +214,37 @@ private struct SplatRenderingView: View {
                 viewModel.viewSize = size
             }
         }
+    }
+
+    /// Bridges cameraMatrix to the rotation-cube quaternion using the same
+    /// orbit convention as InteractiveCameraMatrixModifier (target at origin).
+    private var orbitRotationBinding: Binding<simd_quatf> {
+        Binding(
+            get: {
+                let m = cameraMatrix
+                let position = SIMD3<Float>(m.columns.3.x, m.columns.3.y, m.columns.3.z)
+                let offset = -position
+                let distance = length(offset)
+                guard distance > .ulpOfOne else {
+                    return simd_quatf(angle: 0, axis: [0, 1, 0])
+                }
+                let forward = offset / distance
+                let worldUp = SIMD3<Float>(0, 1, 0)
+                let referenceUp = abs(dot(forward, worldUp)) > 0.999 ? SIMD3<Float>(0, 0, 1) : worldUp
+                let right = normalize(cross(forward, referenceUp))
+                let up = cross(right, forward)
+                return simd_normalize(simd_quatf(simd_float3x3(columns: (right, up, -forward))))
+            },
+            set: { rotation in
+                let m = cameraMatrix
+                let position = SIMD3<Float>(m.columns.3.x, m.columns.3.y, m.columns.3.z)
+                let distance = max(length(position), 0.01)
+                let forward = rotation.act(SIMD3<Float>(0, 0, -1))
+                var matrix = simd_float4x4(rotation)
+                matrix.columns.3 = SIMD4<Float>(-forward * distance, 1)
+                cameraMatrix = matrix
+            }
+        )
     }
 }
 

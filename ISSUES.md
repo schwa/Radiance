@@ -432,12 +432,13 @@ Actual: The checkbox does not change the debug state.
 ## 22: Add Interaction3D rotation cube
 
 +++
-status: open
+status: closed
 priority: medium
 kind: feature
 labels: effort:s
 created: 2026-08-27T03:36:07Z
-updated: 2026-08-27T05:44:48Z
+updated: 2026-09-10T00:05:02Z
+closed: 2026-09-10T00:05:02Z
 +++
 
 Add the rotation cube provided by Interaction3D to the 3D viewer so users can inspect and change the current view orientation.

@@ -1214,11 +1214,13 @@ Desired: render on demand by default — only when the camera, model transform, 
 ## 63: SingleCloudGuidedRenderView allocates GPUSortResources on every body eval
 
 +++
-status: new
+status: closed
 priority: high
 kind: bug
 labels: rendering, performance, area:rendering, area:performance
 created: 2026-09-10T02:42:56Z
+updated: 2026-09-10T03:20:08Z
+closed: 2026-09-10T03:20:08Z
 +++
 
 SingleCloudGuidedRenderView.init creates GPUSortResources via _resources = State(initialValue: try GPUSortResources(device:capacity:)). SwiftUI evaluates the initialValue expression on every init (every parent body evaluation) and keeps only the first result, so the GPUSortResources allocation (scratch + output buffers x slotCount, sized to splat count) runs and is thrown away on each body eval.
@@ -1231,6 +1233,8 @@ Location: Radiance/SplatDocuments/Shared/SplatRenderView.swift (SingleCloudGuide
 
 Fix: make resources lazy — hold @State private var resources: GPUSortResources? = nil, create it once in .task/onAppear (or .task(id:) keyed to the cloud), and guard rendering until it exists. Apply to both SingleCloudGuidedRenderView and SingleCloudDebugRenderView.
 
+- `2026-09-10T03:20:08Z`: Moved GPUSortResources allocation out of both single-cloud view initializers into tasks keyed by the source Metal buffer identity. Matching resources are reused when tasks restart; render passes cannot use resources for a previous cloud. Radiance scheme builds and RadianceSupport test command passes. No automated SwiftUI allocation-lifecycle regression test was added; runtime allocation profiling remains unverified. The previously reported momentum hang was independently fixed in Interaction3D, not by this change.
+
 ---
 
 ## 64: Audit and remove State(initialValue:) init pattern in views
@@ -1239,7 +1243,7 @@ Fix: make resources lazy — hold @State private var resources: GPUSortResources
 status: new
 priority: medium
 kind: task
-labels: swiftui,performance,architecture,area:swiftui,area:performance
+labels: swiftui, performance, architecture, area:swiftui, area:performance
 depends: 63
 created: 2026-09-10T02:43:29Z
 +++

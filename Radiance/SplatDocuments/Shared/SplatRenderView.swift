@@ -241,7 +241,8 @@ private struct SingleCloudGuidedRenderView: View {
 
     @State private var stochasticSeed: UInt32 = 0
     @State private var pointSplatStatistics = PointSplatStatistics()
-    @State private var resources: GPUSortResources
+    @State private var resources: GPUSortResources?
+    @State private var resourceBufferID: ObjectIdentifier?
 
     init(splatCloud: GPUSplatCloud<SparkSplat>, cameraMatrix: simd_float4x4, modelMatrix: simd_float4x4, verticalAngleOfView: Double, nearClip: Double, farClip: Double, useSphericalHarmonics: Bool, renderer: SplatRenderer, gridColor: Color, showGrid: Bool, showAxes: Bool, boundingBoxes: [BoundingBoxInfo], onFrame: @escaping () -> Void) {
         self.splatCloud = splatCloud
@@ -257,13 +258,6 @@ private struct SingleCloudGuidedRenderView: View {
         self.showAxes = showAxes
         self.boundingBoxes = boundingBoxes
         self.onFrame = onFrame
-
-        do {
-            let device = splatCloud.splats.unsafeMTLBuffer.device
-            _resources = State(initialValue: try GPUSortResources(device: device, capacity: splatCloud.count))
-        } catch {
-            fatalError("Failed to create GPU sort resources: \(error)")
-        }
     }
 
     var body: some View {
@@ -285,7 +279,9 @@ private struct SingleCloudGuidedRenderView: View {
 
             switch renderer {
             case .sparkGPU, .sparkCPU:
-                try GuidedSplatRenderPass(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, useSphericalHarmonics: useSphericalHarmonics, colorLoadAction: splatLoadAction, boxes: boxInstances, resources: resources)
+                if let resources, resourceBufferID == ObjectIdentifier(splatCloud.splats.unsafeMTLBuffer) {
+                    try GuidedSplatRenderPass(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, useSphericalHarmonics: useSphericalHarmonics, colorLoadAction: splatLoadAction, boxes: boxInstances, resources: resources)
+                }
 
             case .tileBased:
                 try TileBasedSplatPass(splatCloud: splatCloud, projection: projection, drawableSize: drawableSize, cameraMatrix: cameraMatrix, modelMatrix: modelMatrix, colorLoadAction: splatLoadAction)
@@ -303,6 +299,18 @@ private struct SingleCloudGuidedRenderView: View {
 
             case .pointSplat:
                 try PointSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, frameIndex: 0, configuration: .init(depthRange: Float(nearClip) ... Float(farClip), statistics: pointSplatStatistics, colorLoadAction: splatLoadAction))
+            }
+        }
+        .task(id: ObjectIdentifier(splatCloud.splats.unsafeMTLBuffer)) {
+            let buffer = splatCloud.splats.unsafeMTLBuffer
+            guard resourceBufferID != ObjectIdentifier(buffer) else {
+                return
+            }
+            do {
+                resources = try GPUSortResources(device: buffer.device, capacity: splatCloud.count)
+                resourceBufferID = ObjectIdentifier(buffer)
+            } catch {
+                fatalError("Failed to create GPU sort resources: \(error)")
             }
         }
         .onFrameTimingChange { _ in
@@ -457,7 +465,8 @@ private struct SingleCloudDebugRenderView: View {
     let farClip: Double
     let debugParams: DebugParams
 
-    @State private var resources: GPUSortResources
+    @State private var resources: GPUSortResources?
+    @State private var resourceBufferID: ObjectIdentifier?
 
     init(splatCloud: GPUSplatCloud<SparkSplat>, cameraMatrix: simd_float4x4, modelMatrix: simd_float4x4, verticalAngleOfView: Double, nearClip: Double, farClip: Double, debugParams: DebugParams) {
         self.splatCloud = splatCloud
@@ -467,13 +476,6 @@ private struct SingleCloudDebugRenderView: View {
         self.nearClip = nearClip
         self.farClip = farClip
         self.debugParams = debugParams
-
-        do {
-            let device = splatCloud.splats.unsafeMTLBuffer.device
-            _resources = State(initialValue: try GPUSortResources(device: device, capacity: splatCloud.count))
-        } catch {
-            fatalError("Failed to create GPU debug sort resources: \(error)")
-        }
     }
 
     var body: some View {
@@ -482,15 +484,29 @@ private struct SingleCloudDebugRenderView: View {
                 verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
                 depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
             )
-            return try GPUSortedSplatDebugRenderPipeline(
-                splatCloud: splatCloud,
-                projectionMatrix: projection.projectionMatrix(for: drawableSize),
-                modelMatrix: modelMatrix,
-                cameraMatrix: cameraMatrix,
-                drawableSize: SIMD2(Float(drawableSize.width), Float(drawableSize.height)),
-                debugParams: debugParams,
-                resources: resources
-            )
+            if let resources, resourceBufferID == ObjectIdentifier(splatCloud.splats.unsafeMTLBuffer) {
+                try GPUSortedSplatDebugRenderPipeline(
+                    splatCloud: splatCloud,
+                    projectionMatrix: projection.projectionMatrix(for: drawableSize),
+                    modelMatrix: modelMatrix,
+                    cameraMatrix: cameraMatrix,
+                    drawableSize: SIMD2(Float(drawableSize.width), Float(drawableSize.height)),
+                    debugParams: debugParams,
+                    resources: resources
+                )
+            }
+        }
+        .task(id: ObjectIdentifier(splatCloud.splats.unsafeMTLBuffer)) {
+            let buffer = splatCloud.splats.unsafeMTLBuffer
+            guard resourceBufferID != ObjectIdentifier(buffer) else {
+                return
+            }
+            do {
+                resources = try GPUSortResources(device: buffer.device, capacity: splatCloud.count)
+                resourceBufferID = ObjectIdentifier(buffer)
+            } catch {
+                fatalError("Failed to create GPU debug sort resources: \(error)")
+            }
         }
     }
 }

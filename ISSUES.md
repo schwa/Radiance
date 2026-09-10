@@ -1346,11 +1346,13 @@ Evidence: /Users/schwa/Desktop/SwiftUI Trace.trace. InspectorView.cloudDisplayNa
 ## 68: Analysis debounce task bookkeeping invalidates the document view during movement
 
 +++
-status: new
+status: closed
 priority: medium
 kind: bug
 labels: area:swiftui, area:performance
 created: 2026-09-10T05:42:12Z
+updated: 2026-09-10T06:09:59Z
+closed: 2026-09-10T06:09:59Z
 +++
 
 Scheduling debounced image analysis writes classificationTask stored in @State on SplatDocumentContentView for every camera change. Although model work waits until movement settles, task bookkeeping itself causes additional document-body updates.
@@ -1360,5 +1362,26 @@ Repro: open a single cloud and rotate continuously with the analysis debounce en
 Expected: replacing or cancelling an analysis request does not redraw unrelated document UI. Actual: /Users/schwa/Desktop/SwiftUI Trace.trace contains hundreds of direct cause edges from @LazyState SplatDocumentContentView._classificationTask to SplatDocumentContentView.body (561, 96, and 79 edges in three recorded source-stack groups after four seconds).
 
 The relevant path is classifyCurrentRenderingIfNeeded() in Radiance/SplatDocuments/Shared/SplatDocumentContentView.swift. This issue concerns scheduling overhead, not Core ML inference or the already addressed repeated model loading.
+
+- `2026-09-10T06:09:59Z`: Moved the classification task handle from document @State into a plain MainActor ClassificationTaskCoordinator. Replacing/cancelling tasks no longer mutates observable view state. Preserved debounce and cancellation on movement, document changes, and disappearance. Release build, lint, and support tests pass; no dedicated coordinator tests or follow-up Instruments measurement yet.
+
+---
+
+## 69: SplatCloudDescriptor.computeBounds causes a microhang
+
++++
+status: new
+priority: medium
+kind: bug
+labels: area:performance
+created: 2026-09-10T06:54:54Z
++++
+
+SplatCloudDescriptor.computeBounds causes a microhang, as reported by the user.
+
+Expected: computing cloud bounds does not interrupt UI responsiveness.
+Actual: a brief hang occurs during bounds computation.
+
+The triggering cloud, call site, thread, and duration have not yet been recorded.
 
 ---

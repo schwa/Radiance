@@ -148,7 +148,30 @@ final class SplatViewModel {
             }
         }
     }
-    var cameraMatrix: simd_float4x4 = .init(translation: [0, 0, 5])
+    // Camera orientation source of truth for object (turntable) mode: one
+    // rotation, shared by the turntable controller and the rotation cube.
+    // cameraMatrix is derived from these in object mode. Room/spatial modes
+    // keep an arbitrary matrix (roll would be lost by orbit decomposition), so
+    // they use `storedCameraMatrix` directly.
+    var cameraRotation = simd_quatf(angle: 0, axis: [0, 1, 0])
+    var cameraDistance: Float = 5
+    var cameraTarget = SIMD3<Float>.zero
+    private var storedCameraMatrix = simd_float4x4(translation: [0, 0, 5])
+
+    var cameraMatrix: simd_float4x4 {
+        get {
+            cameraMode == .object
+                ? Self.composeCameraMatrix(rotation: cameraRotation, distance: cameraDistance, target: cameraTarget)
+                : storedCameraMatrix
+        }
+        set {
+            if cameraMode == .object {
+                (cameraRotation, cameraDistance, cameraTarget) = Self.decomposeCameraMatrix(newValue, target: cameraTarget)
+            } else {
+                storedCameraMatrix = newValue
+            }
+        }
+    }
     var verticalAngleOfView: Double = 90 {
         didSet { updateCameraForZoomToFit() }
     }
@@ -170,6 +193,48 @@ final class SplatViewModel {
             }
             updateCameraForZoomToFit()
         }
+    }
+
+    // MARK: - Camera Matrix Conversion
+
+    /// Orbit camera matrix from rotation/distance/target (matches
+    /// Interaction3D's CameraMatrixSynchronizer convention).
+    static func composeCameraMatrix(rotation: simd_quatf, distance: Float, target: SIMD3<Float>) -> simd_float4x4 {
+        let forward = rotation.act(SIMD3<Float>(0, 0, -1))
+        let position = target - forward * distance
+        var matrix = simd_float4x4(rotation)
+        matrix.columns.3 = SIMD4<Float>(position, 1)
+        return matrix
+    }
+
+    static func decomposeCameraMatrix(_ matrix: simd_float4x4, target: SIMD3<Float>, minimumDistance: Float = 0.01) -> (rotation: simd_quatf, distance: Float, target: SIMD3<Float>) {
+        let position = SIMD3<Float>(matrix.columns.3.x, matrix.columns.3.y, matrix.columns.3.z)
+        let offset = target - position
+        let rawDistance = length(offset)
+        let rotation: simd_quatf
+        if rawDistance > .ulpOfOne {
+            rotation = lookRotation(forward: offset / rawDistance)
+        } else {
+            rotation = matrixRotation(matrix)
+        }
+        return (rotation, max(rawDistance, minimumDistance), target)
+    }
+
+    private static func lookRotation(forward: SIMD3<Float>) -> simd_quatf {
+        let worldUp = SIMD3<Float>(0, 1, 0)
+        let referenceUp = abs(dot(forward, worldUp)) > 0.999 ? SIMD3<Float>(0, 0, 1) : worldUp
+        let right = normalize(cross(forward, referenceUp))
+        let up = cross(right, forward)
+        return simd_normalize(simd_quatf(simd_float3x3(columns: (right, up, -forward))))
+    }
+
+    private static func matrixRotation(_ matrix: simd_float4x4) -> simd_quatf {
+        let rotationMatrix = simd_float3x3(columns: (
+            normalize(SIMD3<Float>(matrix.columns.0.x, matrix.columns.0.y, matrix.columns.0.z)),
+            normalize(SIMD3<Float>(matrix.columns.1.x, matrix.columns.1.y, matrix.columns.1.z)),
+            normalize(SIMD3<Float>(matrix.columns.2.x, matrix.columns.2.y, matrix.columns.2.z))
+        ))
+        return simd_normalize(simd_quatf(rotationMatrix))
     }
 
     // MARK: - Render Settings

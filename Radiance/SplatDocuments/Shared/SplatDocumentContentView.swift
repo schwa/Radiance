@@ -1152,7 +1152,7 @@ struct SplatDocumentContentView: View {
         .ignoresSafeArea()
         .overlay(alignment: .topTrailing) {
             if viewModel.cameraMode == .object {
-                CameraOrientationCube(cameraMatrix: renderCameraMatrix)
+                CameraOrientationCube(rotation: $viewModel.cameraRotation)
             }
         }
     }
@@ -1257,7 +1257,7 @@ struct SplatDocumentContentView: View {
             )
             .overlay(alignment: .topTrailing) {
                 if viewModel.cameraMode == .object {
-                    CameraOrientationCube(cameraMatrix: renderCameraMatrix)
+                    CameraOrientationCube(rotation: $viewModel.cameraRotation)
                 }
             }
         } else if multiDocument != nil {

@@ -183,12 +183,16 @@ private struct SplatRenderingView: View {
         }
     }
 
-    @ViewBuilder
     private func cameraController<Content: View>(for content: Content) -> some View {
-        Group {
+        @Bindable var viewModel = viewModel
+        return Group {
             switch cameraMode {
             case .object:
-                content.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
+                // Object mode's source of truth is the viewModel's rotation/
+                // distance/target trio (shared with the rotation cube), not the
+                // matrix — so there is a single rotation, like the Interaction3D
+                // demo. cameraMatrix is derived from the trio for rendering.
+                content.interactiveCamera(rotation: $viewModel.cameraRotation, distance: $viewModel.cameraDistance, target: $viewModel.cameraTarget, mode: .turntable())
 
             case .room:
                 content.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
@@ -205,47 +209,18 @@ private struct SplatRenderingView: View {
     }
 }
 
-/// Rotation cube showing/controlling the orbit camera orientation. Attach
-/// outside any .ignoresSafeArea() so it stays clear of the title bar.
+/// Rotation cube showing/controlling the orbit camera orientation. Binds the
+/// same rotation quaternion the turntable controller uses (one source of
+/// truth), so there is no matrix round-trip. Attach outside any
+/// .ignoresSafeArea() so it stays clear of the title bar.
 struct CameraOrientationCube: View {
-    @Binding var cameraMatrix: simd_float4x4
+    @Binding var rotation: simd_quatf
 
     var body: some View {
-        RotationWidget(rotation: orbitRotationBinding)
+        RotationWidget(rotation: $rotation)
             .frame(width: 80, height: 80)
             .background(.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
             .padding()
-    }
-
-    /// Bridges cameraMatrix to the rotation-cube quaternion using the same
-    /// orbit convention as InteractiveCameraMatrixModifier (target at origin).
-    private var orbitRotationBinding: Binding<simd_quatf> {
-        Binding(
-            get: {
-                let m = cameraMatrix
-                let position = SIMD3<Float>(m.columns.3.x, m.columns.3.y, m.columns.3.z)
-                let offset = -position
-                let distance = length(offset)
-                guard distance > .ulpOfOne else {
-                    return simd_quatf(angle: 0, axis: [0, 1, 0])
-                }
-                let forward = offset / distance
-                let worldUp = SIMD3<Float>(0, 1, 0)
-                let referenceUp = abs(dot(forward, worldUp)) > 0.999 ? SIMD3<Float>(0, 0, 1) : worldUp
-                let right = normalize(cross(forward, referenceUp))
-                let up = cross(right, forward)
-                return simd_normalize(simd_quatf(simd_float3x3(columns: (right, up, -forward))))
-            },
-            set: { rotation in
-                let m = cameraMatrix
-                let position = SIMD3<Float>(m.columns.3.x, m.columns.3.y, m.columns.3.z)
-                let distance = max(length(position), 0.01)
-                let forward = rotation.act(SIMD3<Float>(0, 0, -1))
-                var matrix = simd_float4x4(rotation)
-                matrix.columns.3 = SIMD4<Float>(-forward * distance, 1)
-                cameraMatrix = matrix
-            }
-        )
     }
 }
 

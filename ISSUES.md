@@ -896,12 +896,13 @@ The Enable Sorting toggle and Sort Now button are obsolete and should no longer 
 ## 47: Bounding-box overlay renders no visible wireframe
 
 +++
-status: open
+status: closed
 priority: medium
 kind: bug
 labels: effort:m, area:rendering
 created: 2026-08-27T07:09:36Z
-updated: 2026-09-09T23:03:58Z
+updated: 2026-09-10T04:01:49Z
+closed: 2026-09-10T04:01:49Z
 +++
 
 Enabling bounding boxes produces no visible wireframe in the scene. The SwiftUI Canvas overlay is present, but the failure stage is not yet confirmed.
@@ -913,6 +914,7 @@ Expected: Enabling bounding boxes draws the cloud bounds over the rendered scene
 Actual: No bounding-box lines appear.
 
 - `2026-09-10T00:02:10Z`: Investigated statically: simulated BoundingBoxWireframe's exact projection math (PerspectiveProjection standard depth, camera at +5Z, xRotation(pi) scene transform, unit box) — all 8 corners project on-screen, clip.w guard and screen-bounds guards pass. Data plumbing also checks out: single mode computes bounds via descriptor.computeBounds() and guards showBoundingBoxes/boundsSize; multi mode fills bounds async via computeBoundsForLoadedClouds. Punting: failure stage still unconfirmed without runtime inspection. Unblocker: with the app running and boxes enabled, log boundingBoxInfos.count and one projected corner in SplatBoundingBoxOverlayView (and confirm GeometryReader proxy.size is nonzero) to pin whether infos are empty, the overlay is zero-sized, or the Canvas is occluded by the Metal layer.
+- `2026-09-10T04:01:50Z`: Closed as invalid per user.
 
 ---
 

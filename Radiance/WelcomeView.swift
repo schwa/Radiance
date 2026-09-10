@@ -1,7 +1,8 @@
 import SwiftUI
 
 struct WelcomeView: View {
-    @AppStorage("doNotShowWelcomeAgain") private var doNotShowAgain = true
+    @AppStorage(DismissedHints.storageKey) private var dismissedHints = DismissedHints.legacyDefault
+    @State private var doNotShowAgain = true
     let onDone: () -> Void
     var onOpenSample: ((URL) -> Void)?
 
@@ -78,7 +79,11 @@ struct WelcomeView: View {
             VStack(spacing: 16) {
                 Button {
                     // Persist even when the toggle was left at its default.
-                    UserDefaults.standard.set(doNotShowAgain, forKey: "doNotShowWelcomeAgain")
+                    if doNotShowAgain {
+                        dismissedHints.insert(.welcome)
+                    } else {
+                        dismissedHints.remove(.welcome)
+                    }
                     onDone()
                 } label: {
                     Text("Done")

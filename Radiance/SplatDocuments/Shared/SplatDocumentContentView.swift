@@ -1049,6 +1049,11 @@ struct SplatDocumentContentView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .bottom) {
+            if viewModel.cameraMode == .room {
+                RoomControlsHelpView()
+            }
+        }
         #if os(macOS)
         .overlay(alignment: .top) {
             if showFPSOverlay {

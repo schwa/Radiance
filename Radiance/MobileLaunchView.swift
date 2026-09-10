@@ -3,7 +3,7 @@ import SwiftUI
 
 struct MobileLaunchView: View {
     @State private var openImport = false
-    @State private var isShowingWelcome = !UserDefaults.standard.bool(forKey: "doNotShowWelcomeAgain")
+    @State private var isShowingWelcome = !DismissedHints.current.contains(.welcome)
     #if os(iOS)
     @State private var restoredDocumentURL: URL?
     #endif

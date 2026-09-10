@@ -25,7 +25,7 @@ struct SplashView: View {
     private var isFileImporterPresented = false
 
     @State
-    private var isShowingWelcome = !UserDefaults.standard.bool(forKey: "doNotShowWelcomeAgain")
+    private var isShowingWelcome = !DismissedHints.current.contains(.welcome)
 
     private var recentDocumentURLs: [URL] {
         NSDocumentController.shared.recentDocumentURLs

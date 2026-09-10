@@ -5,7 +5,7 @@ import AppKit
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("doNotShowWelcomeAgain") private var doNotShowWelcomeAgain = false
+    @AppStorage(DismissedHints.storageKey) private var dismissedHints = DismissedHints.legacyDefault
 
     var body: some View {
         form
@@ -39,11 +39,11 @@ struct SettingsView: View {
                 }
             }
             #endif
-            Section("Welcome") {
-                Button("Show Welcome Again") {
-                    doNotShowWelcomeAgain = false
+            Section("Hints and Welcome") {
+                Button("Reset All ‘Don’t Show Again’ Choices") {
+                    dismissedHints = []
                 }
-                .disabled(!doNotShowWelcomeAgain)
+                .disabled(dismissedHints.isEmpty)
             }
             Section("Image to Gaussian Splat Conversion") {
                 Text("Sharp is an Apple ML model that converts images to Gaussian Splats.")

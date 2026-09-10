@@ -149,6 +149,10 @@ struct SplatDocumentContentView: View {
         }
         #endif
         .onAppear { setupInitialState() }
+        .onDisappear {
+            classificationTask?.cancel()
+            classificationTask = nil
+        }
         .onChange(of: viewModel.loadingState) {
             classifyCurrentRenderingIfNeeded()
         }
@@ -236,7 +240,8 @@ struct SplatDocumentContentView: View {
     }
 
     private func classifyCurrentRenderingIfNeeded() {
-        guard mode == .single, viewModel.loadingState == .ready, classificationTask == nil else {
+        classificationTask?.cancel()
+        guard mode == .single, viewModel.loadingState == .ready else {
             return
         }
 
@@ -257,6 +262,9 @@ struct SplatDocumentContentView: View {
 
         classificationTask = Task {
             do {
+                // Debounce all analysis until camera and scene changes settle.
+                try await Task.sleep(for: .milliseconds(300))
+                try Task.checkCancellation()
                 let image = try await Self.renderAnalysisImage(
                     width: width,
                     height: height,
@@ -266,6 +274,7 @@ struct SplatDocumentContentView: View {
                     verticalAngleOfView: verticalAngleOfView,
                     backgroundColor: backgroundColor
                 )
+                try Task.checkCancellation()
                 async let observations = ClassifyImageRequest().perform(on: image)
                 async let horizon = DetectHorizonRequest().perform(on: image)
                 async let aesthetics = CalculateImageAestheticsScoresRequest().perform(on: image)
@@ -278,7 +287,7 @@ struct SplatDocumentContentView: View {
                     horizonConfidence: horizonObservation?.confidence,
                     aestheticsScore: aestheticsObservation.overallScore,
                     isUtility: aestheticsObservation.isUtility,
-                    splatAngleGoodProbability: Self.splatAngleGoodProbability(for: image)
+                    splatAngleGoodProbability: try await SplatAngleClassificationService.shared.probability(for: image)
                 )
                 let generatedSubjectMask: CGImage?
                 if shouldGenerateSubjectMask {
@@ -298,11 +307,6 @@ struct SplatDocumentContentView: View {
                 if !Task.isCancelled {
                     classificationError = error.localizedDescription
                 }
-            }
-
-            classificationTask = nil
-            if viewModel.renderCameraMatrix != cameraMatrix || viewModel.renderSceneTransform != sceneTransform || viewModel.viewSize != viewSize || viewModel.verticalAngleOfView != verticalAngleOfView || highlightsSubjects != shouldGenerateSubjectMask {
-                classifyCurrentRenderingIfNeeded()
             }
         }
     }
@@ -735,33 +739,6 @@ struct SplatDocumentContentView: View {
         }
     }
 
-    private static func splatAngleGoodProbability(for image: CGImage) -> Float? {
-        let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Radiance", category: "SplatAngleClassifier")
-        guard let modelURL = Bundle.main.url(forResource: "SplatAngleClassifier", withExtension: "mlmodelc") else {
-            logger.error("Model resource SplatAngleClassifier.mlmodelc was not found in the app bundle")
-            return nil
-        }
-        do {
-            let model = try MLModel(contentsOf: modelURL)
-            guard let constraint = model.modelDescription.inputDescriptionsByName["image"]?.imageConstraint else {
-                logger.error("Model has no image input constraint")
-                return nil
-            }
-            let input = try MLFeatureValue(cgImage: image, constraint: constraint)
-            let provider = try MLDictionaryFeatureProvider(dictionary: ["image": input])
-            let output = try model.prediction(from: provider)
-            guard let probabilities = output.featureValue(for: "classLabel_probs")?.dictionaryValue,
-                  let value = probabilities["good"] else {
-                logger.error("Model output did not contain classLabel_probs[good]; outputs: \(output.featureNames)")
-                return nil
-            }
-            return value.floatValue
-        } catch {
-            logger.error("Model prediction failed: \(error.localizedDescription)")
-            return nil
-        }
-    }
-
     // swiftlint:disable:next function_parameter_count
     @concurrent nonisolated private static func renderAnalysisImage(width: Int, height: Int, cloudInfos: [(descriptor: SplatCloudDescriptor, modelTransform: simd_float4x4)], sceneTransform: simd_float4x4, cameraMatrix: simd_float4x4, verticalAngleOfView: Double, backgroundColor: Color.Resolved) async throws -> CGImage {
         try Task.checkCancellation()
@@ -1049,6 +1026,11 @@ struct SplatDocumentContentView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .overlay(alignment: .bottomLeading) {
+            if viewModel.cameraMode == .object {
+                CameraSpinTestView(rotation: $viewModel.cameraRotation)
+            }
+        }
         .overlay(alignment: .bottom) {
             if viewModel.cameraMode == .room {
                 RoomControlsHelpView()

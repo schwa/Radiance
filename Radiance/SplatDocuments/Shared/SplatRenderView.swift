@@ -579,11 +579,8 @@ struct InspectorView: View {
                     cloudContent
 
                 case .scene:
-                    if var doc = document {
-                        SceneInspector(document: Binding(
-                            get: { doc },
-                            set: { doc = $0; document = $0 }
-                        ))
+                    if let document = Binding($document) {
+                        SceneInspector(document: document)
                         .environment(viewModel)
                     }
 
@@ -659,64 +656,58 @@ struct InspectorView: View {
         if mode == .single {
             return $viewModel.modelRotationX
         }
-        return Binding(
-            get: { selectedCloud?.transform.rotation.x ?? 0 },
-            set: { selectedCloud?.transform.rotation.x = $0 }
-        )
+        guard let cloud = Binding($selectedCloud) else {
+            return .constant(0)
+        }
+        return cloud.transform.rotation.x
     }
 
     private var cloudRotationYBinding: Binding<Float> {
         if mode == .single {
             return $viewModel.modelRotationY
         }
-        return Binding(
-            get: { selectedCloud?.transform.rotation.y ?? 0 },
-            set: { selectedCloud?.transform.rotation.y = $0 }
-        )
+        guard let cloud = Binding($selectedCloud) else {
+            return .constant(0)
+        }
+        return cloud.transform.rotation.y
     }
 
     private var cloudRotationZBinding: Binding<Float> {
         if mode == .single {
             return $viewModel.modelRotationZ
         }
-        return Binding(
-            get: { selectedCloud?.transform.rotation.z ?? 0 },
-            set: { selectedCloud?.transform.rotation.z = $0 }
-        )
+        guard let cloud = Binding($selectedCloud) else {
+            return .constant(0)
+        }
+        return cloud.transform.rotation.z
     }
 
     private var cloudDisplayNameBinding: Binding<String?> {
-        Binding(
-            get: { selectedCloud?.displayName },
-            set: { selectedCloud?.displayName = $0 }
-        )
+        guard mode == .multi, let cloud = Binding($selectedCloud) else {
+            return .constant(nil)
+        }
+        return cloud.displayName
     }
 
     private var cloudEnabledBinding: Binding<Bool> {
-        if mode == .single {
+        guard mode == .multi, let cloud = Binding($selectedCloud) else {
             return .constant(true)
         }
-        return Binding(
-            get: { selectedCloud?.enabled ?? true },
-            set: { selectedCloud?.enabled = $0 }
-        )
+        return cloud.enabled
     }
 
     private var cloudOpacityBinding: Binding<Float> {
-        if mode == .single {
+        guard mode == .multi, let cloud = Binding($selectedCloud) else {
             return .constant(1)
         }
-        return Binding(
-            get: { selectedCloud?.opacity ?? 1 },
-            set: { selectedCloud?.opacity = $0 }
-        )
+        return cloud.opacity
     }
 
     private var cloudTransformBinding: Binding<Transform> {
-        Binding(
-            get: { selectedCloud?.transform ?? .identity },
-            set: { selectedCloud?.transform = $0 }
-        )
+        guard mode == .multi, let cloud = Binding($selectedCloud) else {
+            return .constant(.identity)
+        }
+        return cloud.transform
     }
 
     // MARK: - Camera Content
@@ -787,10 +778,10 @@ struct InspectorView: View {
         guard mode == .multi else {
             return $viewModel.useSphericalHarmonics
         }
-        return Binding(
-            get: { document?.scene.renderSettings.useSphericalHarmonics ?? true },
-            set: { document?.scene.renderSettings.useSphericalHarmonics = $0 }
-        )
+        guard let document = Binding($document) else {
+            return .constant(true)
+        }
+        return document.scene.renderSettings.useSphericalHarmonics
     }
     @ViewBuilder
     private var renderContent: some View {

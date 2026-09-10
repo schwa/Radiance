@@ -1322,11 +1322,13 @@ Evidence: /Users/schwa/Desktop/SwiftUI Trace.trace. Cause edges identify configu
 ## 67: Cloud inspector display-name binding changes during camera rotation
 
 +++
-status: new
+status: closed
 priority: medium
 kind: bug
 labels: area:swiftui, area:performance
 created: 2026-09-10T05:42:12Z
+updated: 2026-09-10T06:04:30Z
+closed: 2026-09-10T06:04:30Z
 +++
 
 CloudInspector updates during camera rotation despite its cloud properties being unchanged.
@@ -1337,6 +1339,8 @@ Expected: unchanged cloud fields do not update because the camera moved. Actual:
 
 Evidence: /Users/schwa/Desktop/SwiftUI Trace.trace. InspectorView.cloudDisplayNameBinding in Radiance/SplatDocuments/Shared/SplatRenderView.swift constructs a Binding(get:set:) on each evaluation, including single-cloud mode where selectedCloud is nil. The trace directly identifies the changing binding location; its standalone frame-time impact has not been measured.
 
+- `2026-09-10T06:04:31Z`: Replaced cloud-field closure bindings with native optional-unwrapped projections and constants for hidden single-cloud fields. Also replaced renderer selection, scene document, and spherical-harmonics forwarding adapters. User measured roughly 54 FPS after cloud bindings, then 56–59 FPS after the additional adapters, versus about 30 FPS before. Release build, lint, and support tests pass.
+
 ---
 
 ## 68: Analysis debounce task bookkeeping invalidates the document view during movement
@@ -1345,7 +1349,7 @@ Evidence: /Users/schwa/Desktop/SwiftUI Trace.trace. InspectorView.cloudDisplayNa
 status: new
 priority: medium
 kind: bug
-labels: area:swiftui,area:performance
+labels: area:swiftui, area:performance
 created: 2026-09-10T05:42:12Z
 +++
 

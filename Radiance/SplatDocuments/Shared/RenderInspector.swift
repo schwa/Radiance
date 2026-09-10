@@ -23,12 +23,10 @@ struct RenderInspector<CullingContent: View>: View {
     @AppStorage("showFPSOverlay") private var showFPSOverlay = false
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         Section("Renderer") {
             if !rendererSelectionDisabled {
-                Picker("Type", selection: Binding(
-                    get: { viewModel.renderer },
-                    set: { viewModel.renderer = $0 }
-                )) {
+                Picker("Type", selection: $viewModel.renderer) {
                     ForEach(SplatRenderer.allCases.filter { $0 != .sparkCPU }, id: \.self) { renderer in
                         Text(renderer == .sparkGPU ? "Spark (GPU Sort)" : renderer.rawValue.capitalized).tag(renderer)
                     }

@@ -513,6 +513,7 @@
 		};
 		452D31AF2F15791E0034906D /* Interaction3D */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = 455EE9212F3A679900A753D3 /* XCRemoteSwiftPackageReference "Interaction3D" */;
 			productName = Interaction3D;
 		};
 		453915A52F74A5DF00D7A039 /* MetalSprocketsGaussianSplats */ = {

@@ -224,12 +224,12 @@ struct ModelDownloadView: View {
 }
 
 private final class DownloadDelegate: NSObject, URLSessionDownloadDelegate {
-    let progressHandler: (Int64, Int64, Int64) -> Void
-    let completionHandler: (Result<(URL, URLResponse), Error>) -> Void
+    let progressHandler: @Sendable (Int64, Int64, Int64) -> Void
+    let completionHandler: @Sendable (Result<(URL, URLResponse), Error>) -> Void
 
     init(
-        progress: @escaping (Int64, Int64, Int64) -> Void,
-        completion: @escaping (Result<(URL, URLResponse), Error>) -> Void
+        progress: @escaping @Sendable (Int64, Int64, Int64) -> Void,
+        completion: @escaping @Sendable (Result<(URL, URLResponse), Error>) -> Void
     ) {
         self.progressHandler = progress
         self.completionHandler = completion

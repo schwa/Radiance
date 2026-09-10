@@ -751,7 +751,7 @@ struct SplatDocumentContentView: View {
             let provider = try MLDictionaryFeatureProvider(dictionary: ["image": input])
             let output = try model.prediction(from: provider)
             guard let probabilities = output.featureValue(for: "classLabel_probs")?.dictionaryValue,
-                  let value = probabilities["good"] as? NSNumber else {
+                  let value = probabilities["good"] else {
                 logger.error("Model output did not contain classLabel_probs[good]; outputs: \(output.featureNames)")
                 return nil
             }

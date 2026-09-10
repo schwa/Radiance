@@ -214,12 +214,12 @@ private struct FolderPickerDocument: FileDocument {
 // MARK: - Download Delegate
 
 private final class DownloadProgressDelegate: NSObject, URLSessionDownloadDelegate {
-    let progressHandler: (Double) -> Void
-    let completionHandler: (Result<(URL, URLResponse), Error>) -> Void
+    let progressHandler: @Sendable (Double) -> Void
+    let completionHandler: @Sendable (Result<(URL, URLResponse), Error>) -> Void
 
     init(
-        progress: @escaping (Double) -> Void,
-        completion: @escaping (Result<(URL, URLResponse), Error>) -> Void
+        progress: @escaping @Sendable (Double) -> Void,
+        completion: @escaping @Sendable (Result<(URL, URLResponse), Error>) -> Void
     ) {
         self.progressHandler = progress
         self.completionHandler = completion

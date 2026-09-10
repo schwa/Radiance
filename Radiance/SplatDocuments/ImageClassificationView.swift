@@ -1,6 +1,6 @@
 #if os(iOS) || os(macOS)
-import FoundationModels
 import CoreML
+import FoundationModels
 import SwiftUI
 
 struct ImageClassification: Identifiable, Equatable, Sendable {

@@ -746,6 +746,7 @@ struct InspectorView: View {
             nearClip: $viewModel.nearClip,
             farClip: $viewModel.farClip,
             cameraMatrix: $viewModel.cameraMatrix,
+            cameraRotation: $viewModel.cameraRotation,
             viewSize: viewModel.viewSize,
             zoomToFitDisabled: viewModel.boundsSize == .zero,
             boundsCenter: selectedCloudBoundsCenter,

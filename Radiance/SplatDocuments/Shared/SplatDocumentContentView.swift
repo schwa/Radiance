@@ -84,7 +84,7 @@ struct SplatDocumentContentView: View {
     @State private var isDescribingImage = false
     @State private var subjectMask: CGImage?
     @State private var highlightsSubjects = false
-    @State private var classificationTask: Task<Void, Never>?
+    @State private var classificationCoordinator = ClassificationTaskCoordinator()
     @State private var imageDescriptionTask: Task<Void, Never>?
     @State private var bestViewTask: Task<Void, Never>?
     @State private var bestViewError: String?
@@ -150,8 +150,7 @@ struct SplatDocumentContentView: View {
         #endif
         .onAppear { setupInitialState() }
         .onDisappear {
-            classificationTask?.cancel()
-            classificationTask = nil
+            classificationCoordinator.cancel()
         }
         .onChange(of: viewModel.loadingState) {
             classifyCurrentRenderingIfNeeded()
@@ -240,7 +239,7 @@ struct SplatDocumentContentView: View {
     }
 
     private func classifyCurrentRenderingIfNeeded() {
-        classificationTask?.cancel()
+        classificationCoordinator.cancel()
         guard mode == .single, viewModel.loadingState == .ready else {
             return
         }
@@ -260,7 +259,7 @@ struct SplatDocumentContentView: View {
         let backgroundColor = viewModel.backgroundColor.resolve(in: .init())
         let shouldGenerateSubjectMask = highlightsSubjects
 
-        classificationTask = Task {
+        classificationCoordinator.replace {
             do {
                 // Debounce all analysis until camera and scene changes settle.
                 try await Task.sleep(for: .milliseconds(300))
@@ -831,8 +830,7 @@ struct SplatDocumentContentView: View {
                 // Export completion handled by system
             }
             .task(id: fileURL) {
-                classificationTask?.cancel()
-                classificationTask = nil
+                classificationCoordinator.cancel()
                 imageDescriptionTask?.cancel()
                 imageDescriptionTask = nil
                 classifications = []
@@ -1026,11 +1024,6 @@ struct SplatDocumentContentView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .overlay(alignment: .bottomLeading) {
-            if viewModel.cameraMode == .object {
-                CameraSpinTestView(rotation: $viewModel.cameraRotation)
-            }
-        }
         .overlay(alignment: .bottom) {
             if viewModel.cameraMode == .room {
                 RoomControlsHelpView()

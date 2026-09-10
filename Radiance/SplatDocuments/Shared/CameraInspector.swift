@@ -12,6 +12,7 @@ struct CameraInspector: View {
     @Binding var nearClip: Double
     @Binding var farClip: Double
     @Binding var cameraMatrix: simd_float4x4
+    @Binding var cameraRotation: simd_quatf
     var viewSize: CGSize
     var zoomToFitDisabled = false
     var boundsCenter: SIMD3<Float> = .zero
@@ -28,6 +29,9 @@ struct CameraInspector: View {
             }
             .pickerStyle(.segmented)
             .labelsHidden()
+            if cameraMode == .object {
+                CameraSpinControlView(rotation: $cameraRotation)
+            }
         }
 
         Section {

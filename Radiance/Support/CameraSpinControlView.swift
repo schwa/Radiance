@@ -1,7 +1,7 @@
 import simd
 import SwiftUI
 
-struct CameraSpinTestView: View {
+struct CameraSpinControlView: View {
     @Binding var rotation: simd_quatf
     @State private var startedAt: Date?
     @State private var initialRotation = simd_quatf(angle: 0, axis: [0, 1, 0])
@@ -29,11 +29,10 @@ struct CameraSpinTestView: View {
             }
         }
         .onDisappear { startedAt = nil }
-        .padding()
     }
 }
 
 #Preview {
     @Previewable @State var rotation = simd_quatf(angle: 0, axis: [0, 1, 0])
-    CameraSpinTestView(rotation: $rotation)
+    CameraSpinControlView(rotation: $rotation)
 }

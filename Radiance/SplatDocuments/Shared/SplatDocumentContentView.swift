@@ -1151,6 +1151,11 @@ struct SplatDocumentContentView: View {
             }
         }
         .ignoresSafeArea()
+        .overlay(alignment: .topTrailing) {
+            if viewModel.cameraMode == .object {
+                CameraOrientationCube(cameraMatrix: renderCameraMatrix)
+            }
+        }
     }
 
     /// Compute debug shader parameters based on mode and bounds
@@ -1252,6 +1257,11 @@ struct SplatDocumentContentView: View {
                 onDragChange: handleAxisDrag,
                 onDragEnd: commitDrag
             )
+            .overlay(alignment: .topTrailing) {
+                if viewModel.cameraMode == .object {
+                    CameraOrientationCube(cameraMatrix: renderCameraMatrix)
+                }
+            }
         } else if multiDocument != nil {
             ProgressView("Initializing...")
         }

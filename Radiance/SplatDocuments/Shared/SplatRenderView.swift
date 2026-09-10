@@ -195,12 +195,6 @@ private struct SplatRenderingView: View {
             switch cameraMode {
             case .object:
                 content.interactiveCamera(cameraMatrix: $cameraMatrix, mode: .turntable())
-                    .overlay(alignment: .topTrailing) {
-                        RotationWidget(rotation: orbitRotationBinding)
-                            .frame(width: 80, height: 80)
-                            .background(.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
-                            .padding()
-                    }
 
             case .room:
                 content.roomCameraController(cameraMatrix: $cameraMatrix, cameraHeight: 0)
@@ -214,6 +208,19 @@ private struct SplatRenderingView: View {
                 viewModel.viewSize = size
             }
         }
+    }
+}
+
+/// Rotation cube showing/controlling the orbit camera orientation. Attach
+/// outside any .ignoresSafeArea() so it stays clear of the title bar.
+struct CameraOrientationCube: View {
+    @Binding var cameraMatrix: simd_float4x4
+
+    var body: some View {
+        RotationWidget(rotation: orbitRotationBinding)
+            .frame(width: 80, height: 80)
+            .background(.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
+            .padding()
     }
 
     /// Bridges cameraMatrix to the rotation-cube quaternion using the same

@@ -460,6 +460,8 @@ Add a compact Safari-style downloads window that opens near the top-right corner
 
 The window lists all downloads and their current status. All downloads in the app use this shared downloads UI. It is also accessible from a matching Downloads item in the Window menu.
 
+- `2026-09-10T00:06:47Z`: Assessed in the autonomous run: implementation requires consolidating the two existing independent download flows (SampleAssetsDownloadView's URLSession delegate, ModelDownloadView/Sharp model) behind a shared observable download manager, then designing the window UX (floating panel vs regular window, per-item progress/cancel/retry, clear-completed, persistence across launches). effort:l with real design surface — punting per this run's obvious-solutions-only constraint. Unblocker: sketch the desired UX (or approve a minimal version: shared DownloadManager + plain Window scene listing progress rows with cancel, Window menu item) and it can be built in a dedicated session.
+
 ---
 
 ## 24: Add a reference grid to the 3D viewer
@@ -495,6 +497,7 @@ updated: 2026-08-27T05:44:59Z
 Add skybox support to the 3D viewer. MetalSprocketsAddOns may already provide the required skybox component.
 
 - `2026-08-27T05:44:59Z`: Related viewer-environment enhancements: #24, #25, and #26.
+- `2026-09-10T00:05:24Z`: Confirmed MetalSprocketsAddOns provides SkyboxRenderPipeline (cubemap) and EquirectangularSkyboxRenderPipeline (lat-long panorama), both taking projection/camera matrices + MTLTexture. Punting on integration decisions: (1) texture source — bundled default HDRI (needs a licensed asset), user-picked image, or procedural gradient; (2) inspector UI for toggle/picker/brightness; (3) composition — the skybox must render beneath splats in both the single-cloud (5 pipelines with per-pass load actions) and multi-cloud paths, which #49 wants to unify first. Unblocker: pick the texture source and whether to wait for #49; the render-pass wiring is straightforward after that.
 
 ---
 
@@ -620,6 +623,8 @@ updated: 2026-08-27T05:44:48Z
 +++
 
 Add a splat generation window for creating procedural Gaussian splat assets. Include spheres, toruses, realistic clouds, and multiple color options.
+
+- `2026-09-10T00:07:00Z`: Assessed in the autonomous run: needs design before code — (1) generator algorithms and parameters (sphere/torus are tractable; 'realistic clouds' implies noise-based density and opacity/scale distributions that need iteration), (2) parameter window UX, (3) output path: viewing in a new document is easy, but saving generated splats depends on splat writing which doesn't exist yet (#39/.ply export only via convertedURL). Punting per the obvious-solutions-only constraint. Unblocker: decide the initial generator set + parameters and whether output is view-only or written to file (which format), then this can be built in a dedicated session.
 
 ---
 
@@ -808,6 +813,7 @@ updated: 2026-08-27T05:44:59Z
 Add a spreadsheet-style inspection mode that displays individual splats and their attributes in rows and columns for browsing, sorting, and inspection.
 
 - `2026-08-27T05:44:59Z`: Related to #38: spreadsheet inspection may expose selection and editable attributes.
+- `2026-09-10T00:07:15Z`: Assessed in the autonomous run: needs design first — (1) surface: separate window, document tab, or inspector pane; (2) columns: SparkSplat stores packed/quantized attributes (position, scale, rotation quat, color/opacity, SH) — show raw packed values, decoded floats, or both; (3) scale: clouds run to millions of splats, so the table needs lazy paging from the splat buffer and a strategy for full-set sort-by-column; (4) coupling to #38 (selection/editing) which is effort:xl. Punting per the obvious-solutions-only constraint. Unblocker: pick surface + initial column set and whether v1 is read-only; a read-only lazy Table over decoded attributes is then a mechanical build.
 
 ---
 
@@ -844,6 +850,7 @@ Expected: Toggling the control enables or disables spherical-harmonic rendering.
 Actual: The rendered output does not change.
 
 - `2026-09-09T23:59:53Z`: Root cause: in MetalSprocketsGaussianSplats' SparkSplatRenderPipeline, vertexShader/fragmentShader are @MSState-persisted and updatedShaders() recompiles only when lastUseBoundingBox changes. The use_sh function constant stays baked from the first frame, so per-frame changes to useSphericalHarmonics never rebuild the PSO (and the shDegree runtime binding is skipped by reflection when use_sh was baked false). Radiance's plumbing (toggle -> viewModel -> pipeline configuration) is correct. Punting: fix belongs in the dependency repo (track lastUseSH alongside lastUseBoundingBox in updatedShaders and recompile when it changes), then bump the package in Radiance. Unblocker: apply that change in MetalSprocketsGaussianSplats.
+- `2026-09-10T00:28:34Z`: Fix implemented in MetalSprocketsGaussianSplats (local commit a2d0a2a3 'Recompile shaders when the use_sh function constant drifts'): SparkSplatRenderPipeline tracks lastUseSH alongside lastUseBoundingBox and recompiles on drift; StochasticSplatRenderPipeline gains the same updatedShaders() pattern. Built clean; package test suite green apart from a pre-existing PointSplatComputePass failure also present on main. Remaining to close this issue: push the dependency commit, update Radiance's package pin, and verify the toggle in-app.
 
 ---
 
@@ -1044,6 +1051,7 @@ Store settings either in an extended attribute (xattr) on the document file or i
 
 - `2026-09-09T20:50:07Z`: Strongly related to #59: whichever storage wins (xattr, database, or sidecar), use the same JSON format as #59's sidecar — based on SplatScene.CameraState (camera matrix, FOV, mode, clip planes) plus model transform.
 - `2026-09-09T23:04:06Z`: Related: #35 (camera xattr) is a narrower slice of this.
+- `2026-09-10T00:05:40Z`: Assessed in the autonomous run: punting because the issue's own proposed fix leaves the core decision open (xattr on the file vs central database keyed by document — sandboxed writes to source-file xattrs also differ in behavior across cloud storage/backups). The exact settings set to persist is also unspecified. #35 and #36 were punted into this decision today. Unblocker: pick storage (recommend central store keyed by file bookmark/URL, avoiding xattr write-permission issues on read-only documents) and list the settings to persist; the plumbing via SplatViewModel is then mechanical.
 
 ---
 
@@ -1197,5 +1205,7 @@ updated: 2026-09-09T23:03:59Z
 The MTKView runs in continuous mode, redrawing at 60 fps even when the scene is static, wasting power (notably on iPad).
 
 Desired: render on demand by default — only when the camera, model transform, or render parameters change — with a toggle (Render pane) to switch back to continuous rendering. Renderers that accumulate over time (stochastic, point splat reprojection) need continuous frames while converging, so the on-demand mode must account for them. Related: MetalSprocketsGaussianSplats has an issue about rendering a new frame only when render-affecting inputs change.
+
+- `2026-09-10T00:06:26Z`: Assessed: MetalSprocketsUI's RenderView supports paused + setNeedsDisplay MTKView modes via .metalIsPaused/.metalEnableSetNeedsDisplay environment modifiers, but exposes no way for the host app to request a frame when render inputs change — the MTKView and its delegate are fully encapsulated, and the update closure never marks the view dirty. On-demand mode therefore needs dependency work first: an invalidation API on RenderView (e.g. an environment-injected draw-request token or auto-redraw when the content closure's captured inputs change), matching the related MetalSprocketsGaussianSplats issue this report mentions. Convergence-aware continuous frames for stochastic/point-splat accumulation layer on top of that. Punting: cross-repo design. Unblocker: add the RenderView invalidation API in MetalSprockets, then wiring the Radiance toggle + change detection is straightforward.
 
 ---

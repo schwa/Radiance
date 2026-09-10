@@ -1278,3 +1278,83 @@ Current occurrences (rg 'State(initialValue:'):
 Task: establish the house rule (prefer @State default init / .task over State(initialValue:) for anything non-trivial), fix the expensive cases (#63 covers the GPUSortResources ones), and review the cheap ones for the capture-timing hazard. Consider a lint note in AGENTS.md or a swiftlint custom rule.
 
 ---
+
+## 65: Camera rotation invalidates the document view and unrelated inspector content
+
++++
+status: new
+priority: medium
+kind: bug
+labels: area:swiftui, area:performance
+created: 2026-09-10T05:41:54Z
++++
+
+During continuous camera rotation, SwiftUI updates spread beyond the rendered scene and camera controls into the document and inspector containers.
+
+Repro: open a single cloud, show the inspector, then rotate continuously using drag or the temporary Spin button.
+
+Expected: camera changes do not update unrelated inspector content. Actual: the 11.5-second SwiftUI trace records 1,418 SplatDocumentContentView.body updates and 1,376 InspectorView.body updates.
+
+Evidence: /Users/schwa/Desktop/SwiftUI Trace.trace. Cause edges include @Observable SplatViewModel.(simd_quatf) -> SplatDocumentContentView.body, followed by InspectorModifier/LazyView/conditional content -> InspectorView.body. Camera observation includes onChange(of: viewModel.cameraMatrix) at document scope. The individual contribution to the frame-rate drop has not been isolated.
+
+---
+
+## 66: Inspector tab picker updates repeatedly without a selection change
+
++++
+status: new
+priority: medium
+kind: bug
+labels: area:swiftui, area:performance
+created: 2026-09-10T05:41:55Z
++++
+
+The inspector tab segmented control repeatedly updates during camera rotation even though the selected tab does not change.
+
+Repro: open a single cloud, leave the inspector on one tab, and rotate continuously.
+
+Expected: the tab selector remains unchanged. Actual: the 11.5-second SwiftUI trace records 1,389 SystemSegmentedControl.update events totaling about 297 ms of recorded update duration.
+
+Evidence: /Users/schwa/Desktop/SwiftUI Trace.trace. Cause edges identify configuration.multiSelection (Array<Binding<InspectorTab>>), selectedIndex.location (AnyLocation<Int?>), and content.content.selectedIndices (Array<Binding<Int?>>). This establishes binding-location changes in the picker update chain; the exact application-level source of that instability remains to be isolated.
+
+---
+
+## 67: Cloud inspector display-name binding changes during camera rotation
+
++++
+status: new
+priority: medium
+kind: bug
+labels: area:swiftui, area:performance
+created: 2026-09-10T05:42:12Z
++++
+
+CloudInspector updates during camera rotation despite its cloud properties being unchanged.
+
+Repro: open a single cloud, keep the Cloud inspector visible, and rotate continuously.
+
+Expected: unchanged cloud fields do not update because the camera moved. Actual: the SwiftUI cause export records 1,373 edges into CloudInspector.body with changed property _displayName.location (AnyLocation<String?>).
+
+Evidence: /Users/schwa/Desktop/SwiftUI Trace.trace. InspectorView.cloudDisplayNameBinding in Radiance/SplatDocuments/Shared/SplatRenderView.swift constructs a Binding(get:set:) on each evaluation, including single-cloud mode where selectedCloud is nil. The trace directly identifies the changing binding location; its standalone frame-time impact has not been measured.
+
+---
+
+## 68: Analysis debounce task bookkeeping invalidates the document view during movement
+
++++
+status: new
+priority: medium
+kind: bug
+labels: area:swiftui,area:performance
+created: 2026-09-10T05:42:12Z
++++
+
+Scheduling debounced image analysis writes classificationTask stored in @State on SplatDocumentContentView for every camera change. Although model work waits until movement settles, task bookkeeping itself causes additional document-body updates.
+
+Repro: open a single cloud and rotate continuously with the analysis debounce enabled.
+
+Expected: replacing or cancelling an analysis request does not redraw unrelated document UI. Actual: /Users/schwa/Desktop/SwiftUI Trace.trace contains hundreds of direct cause edges from @LazyState SplatDocumentContentView._classificationTask to SplatDocumentContentView.body (561, 96, and 79 edges in three recorded source-stack groups after four seconds).
+
+The relevant path is classifyCurrentRenderingIfNeeded() in Radiance/SplatDocuments/Shared/SplatDocumentContentView.swift. This issue concerns scheduling overhead, not Core ML inference or the already addressed repeated model loading.
+
+---

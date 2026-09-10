@@ -1385,3 +1385,19 @@ Actual: a brief hang occurs during bounds computation.
 The triggering cloud, call site, thread, and duration have not yet been recorded.
 
 ---
+
+## 70: Rotation widget doesn't respond to taps on iPad
+
++++
+status: new
+priority: medium
+kind: none
+created: 2026-09-10T16:33:22Z
++++
+
+The rotation widget ignores tap input on iPad.
+
+Expected: tapping the rotation widget activates/adjusts it as on other platforms.
+Actual: taps have no effect.
+
+---

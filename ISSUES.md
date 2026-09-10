@@ -243,30 +243,36 @@ SplashScene wraps recentDocumentURLs.enumerated() in Array inside the List body.
 ## 12: Bounds slider rows use manual label-value layout
 
 +++
-status: open
+status: closed
 priority: low
 kind: task
 labels: swiftui, accessibility, effort:xs, area:swiftui, area:accessibility
 created: 2026-08-25T02:10:46Z
-updated: 2026-09-09T23:04:06Z
+updated: 2026-09-10T04:03:47Z
+closed: 2026-09-10T04:03:47Z
 +++
 
 NormalizedBoundsSlider and AbsoluteBoundsSlider manually align labels and values with HStack and Spacer. This bypasses the standard form alignment, truncation, and Dynamic Type behavior provided by SwiftUI's semantic label-value container.
+
+- `2026-09-10T04:03:47Z`: Replaced manual label/value HStacks with LabeledContent in both bounds sliders. Added slider accessibility labels and formatted values while hiding duplicate visual labels. Radiance build, lint, and support test command pass. VoiceOver and Dynamic Type behavior not runtime-verified.
 
 ---
 
 ## 13: Legacy tile debug view uses a soft-deprecated corner modifier
 
 +++
-status: open
+status: closed
 priority: low
 kind: task
 labels: swiftui, legacy, effort:xs, area:swiftui, area:legacy
 created: 2026-08-25T02:10:46Z
-updated: 2026-09-09T23:04:06Z
+updated: 2026-09-10T04:06:08Z
+closed: 2026-09-10T04:06:08Z
 +++
 
 TileDebugViews uses the legacy cornerRadius modifier rather than the current shape clipping API preferred by the project's SwiftUI conventions.
+
+- `2026-09-10T04:06:08Z`: Removed all three files in Radiance/Legacy: TileBasedDemoView, TileDebugViews, and TileOverlayView. No references existed outside that directory. Radiance build and support tests pass.
 
 ---
 

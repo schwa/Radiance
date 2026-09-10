@@ -57,14 +57,15 @@ struct NormalizedBoundsSlider: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(label)
-                Spacer()
+            LabeledContent(label) {
                 Text((value * 100).formatted(.number.precision(.fractionLength(0))) + "%")
-                    .foregroundStyle(.secondary)
                     .monospacedDigit()
             }
-            Slider(value: $value, in: 0...1)
+            Slider(value: $value, in: 0...1) {
+                Text(label)
+            }
+            .labelsHidden()
+            .accessibilityValue(Text((value * 100).formatted(.number.precision(.fractionLength(0))) + "%"))
         }
     }
 }
@@ -76,14 +77,15 @@ struct AbsoluteBoundsSlider: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(label)
-                Spacer()
+            LabeledContent(label) {
                 Text(value.formatted(.number.precision(.fractionLength(2))))
-                    .foregroundStyle(.secondary)
                     .monospacedDigit()
             }
-            Slider(value: $value, in: range)
+            Slider(value: $value, in: range) {
+                Text(label)
+            }
+            .labelsHidden()
+            .accessibilityValue(Text(value.formatted(.number.precision(.fractionLength(2)))))
         }
     }
 }

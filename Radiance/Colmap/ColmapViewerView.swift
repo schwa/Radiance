@@ -146,6 +146,7 @@ struct ColmapViewerView: View {
                 }
             }
         }
+        .frameRatePreference()
     }
 
     private var dragGesture: some Gesture {

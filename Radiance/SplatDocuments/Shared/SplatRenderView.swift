@@ -301,6 +301,7 @@ private struct SingleCloudGuidedRenderView: View {
                 try PointSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, frameIndex: 0, configuration: .init(depthRange: Float(nearClip) ... Float(farClip), statistics: pointSplatStatistics, colorLoadAction: splatLoadAction))
             }
         }
+        .frameRatePreference()
         .task(id: ObjectIdentifier(splatCloud.splats.unsafeMTLBuffer)) {
             let buffer = splatCloud.splats.unsafeMTLBuffer
             guard resourceBufferID != ObjectIdentifier(buffer) else {
@@ -496,6 +497,7 @@ private struct SingleCloudDebugRenderView: View {
                 )
             }
         }
+        .frameRatePreference()
         .task(id: ObjectIdentifier(splatCloud.splats.unsafeMTLBuffer)) {
             let buffer = splatCloud.splats.unsafeMTLBuffer
             guard resourceBufferID != ObjectIdentifier(buffer) else {

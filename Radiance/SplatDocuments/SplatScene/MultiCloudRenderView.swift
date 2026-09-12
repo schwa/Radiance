@@ -105,6 +105,7 @@ struct MultiCloudRenderView: View {
         }
         .metalColorPixelFormat(.bgra8Unorm_srgb)
         .metalClearColor(clearColor)
+        .frameRatePreference()
         .onFrameTimingChange { _ in
             onFrame?()
         }

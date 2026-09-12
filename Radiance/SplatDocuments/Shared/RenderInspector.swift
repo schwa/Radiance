@@ -21,6 +21,7 @@ struct RenderInspector<CullingContent: View>: View {
 
     @Environment(SplatViewModel.self) private var viewModel
     @AppStorage("showFPSOverlay") private var showFPSOverlay = false
+    @AppStorage("frameRatePreference") private var frameRatePreference = FrameRatePreference.display
 
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -33,6 +34,11 @@ struct RenderInspector<CullingContent: View>: View {
                 }
             }
             Toggle("Show FPS", isOn: $showFPSOverlay)
+            Picker("Frame Rate", selection: $frameRatePreference) {
+                ForEach(FrameRatePreference.allCases) { preference in
+                    Text(preference.displayName).tag(preference)
+                }
+            }
             ColorPicker("Background", selection: $backgroundColor)
             Toggle("Spherical Harmonics", isOn: $useSphericalHarmonics)
                 .disabled(sphericalHarmonicsDisabled || debugModeEnabled)

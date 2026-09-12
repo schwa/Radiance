@@ -396,6 +396,7 @@
 			baseConfigurationReferenceAnchor = 452EC1342EF51EF600AB9206 /* Configuration */;
 			baseConfigurationReferenceRelativePath = "Radiance-Debug.xcconfig";
 			buildSettings = {
+				INFOPLIST_KEY_CFBundleDisplayName = Radiance;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "©2016 Jonathan Wight";
@@ -409,6 +410,7 @@
 			baseConfigurationReferenceAnchor = 452EC1342EF51EF600AB9206 /* Configuration */;
 			baseConfigurationReferenceRelativePath = "Radiance-Release.xcconfig";
 			buildSettings = {
+				INFOPLIST_KEY_CFBundleDisplayName = Radiance;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "©2016 Jonathan Wight";
@@ -462,16 +464,16 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/Interaction3D";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.12;
 			};
 		};
 		45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/MetalSprocketsGaussianSplats";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.13;
 			};
 		};
 		45AA00032F90000100AA0001 /* XCRemoteSwiftPackageReference "MetalSprocketsAddOns" */ = {

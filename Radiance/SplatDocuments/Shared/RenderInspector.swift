@@ -28,7 +28,7 @@ struct RenderInspector<CullingContent: View>: View {
         Section("Renderer") {
             if !rendererSelectionDisabled {
                 Picker("Type", selection: $viewModel.renderer) {
-                    ForEach(SplatRenderer.allCases.filter { $0 != .sparkCPU }, id: \.self) { renderer in
+                    ForEach(SplatRenderer.allCases, id: \.self) { renderer in
                         Text(renderer == .sparkGPU ? "Spark (GPU Sort)" : renderer.rawValue.capitalized).tag(renderer)
                     }
                 }

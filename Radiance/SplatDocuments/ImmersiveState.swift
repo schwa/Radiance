@@ -13,7 +13,7 @@ final class ImmersiveState {
     var isImmersive = false
     var splatCloud: GPUSplatCloud<SparkSplat>? {
         didSet {
-            renderState = try? splatCloud.map(SplatImmersiveRenderState.init)
+            renderState = try? splatCloud.map { try SplatImmersiveRenderState(splatCloud: $0) }
         }
     }
     var renderState: SplatImmersiveRenderState?

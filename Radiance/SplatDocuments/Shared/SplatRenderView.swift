@@ -278,7 +278,7 @@ private struct SingleCloudGuidedRenderView: View {
             }
 
             switch renderer {
-            case .sparkGPU, .sparkCPU:
+            case .sparkGPU:
                 if let resources, resourceBufferID == ObjectIdentifier(splatCloud.splats.unsafeMTLBuffer) {
                     try GuidedSplatRenderPass(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, useSphericalHarmonics: useSphericalHarmonics, colorLoadAction: splatLoadAction, boxes: boxInstances, resources: resources)
                 }

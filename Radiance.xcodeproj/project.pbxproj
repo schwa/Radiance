@@ -473,7 +473,7 @@
 			repositoryURL = "https://github.com/schwa/MetalSprocketsGaussianSplats";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.13;
+				minimumVersion = 0.1.15;
 			};
 		};
 		45AA00032F90000100AA0001 /* XCRemoteSwiftPackageReference "MetalSprocketsAddOns" */ = {

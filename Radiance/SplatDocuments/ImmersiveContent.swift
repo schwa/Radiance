@@ -13,7 +13,10 @@ struct ImmersiveGPUSortElement: Element, @unchecked Sendable {
     let content: SplatImmersiveGPUSortElement
 
     init(context: ImmersiveContext, splatCloud: GPUSplatCloud<SparkSplat>, modelMatrix: simd_float4x4, renderState: SplatImmersiveRenderState) throws {
-        ImmersiveState.shared.updateHead(cameraMatrix: context.viewMatrix(eye: 0).inverse)
+        let cameraMatrix = context.viewMatrix(eye: 0).inverse
+        Task { @MainActor in
+            ImmersiveState.shared.updateHead(cameraMatrix: cameraMatrix)
+        }
         content = try SplatImmersiveGPUSortElement(
             context: context,
             splatCloud: splatCloud,

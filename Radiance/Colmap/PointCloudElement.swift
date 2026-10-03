@@ -25,20 +25,16 @@ struct PointCloudElement: Element {
                 fragmentShader: shaderLibrary.pointFragmentMain
             ) {
                 Draw { encoder in
-                    var transform = transform
-                    encoder.setVertexBytes(&transform, length: MemoryLayout<float4x4>.stride, index: 1)
-
-                    var size = pointSize
-                    encoder.setVertexBytes(&size, length: MemoryLayout<Float>.stride, index: 2)
-
-                    encoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
-                    encoder.drawPrimitives(type: .point, vertexStart: 0, vertexCount: vertexCount)
+                    encoder.drawPrimitives(primitiveType: .point, vertexStart: 0, vertexCount: vertexCount)
                 }
+                .vertexBuffer(vertexBuffer, index: 0)
+                .vertexValues([transform], index: 1)
+                .vertexValues([pointSize], index: 2)
             }
             .vertexDescriptor(PointVertex.descriptor)
             .depthCompare(function: .less, enabled: true)
             .renderPipelineDescriptorTransformer { descriptor in
-                descriptor.colorAttachments[0].isBlendingEnabled = true
+                descriptor.colorAttachments[0].blendingState = .enabled
                 descriptor.colorAttachments[0].sourceRGBBlendFactor = .sourceAlpha
                 descriptor.colorAttachments[0].destinationRGBBlendFactor = .oneMinusSourceAlpha
                 descriptor.colorAttachments[0].sourceAlphaBlendFactor = .one

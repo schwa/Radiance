@@ -472,16 +472,16 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/MetalSprocketsGaussianSplats";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.15;
+				kind = upToNextMinorVersion;
+				minimumVersion = 0.2.0;
 			};
 		};
 		45AA00032F90000100AA0001 /* XCRemoteSwiftPackageReference "MetalSprocketsAddOns" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/MetalSprocketsAddOns";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.13;
+				kind = upToNextMinorVersion;
+				minimumVersion = 0.2.0;
 			};
 		};
 		45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {

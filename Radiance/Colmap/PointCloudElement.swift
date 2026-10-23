@@ -32,7 +32,7 @@ struct PointCloudElement: Element {
                 .vertexValues([pointSize], index: 2)
             }
             .vertexDescriptor(PointVertex.descriptor)
-            .depthCompare(function: .less, enabled: true)
+            .depthCompare(function: .less, writes: true)
             .renderPipelineDescriptorTransformer { descriptor in
                 descriptor.colorAttachments[0].blendingState = .enabled
                 descriptor.colorAttachments[0].sourceRGBBlendFactor = .sourceAlpha

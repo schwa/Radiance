@@ -289,7 +289,7 @@ private struct SingleCloudGuidedRenderView: View {
             case .stochastic:
                 try RenderPass {
                     try StochasticSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, frameTime: stochasticSeed, useSphericalHarmonics: useSphericalHarmonics)
-                        .depthCompare(function: .less, enabled: true)
+                        .depthCompare(function: .less, writes: true)
                 }
                 .renderPassDescriptorModifier { descriptor in
                     if let splatLoadAction {

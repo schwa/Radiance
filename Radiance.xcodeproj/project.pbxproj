@@ -489,7 +489,7 @@
 			repositoryURL = "https://github.com/schwa/SwiftZipReader";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 0.0.2;
+				minimumVersion = 0.0.3;
 			};
 		};
 		45E9BB742EF519850016C77E /* XCRemoteSwiftPackageReference "Sharp" */ = {

@@ -231,9 +231,9 @@ The Best View attempt ribbon contains collection rendering, scroll coordination,
 status: open
 priority: low
 kind: task
-labels: swiftui, performance, effort:xs, area:swiftui, area:performance
+labels: swiftui, performance, effort:xs, area:swiftui, area:performance, punted
 created: 2026-08-25T02:10:46Z
-updated: 2026-09-09T23:04:06Z
+updated: 2026-10-23T21:12:02Z
 +++
 
 SplashScene wraps recentDocumentURLs.enumerated() in Array inside the List body. Every body evaluation allocates and copies the collection even though the enumerated collection is directly usable by ForEach.
@@ -458,9 +458,9 @@ Add the rotation cube provided by Interaction3D to the 3D viewer so users can in
 status: open
 priority: medium
 kind: feature
-labels: effort:l
+labels: effort:l, punted
 created: 2026-08-27T03:36:55Z
-updated: 2026-08-27T05:44:48Z
+updated: 2026-10-23T21:12:02Z
 +++
 
 Add a compact Safari-style downloads window that opens near the top-right corner of the screen.
@@ -496,9 +496,9 @@ Add an optional reference grid to the 3D viewer. MetalSprocketsAddOns may alread
 status: open
 priority: medium
 kind: feature
-labels: effort:m
+labels: effort:m, punted
 created: 2026-08-27T03:38:12Z
-updated: 2026-08-27T05:44:59Z
+updated: 2026-10-23T21:12:02Z
 +++
 
 Add skybox support to the 3D viewer. MetalSprocketsAddOns may already provide the required skybox component.
@@ -533,9 +533,9 @@ Add optional axis lines to the 3D viewer. MetalSprocketsAddOns may already provi
 status: open
 priority: medium
 kind: enhancement
-labels: effort:m
+labels: effort:m, punted
 created: 2026-08-27T03:39:07Z
-updated: 2026-08-27T05:44:48Z
+updated: 2026-10-23T21:12:02Z
 +++
 
 Display the COLMAP markers directly in the main 3D view so they are visible alongside the loaded scene.
@@ -609,9 +609,9 @@ Use the animated Radiance icon consistently across branded screens, including Ab
 status: new
 priority: medium
 kind: enhancement
-labels: needs-info, effort:m
+labels: needs-info, effort:m, punted
 created: 2026-08-27T03:45:53Z
-updated: 2026-08-27T05:44:48Z
+updated: 2026-10-23T21:12:02Z
 +++
 
 Improve the sidebar and inspector layout so controls use space more efficiently and the visual hierarchy, alignment, and spacing are consistent.
@@ -624,9 +624,9 @@ Improve the sidebar and inspector layout so controls use space more efficiently 
 status: open
 priority: medium
 kind: feature
-labels: effort:l
+labels: effort:l, punted
 created: 2026-08-27T03:47:41Z
-updated: 2026-08-27T05:44:48Z
+updated: 2026-10-23T21:12:02Z
 +++
 
 Add a splat generation window for creating procedural Gaussian splat assets. Include spheres, toruses, realistic clouds, and multiple color options.
@@ -641,9 +641,9 @@ Add a splat generation window for creating procedural Gaussian splat assets. Inc
 status: open
 priority: medium
 kind: feature
-labels: effort:xl
+labels: effort:xl, punted
 created: 2026-08-27T03:47:41Z
-updated: 2026-08-27T05:44:59Z
+updated: 2026-10-23T21:12:02Z
 +++
 
 Add a COLMAP tool that accepts a batch of photos via drag and drop and runs structure-from-motion to produce COLMAP reconstruction data.
@@ -658,9 +658,9 @@ Add a COLMAP tool that accepts a batch of photos via drag and drop and runs stru
 status: new
 priority: medium
 kind: feature
-labels: needs-info, effort:l
+labels: needs-info, effort:l, punted
 created: 2026-08-27T03:47:41Z
-updated: 2026-08-27T05:44:59Z
+updated: 2026-10-23T21:12:02Z
 +++
 
 Add a workflow that takes COLMAP reconstruction data and its source photos, uploads them to the web service, and returns a generated Gaussian splat.
@@ -677,7 +677,7 @@ priority: medium
 kind: enhancement
 labels: effort:s
 created: 2026-08-27T03:50:07Z
-updated: 2026-08-27T05:44:59Z
+updated: 2026-10-23T21:57:59Z
 +++
 
 When the user saves a splat, serialize the current camera information as JSON and store it in a file extended attribute.
@@ -685,6 +685,8 @@ When the user saves a splat, serialize the current camera information as JSON an
 - `2026-08-27T05:44:59Z`: Related to #36: both persist additional metadata when saving a splat.
 - `2026-09-09T23:04:06Z`: Related: #53 covers remembering all per-document settings (xattr or central DB); this issue is the camera-specific xattr variant. The .splatcamera sidecar (#59, implemented) already defines the JSON format both should reuse.
 - `2026-09-10T00:02:52Z`: Assessed for implementation: the stated trigger ('when the user saves a splat') doesn't exist yet — splat documents are read-only (#39 open), and the only camera persistence paths today are the .splatcamera sidecar (#59) and Share Camera export. Punting: needs two decisions before coding: (1) what event writes the xattr (debounced camera change, document close, or an explicit menu action), and (2) whether to commit to xattr storage now given #53 leaves xattr-vs-central-DB open. Unblocker: pick the write trigger, or fold this into #53's storage decision.
+- `2026-10-23T21:30:46Z`: Autonomous run: still blocked on the same two decisions. (1) The write trigger: splat documents are read-only (#39), so 'on save' never happens. The options are a debounced camera change, document close, or an explicit menu item. (2) The storage: #53 still has extended attributes vs a central store undecided. Unblocker: pick the trigger and the storage, or fold this into #53. Once decided, writing the existing .splatcamera JSON to an extended attribute is small.
+- `2026-10-23T21:57:59Z`: Decision (schwa): store per-document settings in an extended attribute on the document file.
 
 ---
 
@@ -694,9 +696,9 @@ When the user saves a splat, serialize the current camera information as JSON an
 status: open
 priority: medium
 kind: enhancement
-labels: effort:m
+labels: effort:m, punted
 created: 2026-08-27T03:50:07Z
-updated: 2026-08-27T05:44:59Z
+updated: 2026-10-23T21:12:03Z
 +++
 
 Store a preview image in an extended attribute when saving a splat so the file can expose a representative thumbnail without rendering it again.
@@ -712,9 +714,9 @@ Store a preview image in an extended attribute when saving a splat so the file c
 status: new
 priority: medium
 kind: feature
-labels: needs-info, effort:l
+labels: needs-info, effort:l, punted
 created: 2026-08-27T03:50:07Z
-updated: 2026-08-27T05:44:59Z
+updated: 2026-10-23T21:12:03Z
 +++
 
 Add an export workflow that lets users save the current splat in a different supported file format.
@@ -764,12 +766,12 @@ This requires format-writing support in the MetalSprocketsGaussianSplats library
 ## 40: .ply files do not preview in Quick Look
 
 +++
-status: open
+status: blocked
 priority: medium
 kind: bug
 labels: effort:m
 created: 2026-08-27T03:54:16Z
-updated: 2026-08-27T05:44:59Z
+updated: 2026-10-23T21:18:41Z
 +++
 
 Quick Look does not render previews for .ply splat files.
@@ -781,6 +783,7 @@ Actual: No Quick Look preview is available.
 - `2026-08-27T05:45:00Z`: Related to #41: both concern Quick Look support and document type registration.
 - `2026-08-27T06:22:05Z`: Reproduced with qlmanage against a valid test-grid.ply after building and registering the extension: Quick Look reported that the file did not produce a preview. Verified mdls resolves .ply as public.polygon-file-format and the built extension advertises that exact UTI. Also tested an app-owned exported PLY UTI; Launch Services continued resolving .ply to the system UTI, so the change was reverted. Unblocker: capture QuickLookUI/ExtensionKit logs from Finder on a machine with the installed app to determine whether the extension is not selected or is failing during launch.
 - `2026-09-09T23:58:24Z`: Root cause identified via on-machine logs (the unblocker from the last punt): Quick Look routes .ply previews to Apple's HydraQLPreviewExtension (/System/Library/PrivateFrameworks/Hydra.framework/Plugins/HydraQLPreviewExtension.appex), whose QLSupportedContentTypes includes public.polygon-file-format. Hydra runs, fails on gaussian-splat PLYs ('did not produce any preview'), and QL does not fall back to our registered extension (verified registered via pluginkit; .spz/.splat/.sog are unaffected because Apple claims only the mesh formats). No supported API overrides the system's preview-provider selection for a system UTI. Punting: OS-level extension selection, not fixable in this repo. Options: file Apple Feedback requesting fallback/override, or close as blocked-by-OS.
+- `2026-10-23T21:18:41Z`: Re-checked in the autonomous run. Still blocked by the OS: Apple's HydraQLPreviewExtension claims public.polygon-file-format and Quick Look does not fall back to Radiance's extension, so this repo cannot fix it. Marked blocked. Unblocker: an Apple Feedback report asking for preview-provider fallback or override for system UTIs, or a macOS change.
 
 ---
 
@@ -812,9 +815,9 @@ Actual: Finder treats them as ZIP archives.
 status: open
 priority: medium
 kind: feature
-labels: effort:l
+labels: effort:l, punted
 created: 2026-08-27T04:03:21Z
-updated: 2026-08-27T05:44:59Z
+updated: 2026-10-23T21:12:03Z
 +++
 
 Add a spreadsheet-style inspection mode that displays individual splats and their attributes in rows and columns for browsing, sorting, and inspection.
@@ -830,9 +833,9 @@ Add a spreadsheet-style inspection mode that displays individual splats and thei
 status: new
 priority: medium
 kind: feature
-labels: needs-info, effort:m
+labels: needs-info, effort:m, punted
 created: 2026-08-27T04:03:21Z
-updated: 2026-08-27T05:44:49Z
+updated: 2026-10-23T21:12:03Z
 +++
 
 Add a window or view that visualizes the colors of all splats as an image for inspecting the cloud’s color distribution and data.
@@ -842,12 +845,13 @@ Add a window or view that visualizes the colors of all splats as an image for in
 ## 44: Spherical Harmonics control has no effect
 
 +++
-status: open
+status: closed
 priority: medium
 kind: bug
 labels: effort:m, area:rendering
 created: 2026-08-27T06:51:53Z
-updated: 2026-09-09T23:03:58Z
+updated: 2026-10-23T21:30:30Z
+closed: 2026-10-23T21:30:30Z
 +++
 
 The Spherical Harmonics control does not change the rendered splat appearance.
@@ -858,6 +862,8 @@ Actual: The rendered output does not change.
 
 - `2026-09-09T23:59:53Z`: Root cause: in MetalSprocketsGaussianSplats' SparkSplatRenderPipeline, vertexShader/fragmentShader are @MSState-persisted and updatedShaders() recompiles only when lastUseBoundingBox changes. The use_sh function constant stays baked from the first frame, so per-frame changes to useSphericalHarmonics never rebuild the PSO (and the shDegree runtime binding is skipped by reflection when use_sh was baked false). Radiance's plumbing (toggle -> viewModel -> pipeline configuration) is correct. Punting: fix belongs in the dependency repo (track lastUseSH alongside lastUseBoundingBox in updatedShaders and recompile when it changes), then bump the package in Radiance. Unblocker: apply that change in MetalSprocketsGaussianSplats.
 - `2026-09-10T00:28:34Z`: Fix implemented in MetalSprocketsGaussianSplats (local commit a2d0a2a3 'Recompile shaders when the use_sh function constant drifts'): SparkSplatRenderPipeline tracks lastUseSH alongside lastUseBoundingBox and recompiles on drift; StochasticSplatRenderPipeline gains the same updatedShaders() pattern. Built clean; package test suite green apart from a pre-existing PointSplatComputePass failure also present on main. Remaining to close this issue: push the dependency commit, update Radiance's package pin, and verify the toggle in-app.
+- `2026-10-23T21:24:17Z`: Autonomous run: the dependency fix ('Recompile shaders when the use_sh function constant drifts') is in MetalSprocketsGaussianSplats 0.2.3, and Radiance's main resolves to that version. The Radiance plumbing (toggle, view model, pipeline configuration) was already confirmed correct. Not verified in the app: UI automation could not reach the Render inspector toggle. Remaining: open an SH .sog, flip Render > Spherical Harmonics, confirm the image changes, then close.
+- `2026-10-23T21:30:30Z`: Verified in the app with steveo: Release build, Kitchen.sog (SH data), Render inspector. Two renders with the setting unchanged differ by RMSE 0, so rendering is deterministic. Turning Spherical Harmonics from on to off changed the render area by about 0.9% RMSE. The fix comes from MetalSprocketsGaussianSplats 0.2.3 (recompile when the use_sh function constant changes). No Radiance code change was needed. No unit test: this is an app-level toggle with a GPU result.
 
 ---
 
@@ -955,7 +961,7 @@ priority: high
 kind: task
 labels: rendering, architecture, effort:l, area:rendering, area:architecture
 created: 2026-08-27T13:39:30Z
-updated: 2026-09-09T23:03:59Z
+updated: 2026-10-23T21:18:06Z
 +++
 
 Single-cloud documents and multi-cloud scenes enter different renderer implementations even though both already provide an array of GPU splat clouds to SplatRenderView. This duplicates render-pass composition, sorting ownership, debug rendering, scene-guide handling, and frame lifecycle behavior. Features can consequently work differently depending on document type; renderer selection currently applies only to single-cloud rendering, while bounds culling applies only to multi-cloud rendering.
@@ -978,6 +984,7 @@ Acceptance criteria:
 - Tests or focused checks cover equivalent output/configuration for a one-cloud document and a one-cloud scene.
 
 - `2026-09-09T23:51:06Z`: Assessed for the autonomous run: the unification spans SplatRenderView (919 lines, five single-cloud pipelines), MultiCloudRenderView, sorting ownership (AsyncSortManager lifecycle), debug paths, and capability-driven UI. Punting: effort:l redesign with wide blast radius, not the obvious/low-risk fix this run is scoped to. Unblocker: split into subtasks (e.g. 1. collection-based core renderer, 2. route single-cloud through it, 3. consolidate debug/guides, 4. capability surfacing) or green-light a dedicated session for the full refactor.
+- `2026-10-23T21:18:06Z`: Re-assessed in the autonomous run. Punting again: one acceptance criterion needs one global sort order across all clouds, and the multi-cloud GPU sort does not support that yet (MetalSprocketsGaussianSplats#172, cloudIndex is not carried). Also, single-cloud mode offers five renderers (Spark, tile-based, stochastic, point, debug), but multi-cloud mode only supports Spark. Unifying the paths means either dropping those renderers for single clouds or porting them to collections, which is a product decision. Unblockers: (1) land MSGS#172; (2) decide which renderers must work with collections; (3) split into subtasks: collection-based core, route single-cloud through it, consolidate debug and guides, surface capabilities in the UI.
 
 ---
 
@@ -1050,7 +1057,7 @@ priority: medium
 kind: feature
 labels: effort:m
 created: 2026-09-09T20:30:04Z
-updated: 2026-09-09T23:03:59Z
+updated: 2026-10-23T21:57:59Z
 +++
 
 Viewer settings (renderer, camera, background color, model orientation, inspector state, etc.) reset every time a document is reopened. Settings should persist per document.
@@ -1061,18 +1068,21 @@ Store settings either in an extended attribute (xattr) on the document file or i
 - `2026-09-09T20:50:07Z`: Strongly related to #59: whichever storage wins (xattr, database, or sidecar), use the same JSON format as #59's sidecar — based on SplatScene.CameraState (camera matrix, FOV, mode, clip planes) plus model transform.
 - `2026-09-09T23:04:06Z`: Related: #35 (camera xattr) is a narrower slice of this.
 - `2026-09-10T00:05:40Z`: Assessed in the autonomous run: punting because the issue's own proposed fix leaves the core decision open (xattr on the file vs central database keyed by document — sandboxed writes to source-file xattrs also differ in behavior across cloud storage/backups). The exact settings set to persist is also unspecified. #35 and #36 were punted into this decision today. Unblocker: pick storage (recommend central store keyed by file bookmark/URL, avoiding xattr write-permission issues on read-only documents) and list the settings to persist; the plumbing via SplatViewModel is then mechanical.
+- `2026-10-23T21:31:27Z`: Autonomous run: unchanged, still needs the storage decision (an extended attribute on the file, or a central store keyed by bookmark or URL) and the list of settings to persist. #35 is waiting on the same decision. Once those are picked, the plumbing through SplatViewModel and the .splatcamera JSON format is mechanical.
+- `2026-10-23T21:57:59Z`: Decision (schwa): store per-document settings in an extended attribute on the document file.
 
 ---
 
 ## 54: Axis lines extend past the horizon
 
 +++
-status: open
+status: closed
 priority: low
 kind: bug
 labels: ui, rendering, effort:s, area:ui, area:rendering
 created: 2026-09-09T20:30:16Z
-updated: 2026-09-09T23:03:59Z
+updated: 2026-10-23T21:10:17Z
+closed: 2026-10-23T21:10:17Z
 +++
 
 With the reference grid and axis lines both enabled, the X (red) and Z (blue) axis lines extend above the horizon into the sky, and the Y (green) axis runs the full viewport height. The grid stops at the horizon, so the axis lines look detached from the scene.
@@ -1080,6 +1090,8 @@ With the reference grid and axis lines both enabled, the X (red) and Z (blue) ax
 Expected: axis lines end at the horizon, at least when the grid is on (they may just look odd combined with the grid).
 
 Screenshot: iPad, Point renderer, dark background, grid + axes on.
+
+- `2026-10-23T21:10:17Z`: Moved to MetalSprocketsAddOns#110. The axis lines come from AddOns' AxisLinesRenderPipeline.
 
 ---
 
@@ -1213,9 +1225,9 @@ The Cancel / Copy / Save… controls at the bottom of the Export Screenshot shee
 status: open
 priority: medium
 kind: feature
-labels: rendering, performance, effort:m, area:rendering, area:performance
+labels: rendering, performance, effort:m, area:rendering, area:performance, punted
 created: 2026-09-09T21:22:48Z
-updated: 2026-09-09T23:03:59Z
+updated: 2026-10-23T21:57:59Z
 +++
 
 The MTKView runs in continuous mode, redrawing at 60 fps even when the scene is static, wasting power (notably on iPad).
@@ -1223,6 +1235,7 @@ The MTKView runs in continuous mode, redrawing at 60 fps even when the scene is 
 Desired: render on demand by default — only when the camera, model transform, or render parameters change — with a toggle (Render pane) to switch back to continuous rendering. Renderers that accumulate over time (stochastic, point splat reprojection) need continuous frames while converging, so the on-demand mode must account for them. Related: MetalSprocketsGaussianSplats has an issue about rendering a new frame only when render-affecting inputs change.
 
 - `2026-09-10T00:06:26Z`: Assessed: MetalSprocketsUI's RenderView supports paused + setNeedsDisplay MTKView modes via .metalIsPaused/.metalEnableSetNeedsDisplay environment modifiers, but exposes no way for the host app to request a frame when render inputs change — the MTKView and its delegate are fully encapsulated, and the update closure never marks the view dirty. On-demand mode therefore needs dependency work first: an invalidation API on RenderView (e.g. an environment-injected draw-request token or auto-redraw when the content closure's captured inputs change), matching the related MetalSprocketsGaussianSplats issue this report mentions. Convergence-aware continuous frames for stochastic/point-splat accumulation layer on top of that. Punting: cross-repo design. Unblocker: add the RenderView invalidation API in MetalSprockets, then wiring the Radiance toggle + change detection is straightforward.
+- `2026-10-23T21:32:23Z`: Autonomous run: still blocked upstream. MetalSprockets 0.2.8 RenderView has no way to request a frame in on-demand mode: its update closure never calls setNeedsDisplay, and there is no invalidation API. Filed as MetalSprockets#553. Once that exists, the Radiance part is: a Render-pane toggle, change detection for the camera, transforms and parameters, and continuous frames while stochastic or point-splat renderers converge.
 
 ---
 

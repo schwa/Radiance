@@ -1416,3 +1416,151 @@ closed: 2026-10-23T13:48:48Z
 ModelDownloadView.swift is the only user of ZIPFoundation. It uses Archive to extract the downloaded .mlmodelc.zip. SwiftZipReader is already a transitive dependency. Check that SwiftZipReader can extract entries to disk. If it can, port extract(zipURL:to:) to it and remove the ZIPFoundation package reference.
 
 ---
+
+## 72: No document format for a walkable set of splat scenes split into volumes
+
++++
+status: new
+priority: medium
+kind: feature
+labels: area:multisplat-walkthrough
+created: 2026-10-23T14:11:40Z
+updated: 2026-10-23T14:14:41Z
++++
+
+Radiance can open a single splat file or a .splatscene. A .splatscene shows all of its clouds at once. There is no document for a large space, for example a house, that is captured as several separate splat files (one per room) and walked through as one space.
+
+The format needs to hold:
+- References to several splat files, by path or name relative to the document, so that the document and its splats can move together.
+- A list of volumes in world space. Each volume names the splat that is shown when the camera is inside it.
+- Cross-fade parameters for when the visible splat changes, such as on/off and duration. Easing is optional.
+
+It also needs a version field and a UTType, like the other Radiance document types. Open questions: the shapes the volumes support (for example boxes, or floor polygons with a height), and what happens when volumes overlap or when the camera is outside every volume.
+
+- `2026-10-23T14:13:17Z`: Decisions:
+- `2026-10-23T14:13:17Z`: Volumes are polygon prisms for now: a floor polygon plus a min and max height.
+- `2026-10-23T14:13:17Z`: Containment hit testing uses SwiftMesh (winding number on the prism mesh).
+- `2026-10-23T14:13:17Z`: Overlapping volumes are resolved with a heuristic: the smallest volume wins, or else the volume with the nearest centroid. The final choice is made during implementation.
+- `2026-10-23T14:13:17Z`: Behavior at volume boundaries is deferred and is not needed for now (see #73).
+
+---
+
+## 73: Visible splat does not follow the camera between volumes
+
++++
+status: new
+priority: medium
+kind: feature
+labels: area:multisplat-walkthrough
+depends: 72
+created: 2026-10-23T14:11:40Z
+updated: 2026-10-23T14:14:41Z
++++
+
+In a document that splits a space into volumes, each with its own splat, only the splat for the volume that contains the camera should be visible. Today there is no concept of an active volume.
+
+Expected: as the camera moves from one volume to another, the visible splat changes to the one for the new volume. The change has no load hitch, so the next splat is already loaded or is preloaded.
+
+Undecided: the behavior when the camera is outside every volume (keep the last splat, or show nothing), and whether a margin is needed at volume boundaries so the splat does not switch back and forth.
+
+- `2026-10-23T14:13:17Z`: Deferred: switching back and forth at volume boundaries does not need handling for now. Overlap resolution is decided in #72 (smallest volume, or nearest centroid).
+- `2026-10-23T14:13:55Z`: Decision: when the camera is outside every volume, show no splat. Only the background shows (black by default, #000).
+
+---
+
+## 74: Changing the visible splat is a hard cut with no cross-fade
+
++++
+status: new
+priority: medium
+kind: feature
+labels: area:multisplat-walkthrough
+depends: 73
+created: 2026-10-23T14:11:41Z
+updated: 2026-10-23T14:16:16Z
++++
+
+When the visible splat changes, for example when the camera crosses into another volume, the old splat disappears and the new one appears in a single frame.
+
+Expected: a cross-fade that uses the parameters from the document. Both splats look fully opaque throughout the fade, and shared geometry does not go see-through partway through.
+
+This is built in Radiance first, with the existing MetalSprockets plumbing. The work may move into MetalSprocketsGaussianSplats later (MetalSprocketsGaussianSplats#184).
+
+Risks to check: Metal 4 residency of the offscreen targets, the depth attachment and size that the splat render pass expects, and parity with the debug render pipeline.
+
+---
+
+## 75: Portal demo: see and step through into another splat world
+
++++
+status: new
+priority: low
+kind: feature
+labels: demo, area:multisplat-walkthrough
+depends: 74
+created: 2026-10-23T14:11:41Z
+updated: 2026-10-23T14:16:16Z
++++
+
+End goal for the multi-splat work. A demo in which a portal in one splat scene shows a different splat scene live, with the same camera. The user can walk through the portal into the other scene, and the transition has no hitch.
+
+Reference: the WebGPU portal demo by Ian Curtis ('Portal jumping through gaussian splat worlds with WebGPU in real time'). That demo:
+- Clips the other scene cleanly at the portal shape, with no blending of the two scenes.
+- Draws a glowing particle rim around the portal.
+- Chains several worlds: a bedroom, a cyberpunk lounge, a snowy courtyard, a rococo salon, and ruins.
+
+This is built in Radiance first. It reuses the offscreen A/B targets from the cross-fade (#74), with a per-pixel mask in place of one global blend value. The work may move into MetalSprocketsGaussianSplats later (MetalSprocketsGaussianSplats#185).
+
+---
+
+## 77: Horizon correction may tilt the wrong way after GeometryLite3D rotation fix
+
++++
+status: new
+priority: high
+kind: bug
+created: 2026-10-23T19:48:08Z
+updated: 2026-10-23T19:48:27Z
++++
+
+GeometryLite3D commit aabafead (GeometryLite3D#45) changed simd_float4x4(xRotation:/yRotation:/zRotation:) to rotate counter-clockwise (right-handed, same as simd_quatf). Before, positive angles rotated by -θ. Code here was written against the old behavior.
+
+SplatDocumentContentView.swift:322 builds `simd_float4x4(zRotation: .degrees(-horizonAngle))`. The minus sign may have been tuned for the old direction.
+
+To do:
+- Update GeometryLite3D and test horizon correction on a tilted scene.
+- Flip the sign if the result tilts the wrong way.
+
+---
+
+## 78: Model rotation controls and saved rotations flip after GeometryLite3D rotation fix
+
++++
+status: new
+priority: high
+kind: bug
+created: 2026-10-23T19:48:08Z
++++
+
+GeometryLite3D commit aabafead (GeometryLite3D#45) changed simd_float4x4(xRotation:/yRotation:/zRotation:) to rotate counter-clockwise (right-handed, same as simd_quatf). Before, positive angles rotated by -θ. Code here was written against the old behavior.\n\nSplatViewModel.swift:130-132 and 623-625, and SplatScene.swift:20-22 build model transforms from xRotation/yRotation/zRotation with user rotation values. After the update, every control turns the other way. Rotation values saved in existing documents will load with a different orientation.\n\nTo do:\n- Decide whether to negate the stored values when loading, migrate the documents, or accept the change.\n- Check that the UI controls turn in the expected direction.
+
+---
+
+## 79: Check rotation order of zRotation angle list after GeometryLite3D rotation fix
+
++++
+status: new
+priority: high
+kind: bug
+created: 2026-10-23T19:48:08Z
+updated: 2026-10-23T19:48:27Z
++++
+
+GeometryLite3D commit aabafead (GeometryLite3D#45) changed simd_float4x4(xRotation:/yRotation:/zRotation:) to rotate counter-clockwise (right-handed, same as simd_quatf). Before, positive angles rotated by -θ. Code here was written against the old behavior.
+
+SplatDocumentContentView.swift:536 maps `matrix * simd_float4x4(zRotation: .radians($0))` over a list of angles. If the list is not symmetric, the result order or orientation changes.
+
+To do:
+- Check the angle list and the code that uses the result.
+
+---

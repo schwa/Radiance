@@ -838,6 +838,22 @@ struct SplatDocumentContentView: View {
                 classificationError = nil
                 await viewModel.load(url: fileURL, contentType: singleDocument?.contentType)
             }
+            // Remember the camera per file (#35, #53): save shortly after it settles, and when the window goes away.
+            .task(id: CameraSaveKey(url: fileURL, camera: viewModel.persistedCamera, isReady: viewModel.loadingState == .ready)) {
+                guard let fileURL, viewModel.loadingState == .ready, !viewModel.isImageConversion else {
+                    return
+                }
+                try? await Task.sleep(for: .seconds(1))
+                guard !Task.isCancelled else {
+                    return
+                }
+                viewModel.saveCameraAttribute(to: fileURL)
+            }
+            .onDisappear {
+                if let fileURL, viewModel.loadingState == .ready, !viewModel.isImageConversion {
+                    viewModel.saveCameraAttribute(to: fileURL)
+                }
+            }
             .environment(viewModel)
     }
 
@@ -1498,6 +1514,13 @@ struct SplatDocumentContentView: View {
             }
         }
     }
+}
+
+/// Restarts the debounced camera save whenever the file, the saved camera, or the loading state changes.
+private struct CameraSaveKey: Equatable {
+    var url: URL?
+    var camera: SplatScene.CameraState
+    var isReady: Bool
 }
 
 // MARK: - Convenience Initializers

@@ -672,12 +672,13 @@ Add a workflow that takes COLMAP reconstruction data and its source photos, uplo
 ## 35: Save splat camera metadata in an extended attribute
 
 +++
-status: open
+status: closed
 priority: medium
 kind: enhancement
 labels: effort:s
 created: 2026-08-27T03:50:07Z
-updated: 2026-10-23T21:57:59Z
+updated: 2026-10-23T23:20:11Z
+closed: 2026-10-23T23:20:11Z
 +++
 
 When the user saves a splat, serialize the current camera information as JSON and store it in a file extended attribute.
@@ -1052,12 +1053,13 @@ SplatRenderView calls PointSplatRenderPipeline with frameIndex: 0 every frame an
 ## 53: Remember per-document settings across sessions
 
 +++
-status: open
+status: closed
 priority: medium
 kind: feature
 labels: effort:m
 created: 2026-09-09T20:30:04Z
-updated: 2026-10-23T21:57:59Z
+updated: 2026-10-23T23:20:11Z
+closed: 2026-10-23T23:20:11Z
 +++
 
 Viewer settings (renderer, camera, background color, model orientation, inspector state, etc.) reset every time a document is reopened. Settings should persist per document.
@@ -1070,6 +1072,7 @@ Store settings either in an extended attribute (xattr) on the document file or i
 - `2026-09-10T00:05:40Z`: Assessed in the autonomous run: punting because the issue's own proposed fix leaves the core decision open (xattr on the file vs central database keyed by document — sandboxed writes to source-file xattrs also differ in behavior across cloud storage/backups). The exact settings set to persist is also unspecified. #35 and #36 were punted into this decision today. Unblocker: pick storage (recommend central store keyed by file bookmark/URL, avoiding xattr write-permission issues on read-only documents) and list the settings to persist; the plumbing via SplatViewModel is then mechanical.
 - `2026-10-23T21:31:27Z`: Autonomous run: unchanged, still needs the storage decision (an extended attribute on the file, or a central store keyed by bookmark or URL) and the list of settings to persist. #35 is waiting on the same decision. Once those are picked, the plumbing through SplatViewModel and the .splatcamera JSON format is mechanical.
 - `2026-10-23T21:57:59Z`: Decision (schwa): store per-document settings in an extended attribute on the document file.
+- `2026-10-23T23:20:11Z`: Implemented the agreed first version: the camera (matrix, FOV, mode, clip planes) and the model rotation, stored as .splatcamera JSON in the com.schwa.radiance.camera extended attribute. Renderer type, background color and inspector state are not saved yet.
 
 ---
 

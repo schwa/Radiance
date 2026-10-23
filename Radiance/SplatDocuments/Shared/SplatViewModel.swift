@@ -7,11 +7,15 @@ import MetalSprocketsGaussianSplats
 import MetalSprocketsGaussianSplatsDebug
 import MetalSprocketsGaussianSplatShaders
 import Observation
+import os
+import RadianceSupport
 import Sharp
 import simd
 import Splats
 import SwiftUI
 import UniformTypeIdentifiers
+
+nonisolated private let logger = Logger(subsystem: "com.schwa.Radiance", category: "SplatViewModel")
 
 // MARK: - Loading State
 
@@ -389,7 +393,7 @@ final class SplatViewModel {
                 loadedClouds = [loadedCloud]
                 updateSceneTransform()
                 loadingState = .ready
-                applyCameraSidecar(for: url)
+                applySavedCamera(for: url)
             } catch {
                 if !Task.isCancelled {
                     loadingState = .error("Failed to load splat file: \(error.localizedDescription)")
@@ -398,14 +402,43 @@ final class SplatViewModel {
         }
     }
 
-    // Sidecar camera (#59): a .splatcamera JSON next to the splat file
-    // populates the camera on open. Same format as the Share Camera export.
-    private func applyCameraSidecar(for url: URL) {
+    /// Extended attribute that remembers a splat file's camera and model rotation between sessions (#35, #53).
+    static let cameraAttributeName = "com.schwa.radiance.camera"
+
+    /// The viewing state saved per document, in the .splatcamera format.
+    var persistedCamera: SplatScene.CameraState {
+        SplatScene.CameraState(
+            matrix: cameraMatrix,
+            verticalAngleOfView: verticalAngleOfView,
+            mode: cameraMode.rawValue,
+            nearClip: nearClip,
+            farClip: farClip,
+            modelRotation: SIMD3(modelRotationX, modelRotationY, modelRotationZ)
+        )
+    }
+
+    /// Restores the camera on open. A .splatcamera sidecar next to the file (#59) wins over the saved attribute.
+    private func applySavedCamera(for url: URL) {
         let sidecarURL = url.deletingPathExtension().appendingPathExtension("splatcamera")
-        guard let data = try? Data(contentsOf: sidecarURL),
-              let camera = try? JSONDecoder().decode(SplatScene.CameraState.self, from: data) else {
+        let data = (try? Data(contentsOf: sidecarURL)) ?? (try? ExtendedAttributes.data(named: Self.cameraAttributeName, at: url))
+        guard let data, let camera = try? JSONDecoder().decode(SplatScene.CameraState.self, from: data) else {
             return
         }
+        apply(camera: camera)
+    }
+
+    /// Writes `persistedCamera` to the file's extended attribute. Fails quietly on read-only files.
+    func saveCameraAttribute(to url: URL) {
+        do {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.sortedKeys]
+            try ExtendedAttributes.setData(try encoder.encode(persistedCamera), named: Self.cameraAttributeName, at: url)
+        } catch {
+            logger.debug("Could not save camera attribute for \(url.lastPathComponent): \(error)")
+        }
+    }
+
+    private func apply(camera: SplatScene.CameraState) {
         if let mode = CameraMode(rawValue: camera.mode.capitalized) {
             cameraMode = mode
         }

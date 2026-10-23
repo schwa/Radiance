@@ -1,5 +1,5 @@
 import SwiftUI
-import ZIPFoundation
+import SwiftZipReader
 #if os(macOS)
 import AppKit
 #endif
@@ -168,14 +168,14 @@ struct ModelDownloadView: View {
     private func extract(zipURL: URL, to directory: URL) async throws {
         let targetRoot = "\(modelName).mlmodelc"
         try await Task.detached {
-            let archive = try Archive(url: zipURL, accessMode: .read)
+            let archive = try ZipArchive(contentsOf: zipURL)
 
             // Remove any existing model directory before extraction to prevent conflicts
             let targetURL = directory.appendingPathComponent(targetRoot, isDirectory: true)
             try? FileManager.default.removeItem(at: targetURL)
 
-            for entry in archive {
-                let path = entry.path
+            for entry in archive.entries {
+                let path = entry.name
 
                 // Skip macOS metadata entries
                 if path.hasPrefix("__MACOSX/") || path.contains("/.DS_Store") { continue }
@@ -192,10 +192,15 @@ struct ModelDownloadView: View {
                     destinationURL = targetURL.appendingPathComponent(relativePath)
                 }
 
+                if entry.isDirectory {
+                    try FileManager.default.createDirectory(at: destinationURL, withIntermediateDirectories: true)
+                    continue
+                }
+
                 let parentDirectory = destinationURL.deletingLastPathComponent()
                 try FileManager.default.createDirectory(at: parentDirectory, withIntermediateDirectories: true)
 
-                _ = try archive.extract(entry, to: destinationURL)
+                try archive.data(for: entry).write(to: destinationURL)
             }
         }.value
     }

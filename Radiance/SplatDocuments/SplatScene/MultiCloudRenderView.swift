@@ -29,7 +29,7 @@ struct MultiCloudRenderView: View {
     let showGrid: Bool
     let showAxes: Bool
     let backgroundColor: [Float]
-    var cullBoundingBox: BoundingBox3D?
+    var cullBoundingBox: MetalSprocketsGaussianSplatShaders.BoundingBox3D?
 
     // Debug rendering
     var debugParams: DebugParams?

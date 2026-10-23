@@ -28,7 +28,7 @@ struct SplatRenderView: View {
     let nearClip: Double
     let farClip: Double
 
-    var cullBoundingBox: BoundingBox3D?
+    var cullBoundingBox: MetalSprocketsGaussianSplatShaders.BoundingBox3D?
     var showBoundingBoxes: Bool = false
     var showReferenceGrid: Bool = false
     var showAxisLines: Bool = false
@@ -109,7 +109,7 @@ private struct SplatRenderingView: View {
     @Binding var verticalAngleOfView: Double
     let nearClip: Double
     let farClip: Double
-    var cullBoundingBox: BoundingBox3D?
+    var cullBoundingBox: MetalSprocketsGaussianSplatShaders.BoundingBox3D?
     let showReferenceGrid: Bool
     let showAxisLines: Bool
     let showBoundingBoxes: Bool
@@ -345,12 +345,12 @@ struct GuidedSplatRenderPass: Element {
     let useSphericalHarmonics: Bool
     let colorLoadAction: MTLLoadAction?
     let boxes: [BoxInstance]
-    let boundingBox: BoundingBox3D?
+    let boundingBox: MetalSprocketsGaussianSplatShaders.BoundingBox3D?
     let resources: GPUSortResources
     let slotIndex: Int
     let sortedIndices: SplatIndices
 
-    init(splatCloud: GPUSplatCloud<SparkSplat>, projectionMatrix: simd_float4x4, modelMatrix: simd_float4x4, cameraMatrix: simd_float4x4, drawableSize: SIMD2<Float>, useSphericalHarmonics: Bool, colorLoadAction: MTLLoadAction?, boxes: [BoxInstance], resources: GPUSortResources, boundingBox: BoundingBox3D? = nil) throws {
+    init(splatCloud: GPUSplatCloud<SparkSplat>, projectionMatrix: simd_float4x4, modelMatrix: simd_float4x4, cameraMatrix: simd_float4x4, drawableSize: SIMD2<Float>, useSphericalHarmonics: Bool, colorLoadAction: MTLLoadAction?, boxes: [BoxInstance], resources: GPUSortResources, boundingBox: MetalSprocketsGaussianSplatShaders.BoundingBox3D? = nil) throws {
         self.boundingBox = boundingBox
         self.splatCloud = splatCloud
         self.projectionMatrix = projectionMatrix

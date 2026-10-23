@@ -1401,3 +1401,18 @@ Expected: tapping the rotation widget activates/adjusts it as on other platforms
 Actual: taps have no effect.
 
 ---
+
+## 71: Replace ZIPFoundation with SwiftZipReader
+
++++
+status: closed
+priority: low
+kind: task
+created: 2026-10-23T13:47:03Z
+updated: 2026-10-23T13:48:48Z
+closed: 2026-10-23T13:48:48Z
++++
+
+ModelDownloadView.swift is the only user of ZIPFoundation. It uses Archive to extract the downloaded .mlmodelc.zip. SwiftZipReader is already a transitive dependency. Check that SwiftZipReader can extract entries to disk. If it can, port extract(zipURL:to:) to it and remove the ZIPFoundation package reference.
+
+---

@@ -20,7 +20,7 @@
 		45AA00022F90000100AA0001 /* MetalSprocketsAddOns in Frameworks */ = {isa = PBXBuildFile; productRef = 45AA00042F90000100AA0001 /* MetalSprocketsAddOns */; };
 		45AA00062F90000100AA0001 /* MetalSprocketsAddOnsShaders in Frameworks */ = {isa = PBXBuildFile; productRef = 45AA00052F90000100AA0001 /* MetalSprocketsAddOnsShaders */; };
 		45AA00072F90000100AA0001 /* MetalSprocketsAddOnsShaders in Frameworks */ = {isa = PBXBuildFile; productRef = 45AA00052F90000100AA0001 /* MetalSprocketsAddOnsShaders */; };
-		45B4CDDB2EF86B8D00BFC1FC /* ZIPFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = 45B4CDDA2EF86B8D00BFC1FC /* ZIPFoundation */; };
+		45B4CDDB2EF86B8D00BFC1FC /* SwiftZipReader in Frameworks */ = {isa = PBXBuildFile; productRef = 45B4CDDA2EF86B8D00BFC1FC /* SwiftZipReader */; };
 		45DB00012F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug in Frameworks */ = {isa = PBXBuildFile; productRef = 45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */; };
 		45DB00022F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug in Frameworks */ = {isa = PBXBuildFile; productRef = 45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */; };
 		45E9BB732EF504C00016C77E /* Sharp in Frameworks */ = {isa = PBXBuildFile; productRef = 45E9BB722EF504C00016C77E /* Sharp */; };
@@ -138,7 +138,7 @@
 				45AA00022F90000100AA0001 /* MetalSprocketsAddOns in Frameworks */,
 				45AA00072F90000100AA0001 /* MetalSprocketsAddOnsShaders in Frameworks */,
 				45E9BB762EF519850016C77E /* Sharp in Frameworks */,
-				45B4CDDB2EF86B8D00BFC1FC /* ZIPFoundation in Frameworks */,
+				45B4CDDB2EF86B8D00BFC1FC /* SwiftZipReader in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -227,7 +227,7 @@
 				451155A32EC3EF9700C04880 /* GeometryLite3D */,
 				45E9BB722EF504C00016C77E /* Sharp */,
 				45E9BB752EF519850016C77E /* Sharp */,
-				45B4CDDA2EF86B8D00BFC1FC /* ZIPFoundation */,
+				45B4CDDA2EF86B8D00BFC1FC /* SwiftZipReader */,
 				452D31AF2F15791E0034906D /* Interaction3D */,
 				45629B952F74A0A200463117 /* MetalSprocketsGaussianSplats */,
 				45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */,
@@ -270,7 +270,7 @@
 			packageReferences = (
 				451155A22EC3EF9700C04880 /* XCRemoteSwiftPackageReference "GeometryLite3D" */,
 				45E9BB742EF519850016C77E /* XCRemoteSwiftPackageReference "Sharp" */,
-				45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "ZIPFoundation" */,
+				45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "SwiftZipReader" */,
 				455EE9212F3A679900A753D3 /* XCRemoteSwiftPackageReference "Interaction3D" */,
 				45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */,
 				45AA00032F90000100AA0001 /* XCRemoteSwiftPackageReference "MetalSprocketsAddOns" */,
@@ -457,7 +457,7 @@
 			repositoryURL = "https://github.com/schwa/GeometryLite3D";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.0;
+				minimumVersion = 0.2.6;
 			};
 		};
 		455EE9212F3A679900A753D3 /* XCRemoteSwiftPackageReference "Interaction3D" */ = {
@@ -465,7 +465,7 @@
 			repositoryURL = "https://github.com/schwa/Interaction3D";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.12;
+				minimumVersion = 0.1.15;
 			};
 		};
 		45629B942F74A0A200463117 /* XCRemoteSwiftPackageReference "MetalSprocketsGaussianSplats" */ = {
@@ -473,7 +473,7 @@
 			repositoryURL = "https://github.com/schwa/MetalSprocketsGaussianSplats";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 0.2.0;
+				minimumVersion = 0.2.3;
 			};
 		};
 		45AA00032F90000100AA0001 /* XCRemoteSwiftPackageReference "MetalSprocketsAddOns" */ = {
@@ -481,15 +481,15 @@
 			repositoryURL = "https://github.com/schwa/MetalSprocketsAddOns";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 0.2.0;
+				minimumVersion = 0.2.3;
 			};
 		};
-		45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "ZIPFoundation" */ = {
+		45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "SwiftZipReader" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/weichsel/ZIPFoundation";
+			repositoryURL = "https://github.com/schwa/SwiftZipReader";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.9.20;
+				kind = upToNextMinorVersion;
+				minimumVersion = 0.0.2;
 			};
 		};
 		45E9BB742EF519850016C77E /* XCRemoteSwiftPackageReference "Sharp" */ = {
@@ -497,7 +497,7 @@
 			repositoryURL = "https://github.com/schwa/Sharp";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.0.1;
+				minimumVersion = 0.0.2;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -551,10 +551,10 @@
 			package = 45AA00032F90000100AA0001 /* XCRemoteSwiftPackageReference "MetalSprocketsAddOns" */;
 			productName = MetalSprocketsAddOnsShaders;
 		};
-		45B4CDDA2EF86B8D00BFC1FC /* ZIPFoundation */ = {
+		45B4CDDA2EF86B8D00BFC1FC /* SwiftZipReader */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "ZIPFoundation" */;
-			productName = ZIPFoundation;
+			package = 45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "SwiftZipReader" */;
+			productName = SwiftZipReader;
 		};
 		45DB00032F80000100DB0001 /* MetalSprocketsGaussianSplatsDebug */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -260,14 +260,14 @@ final class SplatViewModel {
     var cullMaxNormalized: SIMD3<Float> = SIMD3(1, 1, 1)
 
     /// Computed culling bounding box in model space
-    var cullBoundingBox: BoundingBox3D? {
+    var cullBoundingBox: MetalSprocketsGaussianSplatShaders.BoundingBox3D? {
         guard cullBoundingBoxEnabled, boundsSize != .zero else {
             return nil
         }
         let actualMin = boundsCenter - boundsSize / 2
         let minBounds = actualMin + cullMinNormalized * boundsSize
         let maxBounds = actualMin + cullMaxNormalized * boundsSize
-        return BoundingBox3D(minBounds: minBounds, maxBounds: maxBounds)
+        return MetalSprocketsGaussianSplatShaders.BoundingBox3D(minBounds: minBounds, maxBounds: maxBounds)
     }
 
     // MARK: - Bounds

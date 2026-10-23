@@ -27,7 +27,7 @@ nonisolated struct Transform: Codable, Sendable, Equatable {
     /// Create from a 4x4 matrix (decomposes it)
     init(matrix: simd_float4x4) {
         if let components = matrix.decompose {
-            self.translation = components.translate
+            self.translation = components.translation
             let euler = Euler(components.rotation)
             self.rotation = SIMD3<Float>(euler.roll, euler.pitch, euler.yaw)
         } else {

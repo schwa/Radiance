@@ -127,9 +127,9 @@ final class SplatViewModel {
     }
 
     private func updateSceneTransform() {
-        let rotX = simd_float4x4(xRotation: .radians(modelRotationX))
-        let rotY = simd_float4x4(yRotation: .radians(modelRotationY))
-        let rotZ = simd_float4x4(zRotation: .radians(modelRotationZ))
+        let rotX = simd_float4x4(clockwiseXRotation: .radians(modelRotationX))
+        let rotY = simd_float4x4(clockwiseYRotation: .radians(modelRotationY))
+        let rotZ = simd_float4x4(clockwiseZRotation: .radians(modelRotationZ))
         let rotation = rotZ * rotY * rotX
         if centerModel, let firstBounds = loadedClouds.first?.bounds {
             let translation = simd_float4x4(translation: -firstBounds.center)
@@ -620,9 +620,9 @@ final class SplatViewModel {
 
     private func updateCameraForZoomToFitSingle() {
         // Get the maximum extent of the bounding box (after rotation)
-        let rotX = simd_float4x4(xRotation: .radians(modelRotationX))
-        let rotY = simd_float4x4(yRotation: .radians(modelRotationY))
-        let rotZ = simd_float4x4(zRotation: .radians(modelRotationZ))
+        let rotX = simd_float4x4(clockwiseXRotation: .radians(modelRotationX))
+        let rotY = simd_float4x4(clockwiseYRotation: .radians(modelRotationY))
+        let rotZ = simd_float4x4(clockwiseZRotation: .radians(modelRotationZ))
         let rotation = rotZ * rotY * rotX
 
         // Transform the 8 corners of the bounding box and find the extents

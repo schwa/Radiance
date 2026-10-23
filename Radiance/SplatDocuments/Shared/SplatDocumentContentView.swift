@@ -319,7 +319,7 @@ struct SplatDocumentContentView: View {
             return
         }
         viewModel.zoomToFit = false
-        let correction = simd_float4x4(zRotation: .degrees(-Float(horizonAngleDegrees)))
+        let correction = simd_float4x4(clockwiseZRotation: .degrees(-Float(horizonAngleDegrees)))
         viewModel.analysisModelTransform = correction * viewModel.analysisModelTransform
         clearImageAnalysis()
         visionImageAnalysis = nil
@@ -533,7 +533,7 @@ struct SplatDocumentContentView: View {
         case .upright, .uncertain:
             angles = []
         }
-        return angles.map { matrix * simd_float4x4(zRotation: .radians($0)) }
+        return angles.map { matrix * simd_float4x4(clockwiseZRotation: .radians($0)) }
     }
 
     nonisolated private static func lacksVisualContent(_ image: CGImage, backgroundColor: Color.Resolved) -> Bool {

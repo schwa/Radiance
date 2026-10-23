@@ -17,9 +17,9 @@ nonisolated struct Transform: Codable, Sendable, Equatable {
 
     /// Convert to a 4x4 matrix
     var matrix: simd_float4x4 {
-        let rotX = simd_float4x4(xRotation: .radians(rotation.x))
-        let rotY = simd_float4x4(yRotation: .radians(rotation.y))
-        let rotZ = simd_float4x4(zRotation: .radians(rotation.z))
+        let rotX = simd_float4x4(clockwiseXRotation: .radians(rotation.x))
+        let rotY = simd_float4x4(clockwiseYRotation: .radians(rotation.y))
+        let rotZ = simd_float4x4(clockwiseZRotation: .radians(rotation.z))
         let trans = simd_float4x4(translation: translation)
         return trans * rotZ * rotY * rotX
     }

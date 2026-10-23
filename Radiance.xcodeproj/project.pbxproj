@@ -457,7 +457,7 @@
 			repositoryURL = "https://github.com/schwa/GeometryLite3D";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.2.6;
+				minimumVersion = 0.2.7;
 			};
 		};
 		455EE9212F3A679900A753D3 /* XCRemoteSwiftPackageReference "Interaction3D" */ = {
@@ -480,8 +480,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/MetalSprocketsAddOns";
 			requirement = {
-				kind = upToNextMinorVersion;
-				minimumVersion = 0.2.3;
+				branch = main;
+				kind = branch;
 			};
 		};
 		45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "SwiftZipReader" */ = {

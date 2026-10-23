@@ -1516,11 +1516,12 @@ This is built in Radiance first. It reuses the offscreen A/B targets from the cr
 ## 77: Horizon correction may tilt the wrong way after GeometryLite3D rotation fix
 
 +++
-status: new
+status: closed
 priority: high
 kind: bug
 created: 2026-10-23T19:48:08Z
-updated: 2026-10-23T19:48:27Z
+updated: 2026-10-23T21:05:01Z
+closed: 2026-10-23T21:05:01Z
 +++
 
 GeometryLite3D commit aabafead (GeometryLite3D#45) changed simd_float4x4(xRotation:/yRotation:/zRotation:) to rotate counter-clockwise (right-handed, same as simd_quatf). Before, positive angles rotated by -θ. Code here was written against the old behavior.
@@ -1536,10 +1537,12 @@ To do:
 ## 78: Model rotation controls and saved rotations flip after GeometryLite3D rotation fix
 
 +++
-status: new
+status: closed
 priority: high
 kind: bug
 created: 2026-10-23T19:48:08Z
+updated: 2026-10-23T21:05:01Z
+closed: 2026-10-23T21:05:01Z
 +++
 
 GeometryLite3D commit aabafead (GeometryLite3D#45) changed simd_float4x4(xRotation:/yRotation:/zRotation:) to rotate counter-clockwise (right-handed, same as simd_quatf). Before, positive angles rotated by -θ. Code here was written against the old behavior.\n\nSplatViewModel.swift:130-132 and 623-625, and SplatScene.swift:20-22 build model transforms from xRotation/yRotation/zRotation with user rotation values. After the update, every control turns the other way. Rotation values saved in existing documents will load with a different orientation.\n\nTo do:\n- Decide whether to negate the stored values when loading, migrate the documents, or accept the change.\n- Check that the UI controls turn in the expected direction.
@@ -1549,11 +1552,12 @@ GeometryLite3D commit aabafead (GeometryLite3D#45) changed simd_float4x4(xRotati
 ## 79: Check rotation order of zRotation angle list after GeometryLite3D rotation fix
 
 +++
-status: new
+status: closed
 priority: high
 kind: bug
 created: 2026-10-23T19:48:08Z
-updated: 2026-10-23T19:48:27Z
+updated: 2026-10-23T21:05:01Z
+closed: 2026-10-23T21:05:01Z
 +++
 
 GeometryLite3D commit aabafead (GeometryLite3D#45) changed simd_float4x4(xRotation:/yRotation:/zRotation:) to rotate counter-clockwise (right-handed, same as simd_quatf). Before, positive angles rotated by -θ. Code here was written against the old behavior.
@@ -1562,5 +1566,18 @@ SplatDocumentContentView.swift:536 maps `matrix * simd_float4x4(zRotation: .radi
 
 To do:
 - Check the angle list and the code that uses the result.
+
+---
+
+## 80: MetalSprocketsAddOns dependency tracks main instead of a version
+
++++
+status: new
+priority: low
+kind: task
+created: 2026-10-23T21:05:01Z
++++
+
+The MetalSprocketsAddOns package reference uses branch main, so the app gets the GridShader fix for GeometryLite3D 0.2.7 (MetalSprocketsAddOns#109) before it is released. Every other dependency on this branch uses a version requirement. When a release after 0.2.3 is tagged, the reference must go back to a version requirement.
 
 ---

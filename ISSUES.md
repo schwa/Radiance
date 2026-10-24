@@ -1108,15 +1108,17 @@ Screenshot: iPad, Point renderer, dark background, grid + axes on.
 status: open
 priority: low
 kind: enhancement
-labels: effort:m, area:rendering, area:ui
+labels: effort:m, area:rendering, area:ui, punted
 created: 2026-09-09T20:37:30Z
-updated: 2026-10-24T11:36:02Z
+updated: 2026-10-24T11:54:39Z
 +++
 
 The reference grid and axis lines render with visible aliasing (jagged/shimmering lines), especially at grazing angles where grid lines converge toward the horizon.
 
 ## Proposed fix (per schwa)
 Render the guides pass with MSAA if possible.
+
+- `2026-10-24T11:54:39Z`: Assessed. MetalSprockets sets MSAA per RenderView (metalSampleCount / RenderView sampleCount), so turning it on multisamples the whole drawable. The splat passes would then render into a multisampled target too: the point splat compute path, tile-based, Spark, and debug pipelines. That has a wide blast radius and I can't check it visually. MSAA for just the guides pass needs an offscreen 4x color+depth target for SceneGuidesRenderPass that resolves into the drawable before the splat passes load over it. I found no existing MetalSprockets helper for that. Also, GridShader already does analytic AA (smoothstep with lineAA), but AxisLines.metal does not, so the axis lines may be the main offender. Unblockers: (a) OK to add an offscreen MSAA guides target in Radiance? (b) Or fix it in MetalSprocketsAddOns by adding smoothstep edge AA to AxisLines and widening GridShader's lineAA at grazing angles?
 
 ---
 

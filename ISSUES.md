@@ -231,9 +231,9 @@ The Best View attempt ribbon contains collection rendering, scroll coordination,
 status: open
 priority: low
 kind: task
-labels: swiftui, performance, effort:xs, area:swiftui, area:performance, punted
+labels: swiftui, performance, effort:xs, area:swiftui, area:performance, deferred
 created: 2026-08-25T02:10:46Z
-updated: 2026-10-23T21:12:02Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 SplashScene wraps recentDocumentURLs.enumerated() in Array inside the List body. Every body evaluation allocates and copies the collection even though the enumerated collection is directly usable by ForEach.
@@ -458,9 +458,9 @@ Add the rotation cube provided by Interaction3D to the 3D viewer so users can in
 status: open
 priority: medium
 kind: feature
-labels: effort:l, punted
+labels: effort:l, deferred
 created: 2026-08-27T03:36:55Z
-updated: 2026-10-23T21:12:02Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 Add a compact Safari-style downloads window that opens near the top-right corner of the screen.
@@ -496,9 +496,9 @@ Add an optional reference grid to the 3D viewer. MetalSprocketsAddOns may alread
 status: open
 priority: medium
 kind: feature
-labels: effort:m, punted
+labels: effort:m, deferred
 created: 2026-08-27T03:38:12Z
-updated: 2026-10-23T21:12:02Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 Add skybox support to the 3D viewer. MetalSprocketsAddOns may already provide the required skybox component.
@@ -533,9 +533,9 @@ Add optional axis lines to the 3D viewer. MetalSprocketsAddOns may already provi
 status: open
 priority: medium
 kind: enhancement
-labels: effort:m, punted
+labels: effort:m, deferred
 created: 2026-08-27T03:39:07Z
-updated: 2026-10-23T21:12:02Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 Display the COLMAP markers directly in the main 3D view so they are visible alongside the loaded scene.
@@ -609,9 +609,9 @@ Use the animated Radiance icon consistently across branded screens, including Ab
 status: new
 priority: medium
 kind: enhancement
-labels: needs-info, effort:m, punted
+labels: needs-info, effort:m, deferred
 created: 2026-08-27T03:45:53Z
-updated: 2026-10-23T21:12:02Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 Improve the sidebar and inspector layout so controls use space more efficiently and the visual hierarchy, alignment, and spacing are consistent.
@@ -624,9 +624,9 @@ Improve the sidebar and inspector layout so controls use space more efficiently 
 status: open
 priority: medium
 kind: feature
-labels: effort:l, punted
+labels: effort:l, deferred
 created: 2026-08-27T03:47:41Z
-updated: 2026-10-23T21:12:02Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 Add a splat generation window for creating procedural Gaussian splat assets. Include spheres, toruses, realistic clouds, and multiple color options.
@@ -641,9 +641,9 @@ Add a splat generation window for creating procedural Gaussian splat assets. Inc
 status: open
 priority: medium
 kind: feature
-labels: effort:xl, punted
+labels: effort:xl, deferred
 created: 2026-08-27T03:47:41Z
-updated: 2026-10-23T21:12:02Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 Add a COLMAP tool that accepts a batch of photos via drag and drop and runs structure-from-motion to produce COLMAP reconstruction data.
@@ -658,9 +658,9 @@ Add a COLMAP tool that accepts a batch of photos via drag and drop and runs stru
 status: new
 priority: medium
 kind: feature
-labels: needs-info, effort:l, punted
+labels: needs-info, effort:l, deferred
 created: 2026-08-27T03:47:41Z
-updated: 2026-10-23T21:12:02Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 Add a workflow that takes COLMAP reconstruction data and its source photos, uploads them to the web service, and returns a generated Gaussian splat.
@@ -697,9 +697,9 @@ When the user saves a splat, serialize the current camera information as JSON an
 status: open
 priority: medium
 kind: enhancement
-labels: effort:m, punted
+labels: effort:m, deferred
 created: 2026-08-27T03:50:07Z
-updated: 2026-10-23T21:12:03Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 Store a preview image in an extended attribute when saving a splat so the file can expose a representative thumbnail without rendering it again.
@@ -715,9 +715,9 @@ Store a preview image in an extended attribute when saving a splat so the file c
 status: new
 priority: medium
 kind: feature
-labels: needs-info, effort:l, punted
+labels: needs-info, effort:l, deferred
 created: 2026-08-27T03:50:07Z
-updated: 2026-10-23T21:12:03Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 Add an export workflow that lets users save the current splat in a different supported file format.
@@ -816,9 +816,9 @@ Actual: Finder treats them as ZIP archives.
 status: open
 priority: medium
 kind: feature
-labels: effort:l, punted
+labels: effort:l, deferred
 created: 2026-08-27T04:03:21Z
-updated: 2026-10-23T21:12:03Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 Add a spreadsheet-style inspection mode that displays individual splats and their attributes in rows and columns for browsing, sorting, and inspection.
@@ -834,9 +834,9 @@ Add a spreadsheet-style inspection mode that displays individual splats and thei
 status: new
 priority: medium
 kind: feature
-labels: needs-info, effort:m, punted
+labels: needs-info, effort:m, deferred
 created: 2026-08-27T04:03:21Z
-updated: 2026-10-23T21:12:03Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 Add a window or view that visualizes the colors of all splats as an image for inspecting the cloud’s color distribution and data.
@@ -1228,9 +1228,9 @@ The Cancel / Copy / Save… controls at the bottom of the Export Screenshot shee
 status: open
 priority: medium
 kind: feature
-labels: rendering, performance, effort:m, area:rendering, area:performance, punted
+labels: rendering, performance, effort:m, area:rendering, area:performance, deferred
 created: 2026-09-09T21:22:48Z
-updated: 2026-10-23T21:57:59Z
+updated: 2026-10-24T11:31:25Z
 +++
 
 The MTKView runs in continuous mode, redrawing at 60 fps even when the scene is static, wasting power (notably on iPad).

@@ -1399,9 +1399,9 @@ The relevant path is classifyCurrentRenderingIfNeeded() in Radiance/SplatDocumen
 status: open
 priority: medium
 kind: bug
-labels: area:performance, effort:s
+labels: area:performance, effort:s, punted
 created: 2026-09-10T06:54:54Z
-updated: 2026-10-24T11:36:02Z
+updated: 2026-10-24T11:42:27Z
 +++
 
 SplatCloudDescriptor.computeBounds causes a microhang, as reported by the user.
@@ -1411,6 +1411,8 @@ Actual: a brief hang occurs during bounds computation.
 
 The triggering cloud, call site, thread, and duration have not yet been recorded.
 
+- `2026-10-24T11:42:27Z`: Checked: computeBounds is @concurrent (since March), so it runs off the main actor at all three call sites (SplatViewModel load, computeBoundsForLoadedClouds, SplatCloudInfoSections AsyncView). Punting: root cause is unclear without a trace. Possible candidates: SplatCloudDescriptor.init runs synchronously on the main actor and, for .sog, does a full SplatLoader.read; the AsyncView in SplatCloudInfoSections may restart computeBounds when the inspector is invalidated (#65). Unblocker: a hang report or Instruments trace showing the main-thread stack, plus the file type and splat count.
+
 ---
 
 ## 70: Rotation widget doesn't respond to taps on iPad
@@ -1419,15 +1421,17 @@ The triggering cloud, call site, thread, and duration have not yet been recorded
 status: open
 priority: medium
 kind: bug
-labels: effort:s, area:ui
+labels: effort:s, area:ui, punted
 created: 2026-09-10T16:33:22Z
-updated: 2026-10-24T11:36:02Z
+updated: 2026-10-24T11:42:56Z
 +++
 
 The rotation widget ignores tap input on iPad.
 
 Expected: tapping the rotation widget activates/adjusts it as on other platforms.
 Actual: taps have no effect.
+
+- `2026-10-24T11:42:56Z`: Diagnosed: the bug is in Interaction3D (RotationWidget.swift), not Radiance. HoverArea only creates its tap Button while onContinuousHover is active, and touch never hovers. Also PitchYawDragModifier uses DragGesture(minimumDistance: 0), which sets isDragging on touch-down and removes the HoverArea. Fix: replace the hover-gated Button with a SpatialTapGesture that hit-tests the action paths at the tap location, and give the drag a non-zero minimumDistance. Punting: needs a change and release in the Interaction3D repo. Unblocker: OK to fix it in Interaction3D and bump the Radiance dependency?
 
 ---
 

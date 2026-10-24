@@ -1108,9 +1108,9 @@ Screenshot: iPad, Point renderer, dark background, grid + axes on.
 status: open
 priority: low
 kind: enhancement
-labels: effort:m, area:rendering, area:ui, punted
+labels: effort:m, area:rendering, area:ui, deferred
 created: 2026-09-09T20:37:30Z
-updated: 2026-10-24T11:54:39Z
+updated: 2026-10-24T11:58:18Z
 +++
 
 The reference grid and axis lines render with visible aliasing (jagged/shimmering lines), especially at grazing angles where grid lines converge toward the horizon.
@@ -1413,9 +1413,9 @@ The relevant path is classifyCurrentRenderingIfNeeded() in Radiance/SplatDocumen
 status: open
 priority: medium
 kind: bug
-labels: area:performance, effort:s, punted
+labels: area:performance, effort:s, deferred
 created: 2026-09-10T06:54:54Z
-updated: 2026-10-24T11:42:27Z
+updated: 2026-10-24T11:58:18Z
 +++
 
 SplatCloudDescriptor.computeBounds causes a microhang, as reported by the user.
@@ -1435,9 +1435,9 @@ The triggering cloud, call site, thread, and duration have not yet been recorded
 status: open
 priority: medium
 kind: bug
-labels: effort:s, area:ui, punted
+labels: effort:s, area:ui, deferred
 created: 2026-09-10T16:33:22Z
-updated: 2026-10-24T11:42:56Z
+updated: 2026-10-24T11:58:18Z
 +++
 
 The rotation widget ignores tap input on iPad.
@@ -1500,10 +1500,10 @@ It also needs a version field and a UTType, like the other Radiance document typ
 status: open
 priority: medium
 kind: feature
-labels: area:multisplat-walkthrough, effort:m, punted
+labels: area:multisplat-walkthrough, effort:m, deferred
 depends: 72
 created: 2026-10-23T14:11:40Z
-updated: 2026-10-24T11:46:58Z
+updated: 2026-10-24T11:58:18Z
 +++
 
 In a document that splits a space into volumes, each with its own splat, only the splat for the volume that contains the camera should be visible. Today there is no concept of an active volume.

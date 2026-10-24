@@ -1163,15 +1163,18 @@ The About window's title is wrong (shows the bundle/product name rather than the
 ## 58: Grid and axis lines missing in debug mode
 
 +++
-status: open
+status: closed
 priority: low
 kind: bug
 labels: effort:s, area:rendering
 created: 2026-09-09T20:48:25Z
-updated: 2026-09-09T23:03:59Z
+updated: 2026-10-24T11:50:15Z
+closed: 2026-10-24T11:50:15Z
 +++
 
 With Enable Debug Mode on, the reference grid and axis lines are not rendered even when Show Reference Grid / Show Axis Lines are enabled. The debug render path (SingleCloudDebugRenderView) does not draw the scene guides pass.
+
+- `2026-10-24T11:50:15Z`: SingleCloudDebugRenderView now draws SceneGuidesRenderPass first, and the debug pass loads instead of clearing when guides are on. This mirrors MultiCloudRenderView's debug path. Not checked visually. No unit test: render composition inside RenderView has no unit-testable seam.
 
 ---
 

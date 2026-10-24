@@ -140,7 +140,10 @@ private struct SplatRenderingView: View {
                 verticalAngleOfView: verticalAngleOfView,
                 nearClip: nearClip,
                 farClip: farClip,
-                debugParams: debugParams
+                debugParams: debugParams,
+                gridColor: gridColor,
+                showGrid: showReferenceGrid,
+                showAxes: showAxisLines
             )
             .metalColorPixelFormat(.bgra8Unorm_srgb)
             .metalClearColor(clearColor))
@@ -465,11 +468,17 @@ private struct SingleCloudDebugRenderView: View {
     let nearClip: Double
     let farClip: Double
     let debugParams: DebugParams
+    let gridColor: Color
+    let showGrid: Bool
+    let showAxes: Bool
 
     @State private var resources: GPUSortResources?
     @State private var resourceBufferID: ObjectIdentifier?
 
-    init(splatCloud: GPUSplatCloud<SparkSplat>, cameraMatrix: simd_float4x4, modelMatrix: simd_float4x4, verticalAngleOfView: Double, nearClip: Double, farClip: Double, debugParams: DebugParams) {
+    init(splatCloud: GPUSplatCloud<SparkSplat>, cameraMatrix: simd_float4x4, modelMatrix: simd_float4x4, verticalAngleOfView: Double, nearClip: Double, farClip: Double, debugParams: DebugParams, gridColor: Color, showGrid: Bool, showAxes: Bool) {
+        self.gridColor = gridColor
+        self.showGrid = showGrid
+        self.showAxes = showAxes
         self.splatCloud = splatCloud
         self.cameraMatrix = cameraMatrix
         self.modelMatrix = modelMatrix
@@ -480,21 +489,35 @@ private struct SingleCloudDebugRenderView: View {
     }
 
     var body: some View {
+        let resolvedColor = gridColor.resolve(in: .init())
+        let color = SIMD4<Float>(Float(resolvedColor.red), Float(resolvedColor.green), Float(resolvedColor.blue), Float(resolvedColor.opacity))
+
         RenderView { _, drawableSize in
             let projection = PerspectiveProjection(
                 verticalAngleOfView: .degrees(Float(verticalAngleOfView)),
                 depthMode: .standard(zClip: Float(nearClip) ... Float(farClip))
             )
+            let projectionMatrix = projection.projectionMatrix(for: drawableSize)
+            let drawableSize = SIMD2<Float>(Float(drawableSize.width), Float(drawableSize.height))
+            let showGuides = showGrid || showAxes
+            if showGuides {
+                SceneGuidesRenderPass(projectionMatrix: projectionMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, gridColor: showGrid ? color : nil, showAxes: showAxes)
+            }
             if let resources, resourceBufferID == ObjectIdentifier(splatCloud.splats.unsafeMTLBuffer) {
                 try GPUSortedSplatDebugRenderPipeline(
                     splatCloud: splatCloud,
-                    projectionMatrix: projection.projectionMatrix(for: drawableSize),
+                    projectionMatrix: projectionMatrix,
                     modelMatrix: modelMatrix,
                     cameraMatrix: cameraMatrix,
-                    drawableSize: SIMD2(Float(drawableSize.width), Float(drawableSize.height)),
+                    drawableSize: drawableSize,
                     debugParams: debugParams,
                     resources: resources
                 )
+                .renderPassDescriptorModifier { descriptor in
+                    if showGuides {
+                        descriptor.colorAttachments[0].loadAction = .load
+                    }
+                }
             }
         }
         .frameRatePreference()

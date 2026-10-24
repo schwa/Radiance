@@ -1217,15 +1217,18 @@ Opening the Export Screenshot sheet shows Width 0 and Height 0 instead of the cu
 ## 61: Export Screenshot sheet action buttons are badly laid out
 
 +++
-status: open
+status: closed
 priority: low
 kind: bug
 labels: effort:s, area:ui
 created: 2026-09-09T21:08:23Z
-updated: 2026-09-09T23:03:59Z
+updated: 2026-10-24T11:54:09Z
+closed: 2026-10-24T11:54:09Z
 +++
 
 The Cancel / Copy / Save… controls at the bottom of the Export Screenshot sheet are cramped into one ad-hoc row with mixed styles: Cancel is a bare text button, Copy is icon+text, Save… is a small prominent capsule. They neither follow alert/sheet button conventions nor align with the Width/Height fields above. Observed on iPad.
+
+- `2026-10-24T11:54:09Z`: Rearranged the sheet's button row: Copy (bordered, text only) on the leading side, then a spacer, then Cancel (bordered, cancel role) and Save… (borderedProminent, default action) on the trailing side. Width and Height are spread to the same full width. Built for macOS only: the iPad was unreachable and the iOS Simulator build fails in Metal 4 dependencies. Not checked visually on iPad. No unit test: layout only.
 
 ---
 

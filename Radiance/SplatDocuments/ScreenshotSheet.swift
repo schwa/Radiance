@@ -101,12 +101,14 @@ struct ScreenshotSheet: View {
             .frame(maxHeight: maxPreviewSize)
 
             // Size controls
-            HStack(spacing: 16) {
+            HStack {
                 LabeledContent("Width") {
                     TextField("Width", value: $width, format: .number)
                         .textFieldStyle(.roundedBorder)
                         .frame(width: 80)
                 }
+
+                Spacer()
 
                 LabeledContent("Height") {
                     TextField("Height", value: $height, format: .number)
@@ -121,16 +123,20 @@ struct ScreenshotSheet: View {
                     .font(.caption)
             }
 
+            // Secondary action leading; Cancel and the default action trailing.
             HStack {
-                Button("Cancel") {
+                Button("Copy") {
+                    copyScreenshot()
+                }
+                .disabled(isRendering || cloudInfos.isEmpty)
+
+                Spacer()
+
+                Button("Cancel", role: .cancel) {
                     dismiss()
                 }
                 .keyboardShortcut(.cancelAction)
 
-                Button("Copy", systemImage: "doc.on.doc") {
-                    copyScreenshot()
-                }
-                .disabled(isRendering || cloudInfos.isEmpty)
                 Button("Save…") {
                     renderForExport()
                 }
@@ -138,6 +144,9 @@ struct ScreenshotSheet: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(isRendering || cloudInfos.isEmpty)
             }
+            .buttonStyle(.bordered)
+            .controlSize(.regular)
+            .frame(maxWidth: .infinity)
         }
         .padding()
         .frame(width: 360)

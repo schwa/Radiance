@@ -480,8 +480,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/schwa/MetalSprocketsAddOns";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.2.4;
 			};
 		};
 		45B4CDD92EF86B8D00BFC1FC /* XCRemoteSwiftPackageReference "SwiftZipReader" */ = {

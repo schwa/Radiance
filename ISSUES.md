@@ -1588,10 +1588,12 @@ To do:
 ## 80: MetalSprocketsAddOns dependency tracks main instead of a version
 
 +++
-status: new
+status: closed
 priority: low
 kind: task
 created: 2026-10-23T21:05:01Z
+updated: 2026-10-24T11:35:21Z
+closed: 2026-10-24T11:35:21Z
 +++
 
 The MetalSprocketsAddOns package reference uses branch main, so the app gets the GridShader fix for GeometryLite3D 0.2.7 (MetalSprocketsAddOns#109) before it is released. Every other dependency on this branch uses a version requirement. When a release after 0.2.3 is tagged, the reference must go back to a version requirement.

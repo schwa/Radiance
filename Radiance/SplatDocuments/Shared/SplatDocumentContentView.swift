@@ -155,9 +155,13 @@ struct SplatDocumentContentView: View {
         .onChange(of: viewModel.loadingState) {
             classifyCurrentRenderingIfNeeded()
         }
-        .onChange(of: viewModel.cameraMatrix) {
-            subjectMask = nil
-            classifyCurrentRenderingIfNeeded()
+        .background {
+            ObservedValueChange(value: { viewModel.cameraMatrix }, action: {
+                if subjectMask != nil {
+                    subjectMask = nil
+                }
+                classifyCurrentRenderingIfNeeded()
+            })
         }
         .onChange(of: viewModel.viewSize) {
             subjectMask = nil
@@ -925,15 +929,17 @@ struct SplatDocumentContentView: View {
             viewModel.updateCombinedBounds(for: doc.scene)
         }
         // Sync camera state back to document
-        .onChange(of: viewModel.cameraMatrix) {
-            guard mode == .multi else {
-                return
-            }
-            multiDocument?.scene.camera = SplatScene.CameraState(
-                matrix: viewModel.cameraMatrix,
-                verticalAngleOfView: viewModel.verticalAngleOfView,
-                mode: viewModel.cameraMode.rawValue.lowercased()
-            )
+        .background {
+            ObservedValueChange(value: { viewModel.cameraMatrix }, action: {
+                guard mode == .multi else {
+                    return
+                }
+                multiDocument?.scene.camera = SplatScene.CameraState(
+                    matrix: viewModel.cameraMatrix,
+                    verticalAngleOfView: viewModel.verticalAngleOfView,
+                    mode: viewModel.cameraMode.rawValue.lowercased()
+                )
+            })
         }
         .onChange(of: viewModel.verticalAngleOfView) {
             guard mode == .multi else {
@@ -1625,6 +1631,17 @@ struct CloudListRow: View {
                 Label("Delete", systemImage: "trash")
             }
         }
+    }
+}
+
+// Reads `value` in its own body so high-frequency changes (e.g. camera) invalidate only this view, not the caller (#65).
+private struct ObservedValueChange<Value: Equatable>: View {
+    let value: () -> Value
+    let action: () -> Void
+
+    var body: some View {
+        Color.clear
+            .onChange(of: value()) { action() }
     }
 }
 #endif

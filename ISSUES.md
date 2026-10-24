@@ -1300,12 +1300,13 @@ Task: establish the house rule (prefer @State default init / .task over State(in
 ## 65: Camera rotation invalidates the document view and unrelated inspector content
 
 +++
-status: open
+status: closed
 priority: medium
 kind: bug
 labels: area:swiftui, area:performance, effort:m
 created: 2026-09-10T05:41:54Z
-updated: 2026-10-24T11:36:02Z
+updated: 2026-10-24T11:44:20Z
+closed: 2026-10-24T11:44:20Z
 +++
 
 During continuous camera rotation, SwiftUI updates spread beyond the rendered scene and camera controls into the document and inspector containers.
@@ -1317,6 +1318,7 @@ Expected: camera changes do not update unrelated inspector content. Actual: the 
 Evidence: /Users/schwa/Desktop/SwiftUI Trace.trace. Cause edges include @Observable SplatViewModel.(simd_quatf) -> SplatDocumentContentView.body, followed by InspectorModifier/LazyView/conditional content -> InspectorView.body. Camera observation includes onChange(of: viewModel.cameraMatrix) at document scope. The individual contribution to the frame-rate drop has not been isolated.
 
 - `2026-10-24T11:36:02Z`: Related to #8 (document view invalidation boundary); fixing #8 likely resolves this.
+- `2026-10-24T11:44:20Z`: Moved the cameraMatrix onChange observers out of SplatDocumentContentView.body into a child ObservedValueChange view, so camera changes no longer register a dependency on the document body (which in turn rebuilt InspectorView). Not verified with a trace. Remaining: in multi mode, each camera change still writes scene.camera into the document binding, which invalidates the document anyway. That part is covered by #8. The inspector Camera tab still updates because it shows the camera. No unit test: SwiftUI update counts aren't unit-testable.
 
 ---
 

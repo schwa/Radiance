@@ -1039,15 +1039,18 @@ After standardizing scene guides into a single trailing SceneGuidesRenderPass sh
 ## 52: Point splat renderer passes a constant frameIndex and omits reprojection/supersampling configuration
 
 +++
-status: open
+status: closed
 priority: low
 kind: bug
 labels: effort:s, area:rendering
 created: 2026-09-09T20:23:05Z
-updated: 2026-09-09T23:03:59Z
+updated: 2026-10-24T11:49:16Z
+closed: 2026-10-24T11:49:16Z
 +++
 
 SplatRenderView calls PointSplatRenderPipeline with frameIndex: 0 every frame and does not pass the supersampling, pointsPerThread, or reprojection options that the MetalSprocketsGaussianSplats demo (SplatView) wires up. Any temporal logic keyed off frameIndex never advances, and the renderer runs with defaults rather than the demo's tuned configuration.
+
+- `2026-10-24T11:49:16Z`: Pass context.frameUniforms.index as frameIndex, matching the demo. With a constant 0, PointSplatRenderPipeline's nextAccumulationStep returned the cached first-frame step on every frame, so accumulation and reprojection never advanced. Supersampling, pointsPerThread and reprojection are left at the library defaults (2, 16, true), which are the tuned values; the demo only exposes them as user settings. No unit test: this is render-loop wiring inside RenderView with no unit-testable seam.
 
 ---
 

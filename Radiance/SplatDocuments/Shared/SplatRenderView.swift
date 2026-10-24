@@ -264,7 +264,7 @@ private struct SingleCloudGuidedRenderView: View {
         let resolvedColor = gridColor.resolve(in: .init())
         let color = SIMD4<Float>(Float(resolvedColor.red), Float(resolvedColor.green), Float(resolvedColor.blue), Float(resolvedColor.opacity))
 
-        RenderView { _, drawableSize in
+        RenderView { context, drawableSize in
             let projection = PerspectiveProjection(verticalAngleOfView: .degrees(Float(verticalAngleOfView)), depthMode: .standard(zClip: Float(nearClip) ... Float(farClip)))
             let projectionMatrix = projection.projectionMatrix(for: drawableSize)
             let drawableSize = SIMD2<Float>(Float(drawableSize.width), Float(drawableSize.height))
@@ -298,7 +298,7 @@ private struct SingleCloudGuidedRenderView: View {
                 }
 
             case .pointSplat:
-                try PointSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, frameIndex: 0, configuration: .init(depthRange: Float(nearClip) ... Float(farClip), statistics: pointSplatStatistics, colorLoadAction: splatLoadAction))
+                try PointSplatRenderPipeline(splatCloud: splatCloud, projectionMatrix: projectionMatrix, modelMatrix: modelMatrix, cameraMatrix: cameraMatrix, drawableSize: drawableSize, frameIndex: UInt32(truncatingIfNeeded: context.frameUniforms.index), configuration: .init(depthRange: Float(nearClip) ... Float(farClip), statistics: pointSplatStatistics, colorLoadAction: splatLoadAction))
             }
         }
         .frameRatePreference()

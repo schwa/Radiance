@@ -1323,12 +1323,13 @@ Evidence: /Users/schwa/Desktop/SwiftUI Trace.trace. Cause edges include @Observa
 ## 66: Inspector tab picker updates repeatedly without a selection change
 
 +++
-status: open
+status: closed
 priority: medium
 kind: bug
 labels: area:swiftui, area:performance, effort:s
 created: 2026-09-10T05:41:55Z
-updated: 2026-10-24T11:36:02Z
+updated: 2026-10-24T11:41:56Z
+closed: 2026-10-24T11:41:56Z
 +++
 
 The inspector tab segmented control repeatedly updates during camera rotation even though the selected tab does not change.
@@ -1340,6 +1341,7 @@ Expected: the tab selector remains unchanged. Actual: the 11.5-second SwiftUI tr
 Evidence: /Users/schwa/Desktop/SwiftUI Trace.trace. Cause edges identify configuration.multiSelection (Array<Binding<InspectorTab>>), selectedIndex.location (AnyLocation<Int?>), and content.content.selectedIndices (Array<Binding<Int?>>). This establishes binding-location changes in the picker update chain; the exact application-level source of that instability remains to be isolated.
 
 - `2026-10-24T11:36:02Z`: Related to #65 (same trace).
+- `2026-10-24T11:41:56Z`: Moved the segmented picker into an Equatable InspectorTabPicker (.equatable()) so it only updates when mode or tab changes. No unit test: SwiftUI update counts are not reachable from unit tests; verify with a SwiftUI Instruments trace.
 
 ---
 

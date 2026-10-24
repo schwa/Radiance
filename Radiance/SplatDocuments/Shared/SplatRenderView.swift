@@ -533,6 +533,29 @@ enum InspectorTab: String, CaseIterable {
     }
 }
 
+// Equatable so camera-driven InspectorView updates don't re-update the segmented control (#66).
+private struct InspectorTabPicker: View, Equatable {
+    let mode: SplatContentMode
+    @Binding var tab: InspectorTab
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.mode == rhs.mode && lhs.tab == rhs.tab
+    }
+
+    var body: some View {
+        // Animations disabled to prevent flicker during camera updates.
+        Picker("Tab", selection: $tab) {
+            ForEach(InspectorTab.tabs(for: mode), id: \.self) { tab in
+                Text(tab.rawValue).tag(tab)
+            }
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .padding()
+        .transaction { $0.animation = nil }
+    }
+}
+
 // MARK: - Inspector View
 
 struct InspectorView: View {
@@ -561,16 +584,8 @@ struct InspectorView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Tab picker - disable animations to prevent flicker during camera updates
-            Picker("Tab", selection: $tab) {
-                ForEach(InspectorTab.tabs(for: mode), id: \.self) { tab in
-                    Text(tab.rawValue).tag(tab)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .padding()
-            .transaction { $0.animation = nil }
+            InspectorTabPicker(mode: mode, tab: $tab)
+                .equatable()
 
             Divider()
 

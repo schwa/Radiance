@@ -6,8 +6,10 @@ import SwiftUI
 struct SplatSceneView: View {
     @Binding var document: SplatSceneDocument
 
+    @State private var viewModel = SplatViewModel(mode: .multi)
+
     var body: some View {
-        SplatDocumentContentView(document: $document)
+        SplatDocumentContentView(document: $document, viewModel: viewModel)
     }
 }
 #endif

@@ -60,7 +60,7 @@ struct SplatDocumentContentView: View {
 
     // MARK: - State
 
-    @State private var viewModel: SplatViewModel
+    @Bindable var viewModel: SplatViewModel
 
     @State private var selectedCloudID: UUID?
     @State private var inspectorTab: InspectorTab = .cloud
@@ -109,12 +109,12 @@ struct SplatDocumentContentView: View {
 
     // MARK: - Initialization
 
-    private init(mode: SplatContentMode, singleDocument: SplatDocument?, fileURL: URL?, multiDocument: Binding<SplatSceneDocument?>) {
+    private init(mode: SplatContentMode, singleDocument: SplatDocument?, fileURL: URL?, multiDocument: Binding<SplatSceneDocument?>, viewModel: SplatViewModel) {
         self.mode = mode
         self.singleDocument = singleDocument
         self.fileURL = fileURL
         self._multiDocument = multiDocument
-        self._viewModel = State(initialValue: SplatViewModel(mode: mode == .single ? .single : .multi))
+        self.viewModel = viewModel
     }
 
     #if os(iOS)
@@ -1533,17 +1533,18 @@ private struct CameraSaveKey: Equatable {
 
 extension SplatDocumentContentView {
     /// Create view for single splat document
-    init(document: SplatDocument, fileURL: URL?) {
+    init(document: SplatDocument, fileURL: URL?, viewModel: SplatViewModel) {
         self.init(
             mode: .single,
             singleDocument: document,
             fileURL: fileURL,
-            multiDocument: .constant(nil)
+            multiDocument: .constant(nil),
+            viewModel: viewModel
         )
     }
 
     /// Create view for multi-cloud scene document
-    init(document: Binding<SplatSceneDocument>) {
+    init(document: Binding<SplatSceneDocument>, viewModel: SplatViewModel) {
         self.init(
             mode: .multi,
             singleDocument: nil,
@@ -1551,7 +1552,8 @@ extension SplatDocumentContentView {
             multiDocument: Binding(
                 get: { document.wrappedValue },
                 set: { document.wrappedValue = $0! }
-            )
+            ),
+            viewModel: viewModel
         )
     }
 }

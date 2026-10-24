@@ -7,8 +7,10 @@ struct SplatDocumentView: View {
     let document: SplatDocument
     let fileURL: URL?
 
+    @State private var viewModel = SplatViewModel(mode: .single)
+
     var body: some View {
-        SplatDocumentContentView(document: document, fileURL: fileURL)
+        SplatDocumentContentView(document: document, fileURL: fileURL, viewModel: viewModel)
     }
 }
 #endif

@@ -1272,13 +1272,14 @@ Fix: make resources lazy — hold @State private var resources: GPUSortResources
 ## 64: Audit and remove State(initialValue:) init pattern in views
 
 +++
-status: open
+status: closed
 priority: medium
 kind: task
 labels: area:swiftui, area:performance, effort:s, area:architecture
 depends: 63
 created: 2026-09-10T02:43:29Z
-updated: 2026-10-24T11:36:02Z
+updated: 2026-10-24T11:48:28Z
+closed: 2026-10-24T11:48:28Z
 +++
 
 State(initialValue:) in a view's init is an anti-pattern: SwiftUI evaluates the expression on every init (every parent body evaluation) and discards all but the first result. When the initial value is expensive (allocating GPU buffers, creating model objects, doing IO), that cost is paid on every body eval, not once. It also hides the real initialization point and makes lifetimes hard to reason about.

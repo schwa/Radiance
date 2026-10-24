@@ -59,8 +59,11 @@ struct ScreenshotSheet: View {
     init(cloudInfos: [(descriptor: SplatCloudDescriptor, modelTransform: simd_float4x4)], sceneTransform: simd_float4x4, defaultWidth: Int, defaultHeight: Int) {
         self.cloudInfos = cloudInfos
         self.sceneTransform = sceneTransform
+        // Cheap Ints, and the sheet is built at presentation time, so the defaults are current.
+        // swiftlint:disable state_initial_value
         _width = State(initialValue: defaultWidth)
         _height = State(initialValue: defaultHeight)
+        // swiftlint:enable state_initial_value
     }
 
     private let maxPreviewSize: CGFloat = 300

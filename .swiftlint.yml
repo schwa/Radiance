@@ -251,3 +251,10 @@ only_rules:
   - xct_specific_matcher
   - xctfail_message
   - yoda_condition
+
+custom_rules:
+  state_initial_value:
+    name: "State(initialValue:)"
+    regex: 'State\(initialValue:'
+    message: "Avoid State(initialValue:) in init: it is evaluated on every parent body evaluation. Use a @State default, .task, or own the state higher up."
+    severity: warning

@@ -1455,12 +1455,13 @@ ModelDownloadView.swift is the only user of ZIPFoundation. It uses Archive to ex
 ## 72: No document format for a walkable set of splat scenes split into volumes
 
 +++
-status: open
+status: closed
 priority: medium
 kind: feature
 labels: area:multisplat-walkthrough, effort:m
 created: 2026-10-23T14:11:40Z
-updated: 2026-10-24T11:36:02Z
+updated: 2026-10-24T11:46:35Z
+closed: 2026-10-24T11:46:35Z
 +++
 
 Radiance can open a single splat file or a .splatscene. A .splatscene shows all of its clouds at once. There is no document for a large space, for example a house, that is captured as several separate splat files (one per room) and walked through as one space.
@@ -1477,6 +1478,7 @@ It also needs a version field and a UTType, like the other Radiance document typ
 - `2026-10-23T14:13:17Z`: Containment hit testing uses SwiftMesh (winding number on the prism mesh).
 - `2026-10-23T14:13:17Z`: Overlapping volumes are resolved with a heuristic: the smallest volume wins, or else the volume with the nearest centroid. The final choice is made during implementation.
 - `2026-10-23T14:13:17Z`: Behavior at volume boundaries is deferred and is not needed for now (see #73).
+- `2026-10-24T11:46:35Z`: Added SplatWalkthrough (RadianceSupport): version, splats by relative path, polygon-prism volumes (XZ floor + min/max height, Y-up), cross-fade (enabled, duration, optional easing), validation, JSON encode/decode, UTType com.schwa.splatwalkthrough (.splatwalkthrough) exported in Info.plist. Not included: containment hit testing and overlap resolution (needed by #73), and the FileDocument/DocumentGroup/viewer that opens the format in the app.
 
 ---
 

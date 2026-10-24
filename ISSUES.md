@@ -1488,10 +1488,10 @@ It also needs a version field and a UTType, like the other Radiance document typ
 status: open
 priority: medium
 kind: feature
-labels: area:multisplat-walkthrough, effort:m
+labels: area:multisplat-walkthrough, effort:m, punted
 depends: 72
 created: 2026-10-23T14:11:40Z
-updated: 2026-10-24T11:36:02Z
+updated: 2026-10-24T11:46:58Z
 +++
 
 In a document that splits a space into volumes, each with its own splat, only the splat for the volume that contains the camera should be visible. Today there is no concept of an active volume.
@@ -1502,6 +1502,7 @@ Undecided: the behavior when the camera is outside every volume (keep the last s
 
 - `2026-10-23T14:13:17Z`: Deferred: switching back and forth at volume boundaries does not need handling for now. Overlap resolution is decided in #72 (smallest volume, or nearest centroid).
 - `2026-10-23T14:13:55Z`: Decision: when the camera is outside every volume, show no splat. Only the background shows (black by default, #000).
+- `2026-10-24T11:46:58Z`: Assessed after #72 landed the format. Punting for two reasons. (1) #72 recorded that containment uses SwiftMesh (winding number on the prism mesh), but SwiftMesh is not a dependency of Radiance. A 2D winding-number test on the XZ floor plus a height check is equivalent for prisms and needs no new dependency, but it departs from the recorded decision. (2) Nothing opens a .splatwalkthrough yet: there is no FileDocument, DocumentGroup or viewer, so there is no place to load the splats ahead of time and swap the visible one. Unblockers: choose SwiftMesh or the 2D test, and approve a new issue for a walkthrough viewer (document type, DocumentGroup, preload all splats, render the active cloud through the multi-cloud path) that this issue depends on.
 
 ---
 

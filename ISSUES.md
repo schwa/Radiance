@@ -173,18 +173,20 @@ Actual: moving the camera triggers background classification, which calls the of
 ## 8: Document view has an excessively broad invalidation boundary
 
 +++
-status: open
+status: closed
 priority: high
 kind: task
 labels: effort:xl, area:swiftui, area:architecture, area:performance
 created: 2026-08-25T02:10:46Z
-updated: 2026-10-24T11:36:02Z
+updated: 2026-10-24T12:02:37Z
+closed: 2026-10-24T12:02:37Z
 +++
 
 SplatDocumentContentView owns rendering, Vision analysis, Best View search, image generation, camera math, file coordination, and most screen composition. Changes to frequently updated state can reevaluate unrelated UI and the mixed responsibilities make behavior difficult to isolate and test.
 
 - `2026-08-25T02:18:13Z`: Related to #9: both reduce broad SwiftUI invalidation boundaries; #8 covers the document view and #9 the render view.
 - `2026-10-24T11:36:02Z`: Related: #65 (camera rotation invalidates document view and inspector), #66.
+- `2026-10-24T12:02:37Z`: Closed by user; camera-rotation invalidation addressed in #65/#66.
 
 ---
 

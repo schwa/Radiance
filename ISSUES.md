@@ -176,14 +176,15 @@ Actual: moving the camera triggers background classification, which calls the of
 status: open
 priority: high
 kind: task
-labels: swiftui, architecture, performance, effort:xl, area:swiftui, area:architecture, area:performance
+labels: effort:xl, area:swiftui, area:architecture, area:performance
 created: 2026-08-25T02:10:46Z
-updated: 2026-09-09T23:04:06Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 SplatDocumentContentView owns rendering, Vision analysis, Best View search, image generation, camera math, file coordination, and most screen composition. Changes to frequently updated state can reevaluate unrelated UI and the mixed responsibilities make behavior difficult to isolate and test.
 
 - `2026-08-25T02:18:13Z`: Related to #9: both reduce broad SwiftUI invalidation boundaries; #8 covers the document view and #9 the render view.
+- `2026-10-24T11:36:02Z`: Related: #65 (camera rotation invalidates document view and inspector), #66.
 
 ---
 
@@ -231,9 +232,9 @@ The Best View attempt ribbon contains collection rendering, scroll coordination,
 status: open
 priority: low
 kind: task
-labels: swiftui, performance, effort:xs, area:swiftui, area:performance, deferred
+labels: effort:xs, area:swiftui, area:performance, deferred
 created: 2026-08-25T02:10:46Z
-updated: 2026-10-24T11:31:25Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 SplashScene wraps recentDocumentURLs.enumerated() in Array inside the List body. Every body evaluation allocates and copies the collection even though the enumerated collection is directly usable by ForEach.
@@ -960,9 +961,9 @@ Acceptance criteria:
 status: open
 priority: high
 kind: task
-labels: rendering, architecture, effort:l, area:rendering, area:architecture
+labels: effort:l, area:rendering, area:architecture
 created: 2026-08-27T13:39:30Z
-updated: 2026-10-23T21:18:06Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 Single-cloud documents and multi-cloud scenes enter different renderer implementations even though both already provide an array of GPU splat clouds to SplatRenderView. This duplicates render-pass composition, sorting ownership, debug rendering, scene-guide handling, and frame lifecycle behavior. Features can consequently work differently depending on document type; renderer selection currently applies only to single-cloud rendering, while bounds culling applies only to multi-cloud rendering.
@@ -1104,9 +1105,9 @@ Screenshot: iPad, Point renderer, dark background, grid + axes on.
 status: open
 priority: low
 kind: enhancement
-labels: ui, rendering, effort:m, area:rendering
+labels: effort:m, area:rendering, area:ui
 created: 2026-09-09T20:37:30Z
-updated: 2026-09-09T23:03:59Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 The reference grid and axis lines render with visible aliasing (jagged/shimmering lines), especially at grazing angles where grid lines converge toward the horizon.
@@ -1228,9 +1229,9 @@ The Cancel / Copy / Save… controls at the bottom of the Export Screenshot shee
 status: open
 priority: medium
 kind: feature
-labels: rendering, performance, effort:m, area:rendering, area:performance, deferred
+labels: effort:m, area:rendering, area:performance, deferred
 created: 2026-09-09T21:22:48Z
-updated: 2026-10-24T11:31:25Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 The MTKView runs in continuous mode, redrawing at 60 fps even when the scene is static, wasting power (notably on iPad).
@@ -1271,12 +1272,13 @@ Fix: make resources lazy — hold @State private var resources: GPUSortResources
 ## 64: Audit and remove State(initialValue:) init pattern in views
 
 +++
-status: new
+status: open
 priority: medium
 kind: task
-labels: swiftui, performance, architecture, area:swiftui, area:performance
+labels: area:swiftui, area:performance, effort:s, area:architecture
 depends: 63
 created: 2026-09-10T02:43:29Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 State(initialValue:) in a view's init is an anti-pattern: SwiftUI evaluates the expression on every init (every parent body evaluation) and discards all but the first result. When the initial value is expensive (allocating GPU buffers, creating model objects, doing IO), that cost is paid on every body eval, not once. It also hides the real initialization point and makes lifetimes hard to reason about.
@@ -1298,11 +1300,12 @@ Task: establish the house rule (prefer @State default init / .task over State(in
 ## 65: Camera rotation invalidates the document view and unrelated inspector content
 
 +++
-status: new
+status: open
 priority: medium
 kind: bug
-labels: area:swiftui, area:performance
+labels: area:swiftui, area:performance, effort:m
 created: 2026-09-10T05:41:54Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 During continuous camera rotation, SwiftUI updates spread beyond the rendered scene and camera controls into the document and inspector containers.
@@ -1313,16 +1316,19 @@ Expected: camera changes do not update unrelated inspector content. Actual: the 
 
 Evidence: /Users/schwa/Desktop/SwiftUI Trace.trace. Cause edges include @Observable SplatViewModel.(simd_quatf) -> SplatDocumentContentView.body, followed by InspectorModifier/LazyView/conditional content -> InspectorView.body. Camera observation includes onChange(of: viewModel.cameraMatrix) at document scope. The individual contribution to the frame-rate drop has not been isolated.
 
+- `2026-10-24T11:36:02Z`: Related to #8 (document view invalidation boundary); fixing #8 likely resolves this.
+
 ---
 
 ## 66: Inspector tab picker updates repeatedly without a selection change
 
 +++
-status: new
+status: open
 priority: medium
 kind: bug
-labels: area:swiftui, area:performance
+labels: area:swiftui, area:performance, effort:s
 created: 2026-09-10T05:41:55Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 The inspector tab segmented control repeatedly updates during camera rotation even though the selected tab does not change.
@@ -1332,6 +1338,8 @@ Repro: open a single cloud, leave the inspector on one tab, and rotate continuou
 Expected: the tab selector remains unchanged. Actual: the 11.5-second SwiftUI trace records 1,389 SystemSegmentedControl.update events totaling about 297 ms of recorded update duration.
 
 Evidence: /Users/schwa/Desktop/SwiftUI Trace.trace. Cause edges identify configuration.multiSelection (Array<Binding<InspectorTab>>), selectedIndex.location (AnyLocation<Int?>), and content.content.selectedIndices (Array<Binding<Int?>>). This establishes binding-location changes in the picker update chain; the exact application-level source of that instability remains to be isolated.
+
+- `2026-10-24T11:36:02Z`: Related to #65 (same trace).
 
 ---
 
@@ -1386,11 +1394,12 @@ The relevant path is classifyCurrentRenderingIfNeeded() in Radiance/SplatDocumen
 ## 69: SplatCloudDescriptor.computeBounds causes a microhang
 
 +++
-status: new
+status: open
 priority: medium
 kind: bug
-labels: area:performance
+labels: area:performance, effort:s
 created: 2026-09-10T06:54:54Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 SplatCloudDescriptor.computeBounds causes a microhang, as reported by the user.
@@ -1405,10 +1414,12 @@ The triggering cloud, call site, thread, and duration have not yet been recorded
 ## 70: Rotation widget doesn't respond to taps on iPad
 
 +++
-status: new
+status: open
 priority: medium
-kind: none
+kind: bug
+labels: effort:s, area:ui
 created: 2026-09-10T16:33:22Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 The rotation widget ignores tap input on iPad.
@@ -1436,12 +1447,12 @@ ModelDownloadView.swift is the only user of ZIPFoundation. It uses Archive to ex
 ## 72: No document format for a walkable set of splat scenes split into volumes
 
 +++
-status: new
+status: open
 priority: medium
 kind: feature
-labels: area:multisplat-walkthrough
+labels: area:multisplat-walkthrough, effort:m
 created: 2026-10-23T14:11:40Z
-updated: 2026-10-23T14:14:41Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 Radiance can open a single splat file or a .splatscene. A .splatscene shows all of its clouds at once. There is no document for a large space, for example a house, that is captured as several separate splat files (one per room) and walked through as one space.
@@ -1464,13 +1475,13 @@ It also needs a version field and a UTType, like the other Radiance document typ
 ## 73: Visible splat does not follow the camera between volumes
 
 +++
-status: new
+status: open
 priority: medium
 kind: feature
-labels: area:multisplat-walkthrough
+labels: area:multisplat-walkthrough, effort:m
 depends: 72
 created: 2026-10-23T14:11:40Z
-updated: 2026-10-23T14:14:41Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 In a document that splits a space into volumes, each with its own splat, only the splat for the volume that contains the camera should be visible. Today there is no concept of an active volume.
@@ -1487,13 +1498,13 @@ Undecided: the behavior when the camera is outside every volume (keep the last s
 ## 74: Changing the visible splat is a hard cut with no cross-fade
 
 +++
-status: new
+status: open
 priority: medium
 kind: feature
-labels: area:multisplat-walkthrough
+labels: area:multisplat-walkthrough, effort:l
 depends: 73
 created: 2026-10-23T14:11:41Z
-updated: 2026-10-23T14:16:16Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 When the visible splat changes, for example when the camera crosses into another volume, the old splat disappears and the new one appears in a single frame.
@@ -1509,13 +1520,13 @@ Risks to check: Metal 4 residency of the offscreen targets, the depth attachment
 ## 75: Portal demo: see and step through into another splat world
 
 +++
-status: new
+status: open
 priority: low
 kind: feature
-labels: demo, area:multisplat-walkthrough
+labels: demo, area:multisplat-walkthrough, effort:l
 depends: 74
 created: 2026-10-23T14:11:41Z
-updated: 2026-10-23T14:16:16Z
+updated: 2026-10-24T11:36:02Z
 +++
 
 End goal for the multi-splat work. A demo in which a portal in one splat scene shows a different splat scene live, with the same camera. The user can walk through the portal into the other scene, and the transition has no hitch.
